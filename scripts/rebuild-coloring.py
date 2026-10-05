@@ -5,7 +5,11 @@ from concurrent.futures import ThreadPoolExecutor
 items=json.loads(Path('assets/coloring/catalog.json').read_text())
 def go(i):
  id=i['id'];source=next((p for ext in ['.png','.webp']if (p:=Path('assets/coloring')/(id+ext)).exists()),None)
- if source:subprocess.run([sys.executable,'scripts/trace-coloring.py',str(source),str(source.with_suffix('.svg'))],check=True,stdout=subprocess.DEVNULL)
+ if source:
+  detail=Path('assets/coloring/originals')/(id+'.png')
+  args=[sys.executable,'scripts/trace-coloring.py',str(source),str(source.with_suffix('.svg'))]
+  if detail.exists():args.append(str(detail))
+  subprocess.run(args,check=True)
 with ThreadPoolExecutor(max_workers=4)as pool:list(pool.map(go,items))
 import xml.etree.ElementTree as ET,re
 parts=['<path data-region="sky" d="M0 0H360V440H0Z" fill="white" stroke="none"/>']

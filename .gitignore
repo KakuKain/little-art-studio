@@ -1,3 +1,5 @@
 # Original raster inputs remain available locally; the app ships vector sheets.
 assets/coloring/*.png
 assets/coloring/*.webp
+
+assets/coloring/originals/

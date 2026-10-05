@@ -17,4 +17,4 @@
 
 描圖：安裝 Pillow、numpy、opencv-python-headless 後執行 `python scripts/trace-coloring.py input.png output.svg`。原始 PNG/WebP 留在本機同一資料夾，不加入發布檔案；網站及离線快取使用 SVG。
 
-線稿重建：`python scripts/rebuild-coloring.py` 會重描本機原圖並重組夜煞一家。輪廓以局部二次曲線平滑鋸齒，黑色外框使用不隨縮圖縮小的 1px 描邊，讓手機上的細線仍可辨認。保留既有填色區域 ID，避免更新後已保存的顏色移到其他位置。
+線稿重建：`python scripts/rebuild-coloring.py` 會重描本機原圖並重組夜煞一家；`assets/coloring/originals/` 可放同名的更高解析度 PNG。新版以 1800px 解析度描圖，清掉列印外框與頁腳，平滑輪廓並加強主要外緣；細小內部細節不套用同樣的外緣描邊，避免眼睛和手指黏在一起。既有填色 ID 以區域重疊配對，主要區域維持原色；細小區域拆分或刪除時可能無法完整對應。逐張檢查紀錄見 assets/coloring/REVIEW.md。
