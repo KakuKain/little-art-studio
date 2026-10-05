@@ -13,3 +13,23 @@ body{max-width:none;margin:0;background:white}#home{display:none}.at-home #home{
 #brush-modal{max-width:390px}#brush-sizes{display:flex;gap:10px;padding:22px 0 10px}#brush-sizes button{flex:1;min-height:80px;background:white;display:flex;align-items:center;justify-content:center;border:2px solid transparent}#brush-sizes span{display:block;border-radius:50%;background:#7954a5}#brush-sizes button.active{border-color:#7954a5;background:#f0e8fa}#brush-modal::backdrop{background:#49385066;backdrop-filter:blur(4px)}
 
 #home-grid img{width:100%;height:100%;object-fit:contain;display:block}#home-grid button{position:relative;display:flex;flex-direction:column;padding:10px;overflow:hidden}#home-grid button img{min-height:0;flex:1}#home-grid button span{font-size:13px;padding:8px 0 4px;color:#795d51}#home-grid button:last-child:not(.blank-card){grid-column:auto;height:auto;aspect-ratio:360/440;background:white;border:2px solid #eaded1}.home-top{justify-content:space-between}.home-top #gallery{margin-left:auto}#category-back[hidden]{display:none}.credits{font-size:11px;color:#8b7063;text-decoration:none;line-height:1.6}.blank-card svg{max-height:100px}
+
+/* Compact picture library: consistent thumbnails, with more columns on desktop. */
+#home{padding:max(12px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+.home-top{max-width:1120px;margin:0 auto 12px;position:sticky;top:-12px;z-index:2;padding:8px 0;background:#fff6e9}
+.home-top button{width:46px;height:46px;min-width:46px;min-height:46px;border-radius:14px}
+#home-grid[data-view]{max-width:1120px;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 auto;align-content:start}
+#home-grid[data-view] > button[data-scene],#home-grid[data-view] > button[data-category]{grid-column:auto;min-height:0;height:auto;aspect-ratio:4/5;padding:10px;border:1px solid #e9dfd4;border-radius:20px;box-shadow:0 3px 10px #72513405;background:white;transition:border-color .15s,transform .15s}
+#home-grid[data-view] button img{width:100%;height:100%;min-height:0;object-fit:contain;pointer-events:none}
+#home-grid[data-view="categories"]{max-width:840px}
+#home-grid[data-view="categories"] > button[data-category]{aspect-ratio:1.12;padding:12px 12px 8px}
+#home-grid[data-view="categories"] button span{font-size:13px;padding:8px 0 2px;font-weight:600}
+#home-grid[data-view="categories"] > .blank-card[data-scene]{grid-column:1/-1;aspect-ratio:auto;height:90px;border:1.5px dashed #cdbce0;background:#faf7fe;padding:12px}
+.blank-card svg{max-height:66px}
+@media(hover:hover){#home-grid[data-view] > button:hover{border-color:#b9a1d0;transform:translateY(-2px)}}
+@media(min-width:600px){#home-grid[data-view="sheets"]{grid-template-columns:repeat(3,minmax(0,1fr))}#home-grid[data-view="categories"]{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:900px){#home-grid[data-view="sheets"]{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}}
+@media(min-width:1200px){#home-grid[data-view="sheets"]{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(orientation:landscape) and (max-height:500px){#home-grid[data-view="sheets"]{grid-template-columns:repeat(4,minmax(0,1fr))}#home-grid[data-view="categories"]{grid-template-columns:repeat(3,minmax(0,1fr));max-width:680px}.home-top{margin-bottom:8px}#home-grid[data-view="categories"] > .blank-card[data-scene]{height:74px}}
+
+#home-grid .detail-toggle{grid-column:1/-1;aspect-ratio:auto;min-height:48px;background:#f0e7fa;color:#7753a2;font-size:16px;padding:12px;border:0}#extras{display:grid;grid-template-columns:1fr 1fr;gap:12px}#extras button{min-height:76px;margin:0;text-align:center;font-size:16px}#extras #clear{color:#a35058}#about-modal .credits{display:block;margin:18px 0;font-size:14px;line-height:1.6}#brush-sizes button{touch-action:manipulation}

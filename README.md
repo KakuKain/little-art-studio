@@ -15,6 +15,10 @@
 
 分類著色庫：15 位公主（含艾莎、安娜）、夜煞與光煞、三隻小龍及全家組圖、救援騎士、佩佩豬、6 種海洋生物與 6 種陸地動物。線稿由圖片自動描成 SVG，保留可填色區域和輪廓。點畫筆可選四種粗細。來源與使用條件記錄於 assets/coloring/SOURCES.md 和 catalog.json。角色生成稿可能與原作有所差異。
 
-描圖：安裝 Pillow、numpy、opencv-python-headless 後執行 `python scripts/trace-coloring.py input.png output.svg`。原始 PNG/WebP 留在本機同一資料夾，不加入發布檔案；網站及离線快取使用 SVG。
+描圖：安裝 Pillow、numpy、opencv-python-headless、scikit-image、scipy 後執行 `python scripts/trace-coloring.py input.png output.svg`。原始 PNG/WebP 留在本機同一資料夾，不加入發布檔案；網站及离線快取使用 SVG。
 
 線稿重建：`python scripts/rebuild-coloring.py` 會重描本機原圖並重組夜煞一家；`assets/coloring/originals/` 可放同名的更高解析度 PNG。新版以 1800px 解析度描圖，清掉列印外框與頁腳，平滑輪廓並加強主要外緣；細小內部細節不套用同樣的外緣描邊，避免眼睛和手指黏在一起。既有填色 ID 以區域重疊配對，主要區域維持原色；細小區域拆分或刪除時可能無法完整對應。逐張檢查紀錄見 assets/coloring/REVIEW.md。
+
+更新 v10：補合短缺口與半身輪廓，保留細小封閉區域，避免把碰到邊緣的角色誤當背景。選圖頁採手機兩欄、桌機最多五欄；複雜圖案收在「更多細節圖案」。橡皮擦點擊清除該區填色並擦除拖曳路徑的筆跡；粗細由橡皮擦或畫筆選單調整。每張圖的作品與 20 步復原／重做紀錄分開保留於本次開啟期間。更多選單只放作品操作，來源資訊另列於關於畫室。
+
+回歸測試：安裝 Playwright 後啟動本機伺服器，執行 `node tests/editor-regression.cjs http://localhost:8080` 及 `node tests/coloring-regression.cjs http://localhost:8080`。前者驗證橡皮擦與圖片獨立復原，後者逐張確認背景與指定角色區域不串色。
