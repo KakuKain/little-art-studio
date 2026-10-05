@@ -16,3 +16,5 @@
 分類著色庫：15 位公主（含艾莎、安娜）、夜煞與光煞、三隻小龍及全家組圖、救援騎士、佩佩豬、6 種海洋生物與 6 種陸地動物。線稿由圖片自動描成 SVG，保留可填色區域和輪廓。點畫筆可選四種粗細。來源與使用條件記錄於 assets/coloring/SOURCES.md 和 catalog.json。角色生成稿可能與原作有所差異。
 
 描圖：安裝 Pillow、numpy、opencv-python-headless 後執行 `python scripts/trace-coloring.py input.png output.svg`。原始 PNG/WebP 留在本機同一資料夾，不加入發布檔案；網站及离線快取使用 SVG。
+
+線稿重建：`python scripts/rebuild-coloring.py` 會重描本機原圖並重組夜煞一家。輪廓以局部二次曲線平滑鋸齒，黑色外框使用不隨縮圖縮小的 1px 描邊，讓手機上的細線仍可辨認。保留既有填色區域 ID，避免更新後已保存的顏色移到其他位置。

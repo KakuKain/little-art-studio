@@ -19,7 +19,16 @@ def path_for(mask):
   if cv2.contourArea(c)<1:continue
   c=cv2.approxPolyDP(c,.45,True).reshape(-1,2)
   if len(c)<3:continue
-  parts.append('M'+' '.join(f'{x},{y}' for x,y in c)+'Z')
+  # Round the subpixel staircase of a raster trace with local quadratic curves.
+  # Midpoints keep the curve inside adjacent contour edges, so small features
+  # stay recognizable and the original connected-component region IDs survive.
+  points=c.astype(float)
+  mids=(points+np.roll(points,-1,axis=0))/2
+  def number(v):return f'{v:.2f}'.rstrip('0').rstrip('.')
+  def pair(p):return ','.join(number(v) for v in p)
+  d='M'+pair(mids[-1])
+  for p,end in zip(points,mids):d+='Q'+pair(p)+' '+pair(end)
+  parts.append(d+'Z')
  return ''.join(parts)
 regions=[]
 for i in range(1,n):
@@ -32,7 +41,7 @@ regions.sort(reverse=True)
 parts=['<path data-region="sky" d="M0 0H360V440H0Z" fill="white" stroke="none"/>','<g transform="scale(.6 .599455)" stroke="none">']
 for _,i,d in regions:
  parts.append(f'<path data-region="r{i}" d="{d}" fill="white" fill-rule="evenodd"/>')
-parts.append(f'<path data-outline="true" pointer-events="none" d="{path_for(black)}" fill="#292929" fill-rule="evenodd"/>')
+parts.append(f'<path data-outline="true" pointer-events="none" d="{path_for(black)}" fill="#202020" fill-rule="evenodd" stroke="#202020" stroke-width="1" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>')
 parts.append('</g>')
 svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 440">'+''.join(parts)+'</svg>'
 Path(out).write_text(svg)
