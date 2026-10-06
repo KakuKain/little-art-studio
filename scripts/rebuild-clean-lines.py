@@ -15,7 +15,7 @@ TMP=ROOT/'tmp/clean-lines';TMP.mkdir(parents=True,exist_ok=True)
 cv2.setNumThreads(2)
 DETAIL=Path(sys.argv[1]) if len(sys.argv)>1 else FOLDER/'originals'
 catalog=json.loads((FOLDER/'catalog.json').read_text())
-items=[i for i in catalog if i['category'] in ('princess','dragons') and not i.get('simpleOf')]
+items=[i for i in catalog if i['category'] in ('princess','dragons','gabby') and not i.get('simpleOf')]
 items=[dict(i,id=i.get('replaces',i['id'])) for i in items]
 only=set(sys.argv[2:])
 if only:items=[i for i in items if i['id'] in only]
@@ -62,7 +62,7 @@ for item in items:
  removed=0
  for j in range(1,n):
   x,y,w,h,a=stats[j]
-  frame=w>im.width*.8 and h>im.height*.7 and a<im.width*im.height*.025
+  frame=name not in ('toothless-crouching','toothless-soaring','toothless-gliding','toothless-sitting') and w>im.width*.8 and h>im.height*.7 and a<im.width*im.height*.025
   caption=y>oy+im.height*.95 and h<im.height*.045
   if name=='dragon-riders':caption=caption or y<oy+im.height*.23 and h<im.height*.23 or y>oy+im.height*.90 and h<im.height*.08
   if frame or caption or a<12:ink[labels==j]=0;removed+=1
@@ -99,7 +99,7 @@ for item in items:
   cv2.polylines(barrier,[pts],False,255,6)
  if name=='fury-pair' and source.suffix=='.webp':
   edge=int(min(im.size)*.035);cv2.rectangle(barrier,(ox+edge,oy+edge),(ox+im.width-edge-1,oy+im.height-edge-1),255,2)
- if name=='hiccup-toothless':
+ if name in ('hiccup-toothless','toothless-gliding','toothless-sitting'):
   cv2.rectangle(barrier,(ox,oy),(ox+im.width-1,oy+im.height-1),255,3)
  if name=='merida' and Path('/tmp/merida-legacy-fill.png').exists():
   barrier=(cv2.imread('/tmp/merida-legacy-fill.png',0)<200).astype(np.uint8)*255
@@ -111,6 +111,8 @@ for item in items:
  cv2.drawContours(envelope,external,-1,255,cv2.FILLED)
  n,regions,stats,_=cv2.connectedComponentsWithStats(255-barrier,4)
  background={int(regions[0,0]),int(regions[-1,-1])}
+ if name in ('toothless-gliding','toothless-sitting'):
+  for px,py in [(ox+10,oy+10),(ox+im.width-11,oy+10),(ox+10,oy+im.height-11),(ox+im.width-11,oy+im.height-11)]:background.add(int(regions[py,px]))
  if name=='fury-pair' and source.suffix=='.webp' and not barrier[675,900]:background.add(int(regions[675,900]))
  # Crop whitespace, then fit the complete visible artwork with a 20px margin.
  yy,xx=np.where(ink>0);x0,x1=int(xx.min()),int(xx.max());y0,y1=int(yy.min()),int(yy.max())
@@ -141,7 +143,7 @@ for item in items:
   if radius*scale>3:seeds.append([round(dx+scale*(ax+peak[0]),3),round(dy+scale*(ay+peak[1]),3)])
  parts+=outlines+['</g>']
  new=name+'-clean';(FOLDER/(new+'.svg')).write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 440">'+''.join(parts)+'</svg>')
- report.append({'id':new,'original':name,'regions':count,'sourcePixels':list(raw.size),'removedPrintComponents':removed,'removedCostumeComponents':ornaments,'seeds':seeds,'visibleAutoGapRepairs':0})
+ report.append({'id':new,'original':name,'regions':count,'sourcePixels':list(raw.size),'bounds':{'w':round(scale*(x1-x0+1)+4,3),'h':round(scale*(y1-y0+1)+4,3)},'removedPrintComponents':removed,'removedCostumeComponents':ornaments,'seeds':seeds,'visibleAutoGapRepairs':0})
  print(new,count,flush=True)
 if only:
  old=json.loads((FOLDER/'CLEAN-LINES-REPORT.json').read_text())

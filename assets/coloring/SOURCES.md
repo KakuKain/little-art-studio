@@ -15,3 +15,26 @@ All assets are for this free personal family drawing tool, with no ads or sales.
 V22 source-faithful rebuild: 15 princess and 5 dragon SVGs are rebuilt as spline contours. Most retain the original source pose; these are vector reconstructions, not newly generated character illustrations. Light Fury is isolated from ColoringBook.ai's Toothlessand Light Fury Magical Encounter: https://www.coloringbook.ai/how-to-train-your-dragon/toothlessand-light-fury-magical-encounter (characters © DreamWorks). The new pair composes the complete Toothless and Light Fury sheets. V20 originals and simplified sheets remain on disk for saved-work compatibility but are removed from the picker.
 
 V23: `hiccup-toothless-clean.svg` derives from the ColoringBook.ai image supplied by the user (1024×1536). The printed border/footer is omitted; the illustration composition is unchanged. Characters © DreamWorks. Source attribution is retained here and in app credits.
+
+## V27 additional dragons and Gabby characters
+
+Four dragon drawings were supplied by the user: one Supercoloring print and three ColoringBook.ai prints. The original character composition is kept, with print marks omitted and source attribution moved to credits. The sitting/gliding sheets already crop parts of the character in the supplied drawing; no unseen anatomy is invented.
+
+Gabby scope: all 11 characters currently listed on https://www.gabbysdollhouse.com/characters plus Mama Box (12 sheets). This covers the main cast, not every episodic/film supporting character. Characters © DreamWorks. Raster reference files remain in the ignored originals directory; deployable assets are SVG only.
+
+- toothless-crouching-clean: User-provided line art; Supercoloring
+- toothless-soaring-clean: User-provided ColoringBook.ai line art
+- toothless-gliding-clean: User-provided ColoringBook.ai line art
+- toothless-sitting-clean: User-provided ColoringBook.ai line art
+- gabby-clean: https://tv.dreamworks.com/printables/Gabby/coloring/DW2021_Gabby_ColoringPages_Printable_.pdf
+- pandy-clean: https://tv.dreamworks.com/printables/Gabby/coloring/DW2021_Gabby_ColoringPages_Printable_.pdf
+- cakey-clean: https://tv.dreamworks.com/printables/Gabby/coloring/DW2021_Gabby_ColoringPages_Printable_.pdf
+- dj-catnip-clean: https://wakethekids.com/gabbys-dollhouse-coloring-pages/
+- kitty-fairy-clean: https://wakethekids.com/gabbys-dollhouse-coloring-pages/
+- mercat-clean: https://wakethekids.com/gabbys-dollhouse-coloring-pages/
+- pillow-cat-clean: https://wakethekids.com/gabbys-dollhouse-coloring-pages/
+- baby-box-clean: https://wakethekids.com/gabbys-dollhouse-coloring-pages/
+- catrat-clean: https://wakethekids.com/gabbys-dollhouse-coloring-pages/
+- carlita-clean: https://wakethekids.com/gabbys-dollhouse-coloring-pages/
+- mama-box-clean: https://wakethekids.com/gabbys-dollhouse-coloring-pages/
+- marty-clean: https://www.coloringpages101.com/Gabby-s-Dollhouse-coloring-pages/101979-Marty-the-Party-Cat-Gabby-s-Dollhouse-coloring-page

@@ -241,5 +241,181 @@
     "category": "rescue",
     "source": "Built-in imagegen",
     "name": "Burple"
+  },
+  {
+    "id": "toothless-crouching-clean",
+    "name": "夜煞・蓄勢待發",
+    "category": "dragons",
+    "replaces": "toothless-crouching",
+    "source": "User-provided line art; Supercoloring",
+    "bounds": {
+      "w": 324.0,
+      "h": 247.367
+    }
+  },
+  {
+    "id": "toothless-soaring-clean",
+    "name": "夜煞・展翅飛翔",
+    "category": "dragons",
+    "replaces": "toothless-soaring",
+    "source": "User-provided ColoringBook.ai line art",
+    "bounds": {
+      "w": 324.0,
+      "h": 221.119
+    }
+  },
+  {
+    "id": "toothless-gliding-clean",
+    "name": "夜煞・滑翔",
+    "category": "dragons",
+    "replaces": "toothless-gliding",
+    "source": "User-provided ColoringBook.ai line art",
+    "bounds": {
+      "w": 324.0,
+      "h": 191.755
+    }
+  },
+  {
+    "id": "toothless-sitting-clean",
+    "name": "夜煞・坐姿",
+    "category": "dragons",
+    "replaces": "toothless-sitting",
+    "source": "User-provided ColoringBook.ai line art",
+    "bounds": {
+      "w": 324.0,
+      "h": 330.957
+    }
+  },
+  {
+    "id": "gabby-clean",
+    "name": "蓋比 Gabby",
+    "category": "gabby",
+    "replaces": "gabby",
+    "source": "https://tv.dreamworks.com/printables/Gabby/coloring/DW2021_Gabby_ColoringPages_Printable_.pdf",
+    "bounds": {
+      "w": 173.001,
+      "h": 400.0
+    }
+  },
+  {
+    "id": "pandy-clean",
+    "name": "熊貓貓 Pandy Paws",
+    "category": "gabby",
+    "replaces": "pandy",
+    "source": "https://tv.dreamworks.com/printables/Gabby/coloring/DW2021_Gabby_ColoringPages_Printable_.pdf",
+    "bounds": {
+      "w": 277.488,
+      "h": 400.0
+    }
+  },
+  {
+    "id": "cakey-clean",
+    "name": "蛋糕貓 Cakey Cat",
+    "category": "gabby",
+    "replaces": "cakey",
+    "source": "https://tv.dreamworks.com/printables/Gabby/coloring/DW2021_Gabby_ColoringPages_Printable_.pdf",
+    "bounds": {
+      "w": 324.0,
+      "h": 304.823
+    }
+  },
+  {
+    "id": "dj-catnip-clean",
+    "name": "DJ 貓薄荷",
+    "category": "gabby",
+    "replaces": "dj-catnip",
+    "source": "https://wakethekids.com/gabbys-dollhouse-coloring-pages/",
+    "bounds": {
+      "w": 269.937,
+      "h": 400.0
+    }
+  },
+  {
+    "id": "kitty-fairy-clean",
+    "name": "貓咪仙子 Kitty Fairy",
+    "category": "gabby",
+    "replaces": "kitty-fairy",
+    "source": "https://wakethekids.com/gabbys-dollhouse-coloring-pages/",
+    "bounds": {
+      "w": 265.326,
+      "h": 400.0
+    }
+  },
+  {
+    "id": "mercat-clean",
+    "name": "美人魚貓 MerCat",
+    "category": "gabby",
+    "replaces": "mercat",
+    "source": "https://wakethekids.com/gabbys-dollhouse-coloring-pages/",
+    "bounds": {
+      "w": 318.37,
+      "h": 400.0
+    }
+  },
+  {
+    "id": "pillow-cat-clean",
+    "name": "枕頭貓 Pillow Cat",
+    "category": "gabby",
+    "replaces": "pillow-cat",
+    "source": "https://wakethekids.com/gabbys-dollhouse-coloring-pages/",
+    "bounds": {
+      "w": 271.562,
+      "h": 400.0
+    }
+  },
+  {
+    "id": "baby-box-clean",
+    "name": "盒子寶寶 Baby Box",
+    "category": "gabby",
+    "replaces": "baby-box",
+    "source": "https://wakethekids.com/gabbys-dollhouse-coloring-pages/",
+    "bounds": {
+      "w": 294.935,
+      "h": 400.0
+    }
+  },
+  {
+    "id": "catrat-clean",
+    "name": "貓鼠 CatRat",
+    "category": "gabby",
+    "replaces": "catrat",
+    "source": "https://wakethekids.com/gabbys-dollhouse-coloring-pages/",
+    "bounds": {
+      "w": 279.183,
+      "h": 400.0
+    }
+  },
+  {
+    "id": "carlita-clean",
+    "name": "卡莉塔 Carlita",
+    "category": "gabby",
+    "replaces": "carlita",
+    "source": "https://wakethekids.com/gabbys-dollhouse-coloring-pages/",
+    "bounds": {
+      "w": 324.0,
+      "h": 222.233
+    }
+  },
+  {
+    "id": "mama-box-clean",
+    "name": "盒子媽媽 Mama Box",
+    "category": "gabby",
+    "replaces": "mama-box",
+    "source": "https://wakethekids.com/gabbys-dollhouse-coloring-pages/",
+    "bounds": {
+      "w": 281.753,
+      "h": 400.0
+    }
+  },
+  {
+    "id": "marty-clean",
+    "name": "派對貓 Marty",
+    "category": "gabby",
+    "replaces": "marty",
+    "source": "https://www.coloringpages101.com/Gabby-s-Dollhouse-coloring-pages/101979-Marty-the-Party-Cat-Gabby-s-Dollhouse-coloring-page",
+    "bounds": {
+      "w": 290.759,
+      "h": 400.0
+    }
   }
 ]

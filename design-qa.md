@@ -99,3 +99,7 @@ Scope: garment detail reduction, not a full character redraw. Hair, faces, small
 ## V25：近景圖片滿寬
 
 小嗝嗝與夜煞改用內容範圍 264×400 計算視野，維持原比例與完整內容。390×844 手機中左右留白接近零；上／下保留比例差所需空間。舊筆跡仍沿同一 SVG 座標重投影，填色仍保持獨立區域。截图 docs/screenshots/hiccup-fullwidth-v25.jpg。
+
+## V27 驗證
+
+新增 4 張使用者提供夜煞線稿與 12 位蓋比角色；全部新增 SVG 視覺檢查、53 張背景隔離取樣通過。手機填色驗證蛋糕貓及滑翔夜煞；7 個角色分類加空白畫布，維持兩欄手機佈局。測試使用獨立 127.0.0.1 來源，避免污染使用者 localhost 作品。新素材為來源重建，非全新角色創作。

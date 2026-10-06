@@ -170,3 +170,7 @@ Dialog 白底、24px 圓角、最大宽 390–440px、最大高 85dvh，超高�
 驗證：全部 20 張新版逐張渲染檢視；36 張目前選圖皆通過白區背景隔離取樣檢查（容許取樣點周圍 2px 的曲線邊緣偏差）。390×844 手機畫面測試艾莎：背景粉紅、衣服藍色，臉部、手臂與辮子維持白色，復原與還原正常，無 console error。截圖：docs/screenshots/elsa-mobile-v22.jpg。
 
 維護：scripts/rebuild-clean-lines.py 使用 OpenCV、NumPy、vtracer 重建；scripts/prepare-clean-lines.cjs 使用 sharp 準備梅莉達既有邊界；scripts/protect-clean-regions.py 保護曲線中的小留白；scripts/compose-fury-pair.py 組合双龍。執行階段僅需靜態 SVG，無新增 API 呼叫。
+
+## V27：蓋比分類與新圖適配
+
+首頁新增「蓋比娃娃屋」，共 12 位角色；沿用簡單／全部／細節較多篩選。新圖依內容寬高計算可見範圍，保留比例與完整來源內容，手機盡量滿寬、橫向畫面盡量滿高。橫幅飛龍在直立手機會有上下留白，避免裁掉角色。分類縮圖使用小型 PNG，其餘 SVG 依選取懶載入。

@@ -7,6 +7,7 @@ for file in root.glob('*-clean.svg'):
  tree=ET.parse(file);svg=tree.getroot();group=next(g for g in svg if g.get('data-art-fit'))
  for old in list(group):
   if (old.get('data-region') or '').startswith('backing'):group.remove(old)
+ if file.stem in ('toothless-gliding-clean','toothless-sitting-clean'):continue
  backing=[]
  for outline in group:
   if not outline.get('data-outline'):continue
