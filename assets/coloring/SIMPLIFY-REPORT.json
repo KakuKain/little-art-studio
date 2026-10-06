@@ -1,0 +1,86 @@
+[
+  {
+    "id": "cinderella-easy",
+    "source": "cinderella",
+    "mergedRegions": 47,
+    "regionsBefore": 160,
+    "regionsAfter": 114
+  },
+  {
+    "id": "aurora-easy",
+    "source": "aurora",
+    "mergedRegions": 25,
+    "regionsBefore": 144,
+    "regionsAfter": 120
+  },
+  {
+    "id": "ariel-easy",
+    "source": "ariel",
+    "mergedRegions": 63,
+    "regionsBefore": 243,
+    "regionsAfter": 181
+  },
+  {
+    "id": "jasmine-easy",
+    "source": "jasmine",
+    "mergedRegions": 77,
+    "regionsBefore": 255,
+    "regionsAfter": 179
+  },
+  {
+    "id": "pocahontas-easy",
+    "source": "pocahontas",
+    "mergedRegions": 21,
+    "regionsBefore": 69,
+    "regionsAfter": 49
+  },
+  {
+    "id": "mulan-easy",
+    "source": "mulan",
+    "mergedRegions": 15,
+    "regionsBefore": 42,
+    "regionsAfter": 28
+  },
+  {
+    "id": "rapunzel-easy",
+    "source": "rapunzel",
+    "mergedRegions": 52,
+    "regionsBefore": 327,
+    "regionsAfter": 276
+  },
+  {
+    "id": "merida-easy",
+    "source": "merida",
+    "mergedRegions": 86,
+    "regionsBefore": 239,
+    "regionsAfter": 154
+  },
+  {
+    "id": "moana-easy",
+    "source": "moana",
+    "mergedRegions": 46,
+    "regionsBefore": 165,
+    "regionsAfter": 120
+  },
+  {
+    "id": "elsa-easy",
+    "source": "elsa",
+    "mergedRegions": 123,
+    "regionsBefore": 198,
+    "regionsAfter": 76
+  },
+  {
+    "id": "anna-easy",
+    "source": "anna",
+    "mergedRegions": 31,
+    "regionsBefore": 83,
+    "regionsAfter": 53
+  },
+  {
+    "id": "raya-easy",
+    "source": "raya",
+    "mergedRegions": 73,
+    "regionsBefore": 201,
+    "regionsAfter": 129
+  }
+]

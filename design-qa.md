@@ -78,3 +78,9 @@ final result: passed
 - Strengthened light-fury/night-lights outline strokes while retaining fill IDs and geometry. Elsa/Raya now use the detailed category.
 - All 36 background isolation seed checks passed, including additional Ariel-tail and Merida-hair points. These are sampled assertions, not exhaustive guarantees for every decorative cell.
 - Browser checked Light Fury background fill, separate character fill and undo at 390 × 844; no console errors.
+
+## V20 clothing simplification QA
+
+12 native SVG variants were visually inspected; Moana's selection was narrowed to the skirt so Pua and the limbs remain intact. All 48 sheets passed designated background-isolation seed checks. Each of the 12 merged clothing masks passed comparison against the original exterior background (2-pixel antialias margin). Mobile 390×844: Elsa simplified dress fill, undo to white, redo to blue; no console errors. Screenshot: docs/screenshots/elsa-easy-mobile-v20.jpg.
+
+Scope: garment detail reduction, not a full character redraw. Hair, faces, small scene companions and remaining ornaments can still be intricate. Originals and existing saved works are retained.

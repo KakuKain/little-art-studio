@@ -29,7 +29,7 @@ const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '../assets/color
         if (svg.querySelector(`[data-region="${id}"]`).getAttribute('fill') !== 'white') throw Error(`character changed with background at ${x},${y}`);
         return { id, x: screen.x, y: screen.y };
       });
-    }, seeds[item.id]).catch(error => { throw Error(`${item.id}: ${error.message}`); });
+    }, (seeds[item.id]||seeds[item.simpleOf])).catch(error => { throw Error(`${item.id}: ${error.message}`); });
     await page.evaluate(() => chooseColor('#74b9ed'));
     await page.mouse.click(body[0].x, body[0].y);
     const independent = await page.evaluate(id => svg.querySelector(`[data-region="${id}"]`).getAttribute('fill') === '#74b9ed' && svg.querySelector('[data-region="sky"]').getAttribute('fill') === '#ff7399', body[0].id);

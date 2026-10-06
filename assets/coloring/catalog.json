@@ -214,5 +214,89 @@
     "category": "rescue",
     "source": "Built-in imagegen",
     "name": "Burple"
+  },
+  {
+    "id": "cinderella-easy",
+    "category": "princess",
+    "name": "仙杜瑞拉・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/cinderella-dress-coloring3.pdf",
+    "simpleOf": "cinderella"
+  },
+  {
+    "id": "aurora-easy",
+    "category": "princess",
+    "name": "奧蘿拉・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/briar-rose-coloring2.pdf",
+    "simpleOf": "aurora"
+  },
+  {
+    "id": "ariel-easy",
+    "category": "princess",
+    "name": "愛麗兒・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/little-mermaid-coloring2.pdf",
+    "simpleOf": "ariel"
+  },
+  {
+    "id": "jasmine-easy",
+    "category": "princess",
+    "name": "茉莉・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/jasmine-coloring5.pdf",
+    "simpleOf": "jasmine"
+  },
+  {
+    "id": "pocahontas-easy",
+    "category": "princess",
+    "name": "寶嘉康蒂・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/pocahontas-coloring2.pdf",
+    "simpleOf": "pocahontas"
+  },
+  {
+    "id": "mulan-easy",
+    "category": "princess",
+    "name": "花木蘭・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/mulan-coloring6.pdf",
+    "simpleOf": "mulan"
+  },
+  {
+    "id": "rapunzel-easy",
+    "category": "princess",
+    "name": "樂佩・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/rapunzel-coloring5.pdf",
+    "simpleOf": "rapunzel"
+  },
+  {
+    "id": "merida-easy",
+    "category": "princess",
+    "name": "梅莉達・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/brave-merida-coloring-page.pdf",
+    "simpleOf": "merida"
+  },
+  {
+    "id": "moana-easy",
+    "category": "princess",
+    "name": "莫娜・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/moana-coloring2.pdf",
+    "simpleOf": "moana"
+  },
+  {
+    "id": "elsa-easy",
+    "category": "princess",
+    "name": "艾莎・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/elsa-coloring8.pdf",
+    "simpleOf": "elsa"
+  },
+  {
+    "id": "anna-easy",
+    "category": "princess",
+    "name": "安娜・簡單版",
+    "source": "https://www.disneyclips.com/funstuff/pdf/frozen2-anna-coloring3.pdf",
+    "simpleOf": "anna"
+  },
+  {
+    "id": "raya-easy",
+    "category": "princess",
+    "name": "拉雅・簡單版",
+    "source": "Built-in imagegen",
+    "simpleOf": "raya"
   }
 ]
