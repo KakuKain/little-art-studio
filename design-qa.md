@@ -56,3 +56,8 @@ final result: passed
 - Undo captures a Canvas copy immediately; PNG encoding and persistence wait until 700 ms after drawing stops. History copies are compressed individually during pauses; starting another stroke cancels pending work.
 - Native Canvas comparison (720 × 1400, 240 samples): pen clipped 742 → 140 ms; eraser clipped 740 → 167 ms; rainbow clipped 1043 → 255 ms. This is a desktop renderer benchmark, not measured phone latency. Tests check opaque interiors, bounded antialias differences, and no pixels escaping the selected mask.
 - Browser verified at 390 × 844: drawing, brush sizes, eraser, undo/redo, restoration after reload; no console errors. Physical phone verification remains with the user.
+
+## V14 toolbar and contextual menu
+- At 390 × 844 and 1280 × 800, undo/redo appear at the top, with icon-only clear beside home and a 16px gap.
+- Clearing removes paint, preserves line art, and can be undone. Browser verified clear → undo restored the drawing.
+- More opens a compact anchored menu without a modal backdrop. Verified Escape dismissal and opening About; no console errors.

@@ -16,3 +16,7 @@ dialog{border:1px solid var(--border);border-radius:24px;padding:24px;max-width:
 
 #home-grid[data-view=categories] .blank-card img{width:48px;height:48px;flex:none;min-height:48px}
 #palette button{max-width:52px;max-height:52px;justify-self:center}
+
+.nav-actions{display:flex;gap:16px;pointer-events:auto}#editor-nav #clear{color:#a04d55}#tool-modal{position:fixed;inset:auto;margin:0;width:196px;max-width:calc(100vw - 16px);padding:6px;border:1px solid var(--border);border-radius:16px;background:#fff;color:var(--text);box-shadow:0 8px 32px #263e4d26}#tool-modal::backdrop{background:transparent}#tool-modal button{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;min-height:48px;text-align:left;border-radius:10px;font-size:15px;background:transparent}#tool-modal button:hover,#tool-modal button:focus-visible{background:#eff7fb}#tool-modal button img{width:22px;height:22px}
+
+.history-actions{display:flex;gap:4px;pointer-events:auto}#editor-nav .tool-label{display:none}@media(max-width:899px){.tools{max-width:420px}}
