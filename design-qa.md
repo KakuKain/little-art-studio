@@ -95,3 +95,7 @@ Scope: garment detail reduction, not a full character redraw. Hair, faces, small
 驗證：全部 20 張新版逐張渲染檢視；36 張目前選圖皆通過白區背景隔離取樣檢查（容許取樣點周圍 2px 的曲線邊緣偏差）。390×844 手機畫面測試艾莎：背景粉紅、衣服藍色，臉部、手臂與辮子維持白色，復原與還原正常，無 console error。截圖：docs/screenshots/elsa-mobile-v22.jpg。
 
 維護：scripts/rebuild-clean-lines.py 使用 OpenCV、NumPy、vtracer 重建；scripts/prepare-clean-lines.cjs 使用 sharp 準備梅莉達既有邊界；scripts/protect-clean-regions.py 保護曲線中的小留白；scripts/compose-fury-pair.py 組合双龍。執行階段僅需靜態 SVG，無新增 API 呼叫。
+
+## V25：近景圖片滿寬
+
+小嗝嗝與夜煞改用內容範圍 264×400 計算視野，維持原比例與完整內容。390×844 手機中左右留白接近零；上／下保留比例差所需空間。舊筆跡仍沿同一 SVG 座標重投影，填色仍保持獨立區域。截图 docs/screenshots/hiccup-fullwidth-v25.jpg。
