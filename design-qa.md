@@ -67,3 +67,8 @@ final result: passed
 - Removed full-artwork precaching and reuse cached assets before contacting the network. Newly selected uncached sheets require connectivity.
 - Reduced sun.png from 544130 to 8027 bytes while retaining transparency.
 - Verified home SVG contains zero prepared regions; selecting kitty restores saved fills after reload. Color control is first in the tool group. Browser test at 390 × 844 reported no console errors. Cache regression covers offline hits, shell fallback and fresh navigation.
+
+## V16 consolidated colors
+- Moved current-color panel entry to the start of the bottom color row; removed it from the tool group.
+- Six fixed swatches immediately choose color; the final rainbow swatch directly enables rainbow drawing and exposes pressed state.
+- Verified direct rainbow drawing, changing back to blue, opening the full panel, and mobile layout at 390 × 844 and 320 × 568; no console errors.
