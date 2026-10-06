@@ -35,6 +35,13 @@
     "replaces": "fury-pair"
   },
   {
+    "id": "hiccup-toothless-clean",
+    "name": "小嗝嗝與夜煞",
+    "category": "dragons",
+    "replaces": "hiccup-toothless",
+    "source": "User-provided ColoringBook.ai coloring page"
+  },
+  {
     "id": "kitty",
     "category": "land",
     "source": "Built-in imagegen",

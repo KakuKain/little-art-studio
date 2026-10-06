@@ -99,6 +99,8 @@ for item in items:
   cv2.polylines(barrier,[pts],False,255,6)
  if name=='fury-pair' and source.suffix=='.webp':
   edge=int(min(im.size)*.035);cv2.rectangle(barrier,(ox+edge,oy+edge),(ox+im.width-edge-1,oy+im.height-edge-1),255,2)
+ if name=='hiccup-toothless':
+  cv2.rectangle(barrier,(ox,oy),(ox+im.width-1,oy+im.height-1),255,3)
  if name=='merida' and Path('/tmp/merida-legacy-fill.png').exists():
   barrier=(cv2.imread('/tmp/merida-legacy-fill.png',0)<200).astype(np.uint8)*255
  envelope_ink=barrier

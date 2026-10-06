@@ -125,3 +125,7 @@
 驗證：全部 20 張新版逐張渲染檢視；36 張目前選圖皆通過白區背景隔離取樣檢查（容許取樣點周圍 2px 的曲線邊緣偏差）。390×844 手機畫面測試艾莎：背景粉紅、衣服藍色，臉部、手臂與辮子維持白色，復原與還原正常，無 console error。截圖：docs/screenshots/elsa-mobile-v22.jpg。
 
 維護：scripts/rebuild-clean-lines.py 使用 OpenCV、NumPy、vtracer 重建；scripts/prepare-clean-lines.cjs 使用 sharp 準備梅莉達既有邊界；scripts/protect-clean-regions.py 保護曲線中的小留白；scripts/compose-fury-pair.py 組合双龍。執行階段僅需靜態 SVG，無新增 API 呼叫。
+
+## V23：小嗝嗝與夜煞
+
+使用者提供的近景構圖转為平順 SVG，裁掉紙框／頁腳；對畫面邊緣截斷線條加入隱藏邊界，保留髮絲、眼睛與盔甲。新增至馴龍高手「細節較多」。37 張選圖背景隔離取樣通過；390×844 手機填色確認夜煞藍色、人物臉橘色且眼白／盔甲保持白色，無 console error。截圖：docs/screenshots/hiccup-toothless-mobile-v23.jpg。
