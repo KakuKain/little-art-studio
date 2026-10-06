@@ -24,3 +24,7 @@
 回歸測試：安裝 Playwright 後啟動本機伺服器，執行 `node tests/editor-regression.cjs http://localhost:8080` 及 `node tests/coloring-regression.cjs http://localhost:8080`。前者驗證橡皮擦與圖片獨立復原，後者逐張確認背景與指定角色區域不串色。
 
 橡皮擦與畫筆各自記住大小，預設 12 CSS px；粗細按實際畫面比例換算，不受 Canvas 解析度或桌機放大影響。
+
+V12 視覺更新：依「樣板二：簡約童趣風」實作淡色首頁、難度選單與響應式繪畫工具列。選圖庫移除三張獨立小圖拼版，保留 36 張線稿及舊拼版作品相容資源。`scripts/fit-coloring.cjs`（需要 sharp）依實際輪廓置中，保持比例、不裁切，主體最多佔 320×396／360×440 視圖。重描後執行此脚本，並更新背景測試種子。SVG 原始追蹤與細節填色 ID 保留。UI 規格：docs/UI-SPEC.md；視覺 QA：design-qa.md。
+
+靜態線稿驗證：`node tests/svg-background.cjs`（需要 sharp），逐張測試指定的角色區域不隨背景上色。RWD、實際繪画與返回流程另以 Codex in-app browser 驗證。
