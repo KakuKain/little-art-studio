@@ -49,3 +49,10 @@ Console：檢查 browser error／warn，回傳空列表。SVG 背景測試全数
 - [x] 實作差異與後續項目納入 UI 規格
 
 final result: passed
+
+## V13 mobile drawing performance
+- Replaced SVG path-by-path pointer hit testing with the prepared region-label bitmap.
+- Cached stroke geometry and restricted clear/composite operations to the segment bounds.
+- Undo captures a Canvas copy immediately; PNG encoding and persistence wait until 700 ms after drawing stops. History copies are compressed individually during pauses; starting another stroke cancels pending work.
+- Native Canvas comparison (720 × 1400, 240 samples): pen clipped 742 → 140 ms; eraser clipped 740 → 167 ms; rainbow clipped 1043 → 255 ms. This is a desktop renderer benchmark, not measured phone latency. Tests check opaque interiors, bounded antialias differences, and no pixels escaping the selected mask.
+- Browser verified at 390 × 844: drawing, brush sizes, eraser, undo/redo, restoration after reload; no console errors. Physical phone verification remains with the user.
