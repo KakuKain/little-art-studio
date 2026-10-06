@@ -61,3 +61,9 @@ final result: passed
 - At 390 × 844 and 1280 × 800, undo/redo appear at the top, with icon-only clear beside home and a 16px gap.
 - Clearing removes paint, preserves line art, and can be undone. Browser verified clear → undo restored the drawing.
 - More opens a compact anchored menu without a modal backdrop. Verified Escape dismissal and opening About; no console errors.
+
+## V15 home loading and color placement
+- Embedded the lightweight catalog; home does not wait for a catalog network request or build the last artwork’s masks. Category covers no longer briefly request SVGs, and sheet thumbnails load lazily.
+- Removed full-artwork precaching and reuse cached assets before contacting the network. Newly selected uncached sheets require connectivity.
+- Reduced sun.png from 544130 to 8027 bytes while retaining transparency.
+- Verified home SVG contains zero prepared regions; selecting kitty restores saved fills after reload. Color control is first in the tool group. Browser test at 390 × 844 reported no console errors. Cache regression covers offline hits, shell fallback and fresh navigation.
