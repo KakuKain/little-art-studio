@@ -72,3 +72,9 @@ final result: passed
 - Moved current-color panel entry to the start of the bottom color row; removed it from the tool group.
 - Six fixed swatches immediately choose color; the final rainbow swatch directly enables rainbow drawing and exposes pressed state.
 - Verified direct rainbow drawing, changing back to blue, opening the full panel, and mobile layout at 390 × 844 and 320 × 568; no console errors.
+
+## V18 per-artwork audit
+- All 36 catalog sheets rendered and visually reviewed; suspect areas checked at 1800 × 2200. Per-sheet observations and remaining complexity limitations recorded in assets/coloring/REVIEW.md.
+- Strengthened light-fury/night-lights outline strokes while retaining fill IDs and geometry. Elsa/Raya now use the detailed category.
+- All 36 background isolation seed checks passed, including additional Ariel-tail and Merida-hair points. These are sampled assertions, not exhaustive guarantees for every decorative cell.
+- Browser checked Light Fury background fill, separate character fill and undo at 390 × 844; no console errors.
