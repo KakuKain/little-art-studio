@@ -120,3 +120,8 @@ Scope: garment detail reduction, not a full character redraw. Hair, faces, small
 ## V31：首頁分類排列
 
 七個分類與自由畫畫以八張等大卡片排列；768px 以上四欄，手機兩欄。標題與太陽改成置中的緊密群組；預覽圖統一容器尺寸，白底以 multiply 融入柔和卡片背景，陸地分類補上淡綠底色。驗證 1280×720 桌面及 390×844 手機排列，截圖位於 docs/screenshots/home-v31.jpg 與 home-mobile-v31.jpg。
+
+
+## V32：夜煞爪子與背景遮罩
+
+針對四張新增夜煞圖重新分區：隱藏補線 closing 核由 17px 降到 5px，填色擴張由 43px 降到 9px（來源遮罩 1800×2202）。避免小爪子空腔被抹平與背景白色碎片。滑翔圖六個爪子空腔以 2880×3520 渲染驗證均為獨立 cell，填背景仍白；原有 53 張背景取樣檢查通過。瀏覽器實測背景填粉紅、爪子單独填藍成功。四張圖新增 data-previous-region，從舊標籤可見區域的重疊對應舊填色，新增區域保留白色，舊筆跡不變。截圖：docs/screenshots/gliding-background-v32.jpg。

@@ -89,7 +89,7 @@ for item in items:
    cv2.polylines(ink,[pts],False,255,5)
  # Modest uniform weight, no skeleton-derived or double exterior outlines.
  ink=cv2.dilate(ink,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)))
- barrier=cv2.morphologyEx(ink,cv2.MORPH_CLOSE,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(17,17)))
+ barrier=cv2.morphologyEx(ink,cv2.MORPH_CLOSE,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)))
  out=str(FOLDER/(name+'.svg'))
  close_short_gaps(barrier)
  # Only the hidden fill barrier can use extra closure curves.
@@ -133,7 +133,7 @@ for item in items:
   label_tile=regions[ay:by,ax:bx]
   mask=(label_tile==j).astype(np.uint8)*255
   visible_white=mask.copy();visible_white[ink[ay:by,ax:bx]>0]=0
-  mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(43,43)))
+  mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(9,9)))
   mask[(label_tile!=j)&(barrier[ay:by,ax:bx]==0)]=0
   mask[envelope[ay:by,ax:bx]==0]=0
   d=vector(mask)
