@@ -114,3 +114,14 @@
 產製腳本：scripts/simplify-coloring.cjs 與 scripts/simplify-coloring.py；區域數比較記錄在 SIMPLIFY-REPORT.json。新增的服裝合併區為單一填色區，所以同一衣物各部分會一起換色。
 
 檢查項目：48 張指定白區背景隔離測試、12 張新增區域與原角色外輪廓的像素比較、12 張簡化版目視檢查，以及手機尺寸的實際填色與復原。種子與像素測試仍不能保證所有微小區域的操作品質。
+
+
+## V22：公主與馴龍線稿重建（2026-10-06）
+
+15 張公主、5 張馴龍著色紙改用平順曲線 SVG，保留來源角色造型與構圖。移除列印文字、外框及部分獨立裝飾；自動補缺口僅用於隱藏的填色邊界，不顯示額外補線。光煞採完整單隻角色，雙龍圖改成兩隻完整角色的組合。這批是來源線稿的向量重建，並非 20 張全新原創插畫。
+
+舊 SVG 與 easy 版本保留，支援舊作品；選圖介面只呈現新版。群像、珊瑚、密集髮絲等複雜構圖置於細節較多分類。角色原有黑色髮塊等仍保留；不保證每個極小細節都可獨立填色。
+
+驗證：全部 20 張新版逐張渲染檢視；36 張目前選圖皆通過白區背景隔離取樣檢查（容許取樣點周圍 2px 的曲線邊緣偏差）。390×844 手機畫面測試艾莎：背景粉紅、衣服藍色，臉部、手臂與辮子維持白色，復原與還原正常，無 console error。截圖：docs/screenshots/elsa-mobile-v22.jpg。
+
+維護：scripts/rebuild-clean-lines.py 使用 OpenCV、NumPy、vtracer 重建；scripts/prepare-clean-lines.cjs 使用 sharp 準備梅莉達既有邊界；scripts/protect-clean-regions.py 保護曲線中的小留白；scripts/compose-fury-pair.py 組合双龍。執行階段僅需靜態 SVG，無新增 API 呼叫。

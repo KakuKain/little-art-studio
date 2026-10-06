@@ -1,33 +1,38 @@
 [
   {
-    "id": "dragon-riders",
+    "id": "dragon-riders-clean",
     "category": "dragons",
     "source": "https://tv.dreamworks.com/printables/HowToTrainYourDragon/coloring/ColoringPagesDragonRiders.pdf",
-    "name": "馴龍高手"
+    "name": "馴龍高手",
+    "replaces": "dragon-riders"
   },
   {
-    "id": "toothless",
+    "id": "toothless-clean",
     "category": "dragons",
     "source": "https://www.cutecoloring.page/how-to-train-your-dragon-coloring-pages",
-    "name": "夜煞・沒牙"
+    "name": "夜煞・沒牙",
+    "replaces": "toothless"
   },
   {
-    "id": "light-fury",
+    "id": "light-fury-clean",
+    "category": "dragons",
+    "source": "https://www.coloringbook.ai/how-to-train-your-dragon/toothlessand-light-fury-magical-encounter",
+    "name": "光煞",
+    "replaces": "light-fury"
+  },
+  {
+    "id": "night-lights-clean",
     "category": "dragons",
     "source": "https://thetoyzone.com/how-to-train-your-dragon-coloring-pages",
-    "name": "光煞"
+    "name": "三隻小龍",
+    "replaces": "night-lights"
   },
   {
-    "id": "night-lights",
+    "id": "fury-pair-clean",
     "category": "dragons",
-    "source": "https://thetoyzone.com/how-to-train-your-dragon-coloring-pages",
-    "name": "三隻小龍"
-  },
-  {
-    "id": "fury-pair",
-    "category": "dragons",
-    "source": "https://www.cutecoloring.page/how-to-train-your-dragon-coloring-pages",
-    "name": "夜煞與光煞"
+    "source": "Composite of toothless-clean and light-fury-clean",
+    "name": "夜煞與光煞",
+    "replaces": "fury-pair"
   },
   {
     "id": "kitty",
@@ -114,94 +119,109 @@
     "name": "喬治"
   },
   {
-    "id": "snow-white",
+    "id": "snow-white-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/snow-white-apple-coloring.pdf",
-    "name": "白雪公主"
+    "name": "白雪公主",
+    "replaces": "snow-white"
   },
   {
-    "id": "cinderella",
+    "id": "cinderella-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/cinderella-dress-coloring3.pdf",
-    "name": "仙杜瑞拉"
+    "name": "仙杜瑞拉",
+    "replaces": "cinderella"
   },
   {
-    "id": "aurora",
+    "id": "aurora-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/briar-rose-coloring2.pdf",
-    "name": "奧蘿拉"
+    "name": "奧蘿拉",
+    "replaces": "aurora"
   },
   {
-    "id": "ariel",
+    "id": "ariel-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/little-mermaid-coloring2.pdf",
-    "name": "愛麗兒"
+    "name": "愛麗兒",
+    "replaces": "ariel"
   },
   {
-    "id": "belle",
+    "id": "belle-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/beauty-and-the-beast-belle-rose-coloring.pdf",
-    "name": "貝兒"
+    "name": "貝兒",
+    "replaces": "belle"
   },
   {
-    "id": "jasmine",
+    "id": "jasmine-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/jasmine-coloring5.pdf",
-    "name": "茉莉"
+    "name": "茉莉",
+    "replaces": "jasmine"
   },
   {
-    "id": "pocahontas",
+    "id": "pocahontas-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/pocahontas-coloring2.pdf",
-    "name": "寶嘉康蒂"
+    "name": "寶嘉康蒂",
+    "replaces": "pocahontas"
   },
   {
-    "id": "mulan",
+    "id": "mulan-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/mulan-coloring6.pdf",
-    "name": "花木蘭"
+    "name": "花木蘭",
+    "replaces": "mulan"
   },
   {
-    "id": "tiana",
+    "id": "tiana-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/princess-and-the-frog-tiana-bird-coloring.pdf",
-    "name": "蒂安娜"
+    "name": "蒂安娜",
+    "replaces": "tiana"
   },
   {
-    "id": "rapunzel",
+    "id": "rapunzel-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/rapunzel-coloring5.pdf",
-    "name": "樂佩"
+    "name": "樂佩",
+    "replaces": "rapunzel"
   },
   {
-    "id": "merida",
+    "id": "merida-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/brave-merida-coloring-page.pdf",
-    "name": "梅莉達"
+    "name": "梅莉達",
+    "replaces": "merida"
   },
   {
-    "id": "moana",
+    "id": "moana-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/moana-coloring2.pdf",
-    "name": "莫娜"
+    "name": "莫娜",
+    "replaces": "moana"
   },
   {
-    "id": "elsa",
+    "id": "elsa-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/elsa-coloring8.pdf",
-    "name": "艾莎"
+    "name": "艾莎",
+    "replaces": "elsa"
   },
   {
-    "id": "anna",
+    "id": "anna-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/frozen2-anna-coloring3.pdf",
-    "name": "安娜"
+    "name": "安娜",
+    "replaces": "anna"
   },
   {
-    "id": "raya",
+    "id": "raya-clean",
     "category": "princess",
     "source": "Built-in imagegen",
-    "name": "拉雅"
+    "name": "拉雅",
+    "replaces": "raya"
   },
   {
     "id": "winger",
@@ -214,89 +234,5 @@
     "category": "rescue",
     "source": "Built-in imagegen",
     "name": "Burple"
-  },
-  {
-    "id": "cinderella-easy",
-    "category": "princess",
-    "name": "仙杜瑞拉・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/cinderella-dress-coloring3.pdf",
-    "simpleOf": "cinderella"
-  },
-  {
-    "id": "aurora-easy",
-    "category": "princess",
-    "name": "奧蘿拉・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/briar-rose-coloring2.pdf",
-    "simpleOf": "aurora"
-  },
-  {
-    "id": "ariel-easy",
-    "category": "princess",
-    "name": "愛麗兒・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/little-mermaid-coloring2.pdf",
-    "simpleOf": "ariel"
-  },
-  {
-    "id": "jasmine-easy",
-    "category": "princess",
-    "name": "茉莉・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/jasmine-coloring5.pdf",
-    "simpleOf": "jasmine"
-  },
-  {
-    "id": "pocahontas-easy",
-    "category": "princess",
-    "name": "寶嘉康蒂・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/pocahontas-coloring2.pdf",
-    "simpleOf": "pocahontas"
-  },
-  {
-    "id": "mulan-easy",
-    "category": "princess",
-    "name": "花木蘭・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/mulan-coloring6.pdf",
-    "simpleOf": "mulan"
-  },
-  {
-    "id": "rapunzel-easy",
-    "category": "princess",
-    "name": "樂佩・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/rapunzel-coloring5.pdf",
-    "simpleOf": "rapunzel"
-  },
-  {
-    "id": "merida-easy",
-    "category": "princess",
-    "name": "梅莉達・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/brave-merida-coloring-page.pdf",
-    "simpleOf": "merida"
-  },
-  {
-    "id": "moana-easy",
-    "category": "princess",
-    "name": "莫娜・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/moana-coloring2.pdf",
-    "simpleOf": "moana"
-  },
-  {
-    "id": "elsa-easy",
-    "category": "princess",
-    "name": "艾莎・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/elsa-coloring8.pdf",
-    "simpleOf": "elsa"
-  },
-  {
-    "id": "anna-easy",
-    "category": "princess",
-    "name": "安娜・簡單版",
-    "source": "https://www.disneyclips.com/funstuff/pdf/frozen2-anna-coloring3.pdf",
-    "simpleOf": "anna"
-  },
-  {
-    "id": "raya-easy",
-    "category": "princess",
-    "name": "拉雅・簡單版",
-    "source": "Built-in imagegen",
-    "simpleOf": "raya"
   }
 ]

@@ -3,3 +3,8 @@ assets/coloring/*.png
 assets/coloring/*.webp
 
 assets/coloring/originals/
+
+# Offline artwork rebuilding scratch data
+tmp/
+
+__pycache__/

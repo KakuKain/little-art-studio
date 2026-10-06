@@ -84,3 +84,14 @@ final result: passed
 12 native SVG variants were visually inspected; Moana's selection was narrowed to the skirt so Pua and the limbs remain intact. All 48 sheets passed designated background-isolation seed checks. Each of the 12 merged clothing masks passed comparison against the original exterior background (2-pixel antialias margin). Mobile 390×844: Elsa simplified dress fill, undo to white, redo to blue; no console errors. Screenshot: docs/screenshots/elsa-easy-mobile-v20.jpg.
 
 Scope: garment detail reduction, not a full character redraw. Hair, faces, small scene companions and remaining ornaments can still be intricate. Originals and existing saved works are retained.
+
+
+## V22：公主與馴龍線稿重建（2026-10-06）
+
+15 張公主、5 張馴龍著色紙改用平順曲線 SVG，保留來源角色造型與構圖。移除列印文字、外框及部分獨立裝飾；自動補缺口僅用於隱藏的填色邊界，不顯示額外補線。光煞採完整單隻角色，雙龍圖改成兩隻完整角色的組合。這批是來源線稿的向量重建，並非 20 張全新原創插畫。
+
+舊 SVG 與 easy 版本保留，支援舊作品；選圖介面只呈現新版。群像、珊瑚、密集髮絲等複雜構圖置於細節較多分類。角色原有黑色髮塊等仍保留；不保證每個極小細節都可獨立填色。
+
+驗證：全部 20 張新版逐張渲染檢視；36 張目前選圖皆通過白區背景隔離取樣檢查（容許取樣點周圍 2px 的曲線邊緣偏差）。390×844 手機畫面測試艾莎：背景粉紅、衣服藍色，臉部、手臂與辮子維持白色，復原與還原正常，無 console error。截圖：docs/screenshots/elsa-mobile-v22.jpg。
+
+維護：scripts/rebuild-clean-lines.py 使用 OpenCV、NumPy、vtracer 重建；scripts/prepare-clean-lines.cjs 使用 sharp 準備梅莉達既有邊界；scripts/protect-clean-regions.py 保護曲線中的小留白；scripts/compose-fury-pair.py 組合双龍。執行階段僅需靜態 SVG，無新增 API 呼叫。
