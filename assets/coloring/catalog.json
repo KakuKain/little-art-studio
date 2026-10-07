@@ -154,6 +154,16 @@
     "replaces": "ariel"
   },
   {
+    "id": "belle-simple",
+    "name": "貝兒・簡單",
+    "category": "princess",
+    "simpleOf": "belle-clean",
+    "bounds": {
+      "w": 324,
+      "h": 322
+    }
+  },
+  {
     "id": "belle-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/beauty-and-the-beast-belle-rose-coloring.pdf",

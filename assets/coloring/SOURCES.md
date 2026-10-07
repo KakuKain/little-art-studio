@@ -38,3 +38,5 @@ Gabby scope: all 11 characters currently listed on https://www.gabbysdollhouse.c
 - carlita-clean: https://wakethekids.com/gabbys-dollhouse-coloring-pages/
 - mama-box-clean: https://wakethekids.com/gabbys-dollhouse-coloring-pages/
 - marty-clean: https://www.coloringpages101.com/Gabby-s-Dollhouse-coloring-pages/101979-Marty-the-Party-Cat-Gabby-s-Dollhouse-coloring-page
+
+- `belle-simple.svg`：沿用 `belle-clean.svg` 的貝兒造型與來源；本專案重製簡化玫瑰，合併主要髮絲填色區。原版保留。
