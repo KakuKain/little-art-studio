@@ -40,3 +40,8 @@ Gabby scope: all 11 characters currently listed on https://www.gabbysdollhouse.c
 - marty-clean: https://www.coloringpages101.com/Gabby-s-Dollhouse-coloring-pages/101979-Marty-the-Party-Cat-Gabby-s-Dollhouse-coloring-page
 
 - `belle-simple.svg`：沿用 `belle-clean.svg` 的貝兒造型與來源；本專案重製簡化玫瑰，合併主要髮絲填色區。原版保留。
+
+
+### V40 簡化版
+
+moana-simple、elsa-simple、anna-simple 衍生自本資料夾對應的 -clean.svg，來源與角色權利標示沿用原版；只簡化局部服裝裝飾。belle-simple 的玫瑰以 SVG 路徑重新設計；人物保留原始來源輪廓。製作腳本：scripts/simplify-princess-details.py、scripts/simplify-belle.py。

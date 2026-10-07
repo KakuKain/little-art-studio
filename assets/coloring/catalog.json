@@ -32,7 +32,13 @@
     "category": "dragons",
     "source": "Composite of toothless-clean and light-fury-clean",
     "name": "夜煞與光煞",
-    "replaces": "fury-pair"
+    "replaces": "fury-pair",
+    "bounds": {
+      "w": 318.5,
+      "h": 194,
+      "cx": 182.875,
+      "cy": 210.625
+    }
   },
   {
     "id": "hiccup-toothless-clean",
@@ -213,6 +219,18 @@
     "replaces": "merida"
   },
   {
+    "id": "moana-simple",
+    "name": "莫娜・簡單",
+    "category": "princess",
+    "simpleOf": "moana-clean",
+    "bounds": {
+      "w": 323.75,
+      "h": 291.25,
+      "cx": 180,
+      "cy": 220
+    }
+  },
+  {
     "id": "moana-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/moana-coloring2.pdf",
@@ -220,11 +238,35 @@
     "replaces": "moana"
   },
   {
+    "id": "elsa-simple",
+    "name": "艾莎・簡單",
+    "category": "princess",
+    "simpleOf": "elsa-clean",
+    "bounds": {
+      "w": 260,
+      "h": 399.5,
+      "cx": 179.875,
+      "cy": 220.125
+    }
+  },
+  {
     "id": "elsa-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/elsa-coloring8.pdf",
     "name": "艾莎",
     "replaces": "elsa"
+  },
+  {
+    "id": "anna-simple",
+    "name": "安娜・簡單",
+    "category": "princess",
+    "simpleOf": "anna-clean",
+    "bounds": {
+      "w": 216.5,
+      "h": 400,
+      "cx": 180.125,
+      "cy": 220.125
+    }
   },
   {
     "id": "anna-clean",
