@@ -1,4 +1,4 @@
-import { createWork, validWork } from "./history.js?v=45";
+import { createWork, validWork } from "./history.js?v=46";
 
 function transaction(db, store, mode, action) {
   return new Promise((resolve, reject) => {
@@ -11,8 +11,29 @@ function transaction(db, store, mode, action) {
     tx.onabort = () => reject(tx.error);
   });
 }
-export async function openStudio(indexed = indexedDB) {
+export async function openStudio(
+  indexed = indexedDB,
+  { timeoutMs = 3000 } = {},
+) {
   const db = await new Promise((resolve, reject) => {
+    let settled = false;
+    function fail(error) {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      reject(error);
+    }
+    function unavailable(code) {
+      const error = new Error("儲存尚未就緒，請關閉其他畫室分頁後重新整理");
+      error.code = code;
+      return error;
+    }
+    // A queued upgrade may never emit onblocked if another open request already
+    // waits for an old tab. Keep the interface usable, and close late connections.
+    const timer = setTimeout(
+      () => fail(unavailable("storage-timeout")),
+      timeoutMs,
+    );
     const req = indexed.open("little-art-studio", 2);
     req.onupgradeneeded = () => {
       for (const name of ["state", "art", "works"])
@@ -26,10 +47,17 @@ export async function openStudio(indexed = indexedDB) {
       if (!works.indexNames.contains("scene"))
         works.createIndex("scene", "scene");
     };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-    req.onblocked = () =>
-      reject(new Error("請關閉其他舊版畫室分頁，再重新整理"));
+    req.onsuccess = () => {
+      if (settled) {
+        req.result.close();
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      resolve(req.result);
+    };
+    req.onerror = () => fail(req.error);
+    req.onblocked = () => fail(unavailable("storage-blocked"));
   });
   db.onversionchange = () => db.close();
   const get = (store, key) =>

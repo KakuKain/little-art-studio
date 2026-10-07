@@ -75,3 +75,49 @@ test("editable documents and undo cursor survive reopening without album duplica
   assert.equal((await studio.get(a.id)).actions[0].points.length, 2);
   studio.close();
 });
+test("blocked upgrades report recovery and close a late connection without losing the draft", async () => {
+  const indexed = new IDBFactory();
+  await legacyDB(indexed);
+  const old = await new Promise((resolve) => {
+    const request = indexed.open("little-art-studio", 1);
+    request.onsuccess = () => resolve(request.result);
+  });
+  let pending;
+  await assert.rejects(
+    openStudio({
+      open(...args) {
+        pending = indexed.open(...args);
+        return pending;
+      },
+    }),
+    (error) =>
+      error.code === "storage-blocked" && /重新整理/.test(error.message),
+  );
+  const closed = new Promise((resolve) =>
+    pending.addEventListener("success", resolve),
+  );
+  old.close();
+  await closed;
+  assert.throws(() => pending.result.transaction("state"), {
+    name: "InvalidStateError",
+  });
+  const recovered = await openStudio(indexed);
+  assert.equal((await recovered.active()).scene, "anna-simple");
+  assert.ok((await recovered.list()).some((art) => art.id === 123));
+  recovered.close();
+});
+test("an open request stuck behind another upgrade cannot block startup indefinitely", async () => {
+  const request = {
+    result: {
+      close() {
+        this.closed = true;
+      },
+    },
+  };
+  await assert.rejects(
+    openStudio({ open: () => request }, { timeoutMs: 10 }),
+    (error) => error.code === "storage-timeout",
+  );
+  request.onsuccess();
+  assert.equal(request.result.closed, true);
+});

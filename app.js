@@ -1,5 +1,5 @@
-import { installUI, syncSizes } from "./modules/ui.js?v=45";
-import { categoryStatus, downloadCategory } from "./modules/offline.js?v=45";
+import { installUI, syncSizes } from "./modules/ui.js?v=46";
+import { categoryStatus, downloadCategory } from "./modules/offline.js?v=46";
 import {
   createWork,
   record,
@@ -8,12 +8,12 @@ import {
   moveCursor,
   replayStart,
   addCheckpoint,
-} from "./modules/history.js?v=45";
-import { openStudio } from "./modules/storage.js?v=45";
-import { createPainter } from "./modules/painter.js?v=45";
-import { ART_CATALOG, ART_METADATA } from "./assets/coloring/catalog.js?v=45";
-import { loadArtwork } from "./modules/assets.js?v=45";
-import { loadRegions } from "./modules/regions.js?v=45";
+} from "./modules/history.js?v=46";
+import { openStudio } from "./modules/storage.js?v=46";
+import { createPainter } from "./modules/painter.js?v=46";
+import { ART_CATALOG, ART_METADATA } from "./assets/coloring/catalog.js?v=46";
+import { loadArtwork } from "./modules/assets.js?v=46";
+import { loadRegions } from "./modules/regions.js?v=46";
 const $ = (id) => document.getElementById(id),
   canvas = $("drawing"),
   ctx = canvas.getContext("2d"),
@@ -47,7 +47,7 @@ let scene = "kitty",
   currentWork,
   ready = false;
 const blankPreview = '<img src="assets/ui/pen.svg" alt="">';
-const ASSET_VERSION='45';
+const ASSET_VERSION='46';
 const artworkURL = (id) =>
   `assets/coloring/${id}.svg?rev=${ART_METADATA[id]?.revision || ASSET_VERSION}`;
 let catalog = ART_CATALOG,
@@ -856,7 +856,11 @@ async function init() {
   } catch (error) {
     console.error(error);
     ready = true;
-    $("hint").textContent = "此瀏覽器無法保存，畫完請下載圖片";
+    $("hint").textContent = ["storage-blocked", "storage-timeout"].includes(
+      error.code,
+    )
+      ? error.message
+      : "此瀏覽器無法保存，畫完請下載圖片";
   }
 }
 let updatePending = false;
