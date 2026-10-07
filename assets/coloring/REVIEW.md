@@ -169,3 +169,10 @@
 ### V40
 
 moana-simple、elsa-simple、anna-simple 保留原線稿人物比例、臉、姿勢，減少密集服裝装飾。不是全面改成幼兒卡通，眼睛、頭髮與配角仍有細節。完整原版在細節較多。belle-simple 的花重新畫成可辨識的玫瑰，保留大填色區。背景隔離以 57 張 SVG 的可見白色內部取樣驗證；實際手機截圖另見 docs/screenshots。
+
+
+## V44：修正人工補形邊界與鉛筆遮罩
+
+之前的服裝補形方框雖然共用填色群組，鉛筆遮罩仍產生虛假外框及抗鋸齒裂縫。安娜、艾莎、莫娜的服裝改成單一連續填色路徑；原本可見輪廓另放在上層。遮罩只轉換已存在的 stroke，不替沒有描邊的 path 創造黑線。舊底色從原服裝 region 移轉，保留已有筆跡；舊筆跡裡已留白的空隙仍需補畫。
+
+驗證：三張先填橘色再用粉紅色 40px 鉛筆跨過原人工邊界。安娜 390×844 手機、艾莎與莫娜桌面截圖見 docs/screenshots/*-brush-v44.jpg。連續服裝測試通過三張，背景隔離取樣通過 57 張。製作順序：simplify-princess-details.py → merge-simple-regions.py → sample-clean-regions.cjs。
