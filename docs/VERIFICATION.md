@@ -33,4 +33,9 @@
 
 ## 發布
 
-待 GitHub Pages 發布與線上模組／畫布驗證完成後記錄 commit 與版本。
+- 正式網址：https://kakukain.github.io/little-art-studio/?v=47
+- 程式 commit：19bcc00a081722560741dd0ef7b231b8e5492814。GitHub Pages API 回報 built，2026-10-07 07:37:50 UTC。
+- 線上 DOM 確認 app.js?v=47；安娜素材有 56 個語意區域，線稿為獨立 SVG 層。
+- 實際選公主 → 安娜，預設鉛筆與 12px 獨立滑桿；填色變紫、復原變白、還原變紫，回鉛筆不開 modal。
+- 線上測試瀏覽器開著多個舊分頁，儲存升級受阻；等待逾時後首頁、選圖及畫布仍可操作，錯誤提示可見。持久存檔及舊作品遷移另由本機實際操作與 IndexedDB 測試驗證；舊分頁關閉後重新整理即可重試升級，不清除資料。
+- 線上畫面：docs/screenshots/structure-v47-live.png；完整主體、工具與連續填色已目視確認。
