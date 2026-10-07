@@ -8,3 +8,4 @@ assets/coloring/originals/
 tmp/
 
 __pycache__/
+node_modules/

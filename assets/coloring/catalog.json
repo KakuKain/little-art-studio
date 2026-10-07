@@ -4,28 +4,32 @@
     "category": "dragons",
     "source": "https://tv.dreamworks.com/printables/HowToTrainYourDragon/coloring/ColoringPagesDragonRiders.pdf",
     "name": "馴龍高手",
-    "replaces": "dragon-riders"
+    "replaces": "dragon-riders",
+    "difficulty": "detailed"
   },
   {
     "id": "toothless-clean",
     "category": "dragons",
     "source": "https://www.cutecoloring.page/how-to-train-your-dragon-coloring-pages",
     "name": "夜煞・沒牙",
-    "replaces": "toothless"
+    "replaces": "toothless",
+    "difficulty": "simple"
   },
   {
     "id": "light-fury-clean",
     "category": "dragons",
     "source": "https://www.coloringbook.ai/how-to-train-your-dragon/toothlessand-light-fury-magical-encounter",
     "name": "光煞",
-    "replaces": "light-fury"
+    "replaces": "light-fury",
+    "difficulty": "simple"
   },
   {
     "id": "night-lights-clean",
     "category": "dragons",
     "source": "https://thetoyzone.com/how-to-train-your-dragon-coloring-pages",
     "name": "三隻小龍",
-    "replaces": "night-lights"
+    "replaces": "night-lights",
+    "difficulty": "simple"
   },
   {
     "id": "fury-pair-clean",
@@ -38,126 +42,146 @@
       "h": 194,
       "cx": 182.875,
       "cy": 210.625
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "hiccup-toothless-clean",
     "name": "小嗝嗝與夜煞",
     "category": "dragons",
     "replaces": "hiccup-toothless",
-    "source": "User-provided ColoringBook.ai coloring page"
+    "source": "User-provided ColoringBook.ai coloring page",
+    "difficulty": "detailed"
   },
   {
     "id": "kitty",
     "category": "land",
     "source": "Built-in imagegen",
-    "name": "貓咪"
+    "name": "貓咪",
+    "difficulty": "simple"
   },
   {
     "id": "rabbit",
     "category": "land",
     "source": "Built-in imagegen",
-    "name": "兔子"
+    "name": "兔子",
+    "difficulty": "simple"
   },
   {
     "id": "lion",
     "category": "land",
     "source": "Built-in imagegen",
-    "name": "獅子"
+    "name": "獅子",
+    "difficulty": "simple"
   },
   {
     "id": "elephant",
     "category": "land",
     "source": "Built-in imagegen",
-    "name": "大象"
+    "name": "大象",
+    "difficulty": "simple"
   },
   {
     "id": "giraffe",
     "category": "land",
     "source": "Built-in imagegen",
-    "name": "長頸鹿"
+    "name": "長頸鹿",
+    "difficulty": "simple"
   },
   {
     "id": "panda",
     "category": "land",
     "source": "Built-in imagegen",
-    "name": "貓熊"
+    "name": "貓熊",
+    "difficulty": "simple"
   },
   {
     "id": "dolphin",
     "category": "ocean",
     "source": "Built-in imagegen",
-    "name": "海豚"
+    "name": "海豚",
+    "difficulty": "simple"
   },
   {
     "id": "turtle",
     "category": "ocean",
     "source": "Built-in imagegen",
-    "name": "海龜"
+    "name": "海龜",
+    "difficulty": "simple"
   },
   {
     "id": "whale",
     "category": "ocean",
     "source": "Built-in imagegen",
-    "name": "鯨魚"
+    "name": "鯨魚",
+    "difficulty": "simple"
   },
   {
     "id": "octopus",
     "category": "ocean",
     "source": "Built-in imagegen",
-    "name": "章魚"
+    "name": "章魚",
+    "difficulty": "simple"
   },
   {
     "id": "fish",
     "category": "ocean",
     "source": "Built-in imagegen",
-    "name": "熱帶魚"
+    "name": "熱帶魚",
+    "difficulty": "simple"
   },
   {
     "id": "seahorse",
     "category": "ocean",
     "source": "Built-in imagegen",
-    "name": "海馬"
+    "name": "海馬",
+    "difficulty": "simple"
   },
   {
     "id": "peppa",
     "category": "peppa",
     "source": "Built-in imagegen",
-    "name": "佩佩豬"
+    "name": "佩佩豬",
+    "difficulty": "simple"
   },
   {
     "id": "george",
     "category": "peppa",
     "source": "Built-in imagegen",
-    "name": "喬治"
+    "name": "喬治",
+    "difficulty": "simple"
   },
   {
     "id": "snow-white-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/snow-white-apple-coloring.pdf",
     "name": "白雪公主",
-    "replaces": "snow-white"
+    "replaces": "snow-white",
+    "difficulty": "simple"
   },
   {
     "id": "cinderella-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/cinderella-dress-coloring3.pdf",
     "name": "仙杜瑞拉",
-    "replaces": "cinderella"
+    "replaces": "cinderella",
+    "difficulty": "detailed"
   },
   {
     "id": "aurora-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/briar-rose-coloring2.pdf",
     "name": "奧蘿拉",
-    "replaces": "aurora"
+    "replaces": "aurora",
+    "difficulty": "simple"
   },
   {
     "id": "ariel-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/little-mermaid-coloring2.pdf",
     "name": "愛麗兒",
-    "replaces": "ariel"
+    "replaces": "ariel",
+    "difficulty": "detailed"
   },
   {
     "id": "belle-simple",
@@ -167,56 +191,64 @@
     "bounds": {
       "w": 324,
       "h": 322
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "belle-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/beauty-and-the-beast-belle-rose-coloring.pdf",
     "name": "貝兒",
-    "replaces": "belle"
+    "replaces": "belle",
+    "difficulty": "detailed"
   },
   {
     "id": "jasmine-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/jasmine-coloring5.pdf",
     "name": "茉莉",
-    "replaces": "jasmine"
+    "replaces": "jasmine",
+    "difficulty": "detailed"
   },
   {
     "id": "pocahontas-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/pocahontas-coloring2.pdf",
     "name": "寶嘉康蒂",
-    "replaces": "pocahontas"
+    "replaces": "pocahontas",
+    "difficulty": "simple"
   },
   {
     "id": "mulan-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/mulan-coloring6.pdf",
     "name": "花木蘭",
-    "replaces": "mulan"
+    "replaces": "mulan",
+    "difficulty": "simple"
   },
   {
     "id": "tiana-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/princess-and-the-frog-tiana-bird-coloring.pdf",
     "name": "蒂安娜",
-    "replaces": "tiana"
+    "replaces": "tiana",
+    "difficulty": "simple"
   },
   {
     "id": "rapunzel-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/rapunzel-coloring5.pdf",
     "name": "樂佩",
-    "replaces": "rapunzel"
+    "replaces": "rapunzel",
+    "difficulty": "detailed"
   },
   {
     "id": "merida-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/brave-merida-coloring-page.pdf",
     "name": "梅莉達",
-    "replaces": "merida"
+    "replaces": "merida",
+    "difficulty": "detailed"
   },
   {
     "id": "moana-simple",
@@ -228,14 +260,16 @@
       "h": 291.25,
       "cx": 180,
       "cy": 220
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "moana-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/moana-coloring2.pdf",
     "name": "莫娜",
-    "replaces": "moana"
+    "replaces": "moana",
+    "difficulty": "detailed"
   },
   {
     "id": "elsa-simple",
@@ -247,14 +281,16 @@
       "h": 399.5,
       "cx": 179.875,
       "cy": 220.125
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "elsa-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/elsa-coloring8.pdf",
     "name": "艾莎",
-    "replaces": "elsa"
+    "replaces": "elsa",
+    "difficulty": "detailed"
   },
   {
     "id": "anna-simple",
@@ -266,33 +302,38 @@
       "h": 400,
       "cx": 180.125,
       "cy": 220.125
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "anna-clean",
     "category": "princess",
     "source": "https://www.disneyclips.com/funstuff/pdf/frozen2-anna-coloring3.pdf",
     "name": "安娜",
-    "replaces": "anna"
+    "replaces": "anna",
+    "difficulty": "detailed"
   },
   {
     "id": "raya-clean",
     "category": "princess",
     "source": "Built-in imagegen",
     "name": "拉雅",
-    "replaces": "raya"
+    "replaces": "raya",
+    "difficulty": "detailed"
   },
   {
     "id": "winger",
     "category": "rescue",
     "source": "Built-in imagegen",
-    "name": "翼龍 Winger"
+    "name": "翼龍 Winger",
+    "difficulty": "simple"
   },
   {
     "id": "burple",
     "category": "rescue",
     "source": "Built-in imagegen",
-    "name": "Burple"
+    "name": "Burple",
+    "difficulty": "simple"
   },
   {
     "id": "toothless-crouching-clean",
@@ -303,7 +344,8 @@
     "bounds": {
       "w": 324.0,
       "h": 247.367
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "toothless-soaring-clean",
@@ -314,7 +356,8 @@
     "bounds": {
       "w": 324.0,
       "h": 221.119
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "toothless-gliding-clean",
@@ -325,7 +368,8 @@
     "bounds": {
       "w": 324.0,
       "h": 191.755
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "toothless-sitting-clean",
@@ -336,7 +380,8 @@
     "bounds": {
       "w": 324.0,
       "h": 330.957
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "gabby-clean",
@@ -347,7 +392,8 @@
     "bounds": {
       "w": 173.001,
       "h": 400.0
-    }
+    },
+    "difficulty": "detailed"
   },
   {
     "id": "pandy-clean",
@@ -358,7 +404,8 @@
     "bounds": {
       "w": 277.488,
       "h": 400.0
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "cakey-clean",
@@ -369,7 +416,8 @@
     "bounds": {
       "w": 324.0,
       "h": 304.823
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "dj-catnip-clean",
@@ -380,7 +428,8 @@
     "bounds": {
       "w": 269.937,
       "h": 400.0
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "kitty-fairy-clean",
@@ -391,7 +440,8 @@
     "bounds": {
       "w": 265.326,
       "h": 400.0
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "mercat-clean",
@@ -402,7 +452,8 @@
     "bounds": {
       "w": 318.37,
       "h": 400.0
-    }
+    },
+    "difficulty": "detailed"
   },
   {
     "id": "pillow-cat-clean",
@@ -413,7 +464,8 @@
     "bounds": {
       "w": 271.562,
       "h": 400.0
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "baby-box-clean",
@@ -424,7 +476,8 @@
     "bounds": {
       "w": 294.935,
       "h": 400.0
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "catrat-clean",
@@ -435,7 +488,8 @@
     "bounds": {
       "w": 279.183,
       "h": 400.0
-    }
+    },
+    "difficulty": "simple"
   },
   {
     "id": "carlita-clean",
@@ -446,7 +500,8 @@
     "bounds": {
       "w": 324.0,
       "h": 222.233
-    }
+    },
+    "difficulty": "detailed"
   },
   {
     "id": "mama-box-clean",
@@ -457,7 +512,8 @@
     "bounds": {
       "w": 281.753,
       "h": 400.0
-    }
+    },
+    "difficulty": "detailed"
   },
   {
     "id": "marty-clean",
@@ -468,6 +524,7 @@
     "bounds": {
       "w": 290.759,
       "h": 400.0
-    }
+    },
+    "difficulty": "simple"
   }
 ]

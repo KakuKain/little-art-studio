@@ -1,131 +1,980 @@
-const $=id=>document.getElementById(id),canvas=$('drawing'),ctx=canvas.getContext('2d'),svg=$('coloring');
-const colors=['#ff7399','#ffae62','#ffe16b','#7ccca0','#74b9ed','#ac8bd8','#f4b7ce','#cde9c4','#845e49','#333948','#ffffff','#e95c57','#e0a23e','#358a6c','#476cbb'];
-const toolSizes={pen:12,eraser:12};
-let masks=new Map(); const ink=document.createElement('canvas');ink.width=720;ink.height=880;const inkCtx=ink.getContext('2d');
-let scene='cat',tool='pen',color=colors[0],history=[],future=[],stroke=null,hue=0,db,ready=false;
-const scenes={cat:`<g stroke="#594137" stroke-width="5" stroke-linejoin="round"><path data-region="sky" d="M0 0H360V440H0Z" fill="white" stroke="none"/><path data-region="tail" d="M239 326Q324 339 296 259Q284 237 267 251Q254 264 273 280Q288 308 233 299Z" fill="white"/><ellipse data-region="body" cx="181" cy="307" rx="77" ry="83" fill="white"/><path data-region="head" d="M104 205 95 107 148 140Q180 127 213 140L266 107 257 205Q250 264 181 263Q112 264 104 205Z" fill="white"/><path data-region="ear1" d="m111 130 30 20-26 16Z" fill="white"/><path data-region="ear2" d="m250 130-30 20 26 16Z" fill="white"/><ellipse data-region="paw1" cx="144" cy="370" rx="29" ry="20" fill="white"/><ellipse data-region="paw2" cx="218" cy="370" rx="29" ry="20" fill="white"/><path data-region="bow1" d="m179 280-35-17v39Z" fill="white"/><path data-region="bow2" d="m181 280 35-17v39Z" fill="white"/><circle data-region="bow3" cx="180" cy="281" r="9" fill="white"/><g fill="none" stroke-linecap="round"><path d="M140 194q10-15 20 0m43 0q10-15 20 0m-54 29q11 15 22 0m-11-10v10M124 217l-29-6m29 19-29 5m143-18 29-6m-29 19 29 5"/></g><path d="m171 208 10 9 10-9Z" fill="#594137"/><path data-region="star" d="m57 55 7 17 19 1-15 12 5 19-16-10-17 10 5-19-15-12 20-1Z" fill="white"/><path data-region="heart" d="M292 63C264 38 249 72 292 99C335 72 320 38 292 63Z" fill="white"/></g>`,princess:`<g stroke="#594137" stroke-width="5" stroke-linejoin="round"><path data-region="sky" d="M0 0H360V440H0Z" fill="white" stroke="none"/><path data-region="hair" d="M119 170Q101 98 180 92Q261 98 244 170L258 266H103Z" fill="white"/><path data-region="arm1" d="m145 231-44 67q-8 20 8 24l55-62Z" fill="white"/><path data-region="arm2" d="m215 231 44 67q8 20-8 24l-55-62Z" fill="white"/><path data-region="dress" d="M148 265 82 389Q180 425 278 389L212 265Z" fill="white"/><path data-region="bodice" d="M141 221Q180 206 219 221L212 269H148Z" fill="white"/><path data-region="face" d="M126 144Q180 174 234 144V174Q232 223 180 226Q128 223 126 174Z" fill="white"/><path data-region="crown" d="m128 111-8-54 34 23 26-37 26 37 34-23-8 54Z" fill="white"/><circle data-region="gem" cx="180" cy="88" r="9" fill="white"/><path data-region="belt" d="M148 260H212V277H148Z" fill="white"/><path data-region="dresscenter" d="M170 278 139 400Q180 407 221 400L190 278Z" fill="white"/><g fill="none" stroke-linecap="round"><path d="m146 181q9-12 18 0m32 0q9-12 18 0m-47 21q13 12 26 0"/></g><path data-region="star" d="m51 173 6 15 17 1-13 11 4 17-14-9-15 9 4-17-13-11 17-1Z" fill="white"/><path data-region="heart" d="M302 141C274 116 259 150 302 177C345 150 330 116 302 141Z" fill="white"/></g>`,blank:''};
+import { installUI, syncSizes } from "./modules/ui.js?v=45";
+import { categoryStatus, downloadCategory } from "./modules/offline.js?v=45";
+import {
+  createWork,
+  record,
+  canUndo,
+  canRedo,
+  moveCursor,
+  replayStart,
+  addCheckpoint,
+} from "./modules/history.js?v=45";
+import { openStudio } from "./modules/storage.js?v=45";
+import { createPainter } from "./modules/painter.js?v=45";
+import { ART_CATALOG, ART_METADATA } from "./assets/coloring/catalog.js?v=45";
+import { loadArtwork } from "./modules/assets.js?v=45";
+import { loadRegions } from "./modules/regions.js?v=45";
+const $ = (id) => document.getElementById(id),
+  canvas = $("drawing"),
+  ctx = canvas.getContext("2d"),
+  svg = $("coloring"),
+  outlines = $("outlines");
+const colors = [
+  "#ff7399",
+  "#ffae62",
+  "#ffe16b",
+  "#7ccca0",
+  "#74b9ed",
+  "#ac8bd8",
+  "#f4b7ce",
+  "#cde9c4",
+  "#845e49",
+  "#333948",
+  "#ffffff",
+  "#e95c57",
+  "#e0a23e",
+  "#358a6c",
+  "#476cbb",
+];
+const toolSizes = { pen: 12, eraser: 12 };
+const painter = createPainter(canvas);
+let scene = "kitty",
+  tool = "pen",
+  color = colors[0],
+  stroke = null,
+  hue = 0,
+  studio,
+  currentWork,
+  ready = false;
+const blankPreview = '<img src="assets/ui/pen.svg" alt="">';
+const ASSET_VERSION='45';
+const artworkURL = (id) =>
+  `assets/coloring/${id}.svg?rev=${ART_METADATA[id]?.revision || ASSET_VERSION}`;
+let catalog = ART_CATALOG,
+  homeCategory = null,
+  showDetailed = false;
+let editorLoaded = false,
+  pendingWork,
+  loadingEditor;
+async function ensureCurrent() {
+  if (editorLoaded) return;
+  if (loadingEditor) return loadingEditor;
+  loadingEditor = (async () => {
+    currentWork = pendingWork || createWork(scene);
+    await replayWork(currentWork);
+    editorLoaded = true;
+    pendingWork = null;
+  })().finally(() => (loadingEditor = null));
+  return loadingEditor;
+}
+const workCache = new Map();
 
-const sheet=(content)=>`<g stroke="#292929" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path data-region="sky" d="M0 0H360V440H0Z" fill="white" stroke="none"/>${content}</g>`;
-scenes.bunny=sheet(`<ellipse data-region="ear1" cx="133" cy="110" rx="30" ry="77" fill="white" transform="rotate(-12 133 110)"/><ellipse data-region="ear2" cx="227" cy="110" rx="30" ry="77" fill="white" transform="rotate(12 227 110)"/><ellipse data-region="body" cx="180" cy="317" rx="74" ry="79" fill="white"/><ellipse data-region="head" cx="180" cy="209" rx="98" ry="84" fill="white"/><ellipse data-region="foot1" cx="133" cy="380" rx="38" ry="23" fill="white"/><ellipse data-region="foot2" cx="227" cy="380" rx="38" ry="23" fill="white"/><ellipse data-region="tummy" cx="180" cy="333" rx="39" ry="45" fill="white"/><ellipse cx="142" cy="202" rx="12" ry="16" fill="#292929"/><ellipse cx="218" cy="202" rx="12" ry="16" fill="#292929"/><circle cx="138" cy="197" r="4" fill="white" stroke="none"/><circle cx="214" cy="197" r="4" fill="white" stroke="none"/><path d="m172 222 8 7 8-7Z" fill="#292929"/><path d="M180 229q-10 19-20 6m20-6q10 19 20 6" fill="none"/><ellipse data-region="cheek1" cx="116" cy="226" rx="15" ry="10" fill="white"/><ellipse data-region="cheek2" cx="244" cy="226" rx="15" ry="10" fill="white"/>`);
-scenes.icecream=sheet(`<path data-region="cone" d="M105 227h150l-75 175Z" fill="white"/><path d="M120 262 205 337M137 300 191 365M240 262 155 337M223 300 169 365" fill="none"/><path data-region="scoop" d="M98 238Q58 218 82 185Q54 122 108 107Q117 61 164 75Q204 43 236 91Q295 85 283 148Q316 188 275 220Q274 253 244 240Q219 266 192 240Q164 263 144 239Q119 260 98 238Z" fill="white"/><path data-region="cherry" d="M200 64a25 25 0 1 1-50 0 25 25 0 1 1 50 0" fill="white"/><path d="M175 39q4-26 27-23" fill="none"/><circle cx="141" cy="168" r="9" fill="#292929"/><circle cx="218" cy="168" r="9" fill="#292929"/><path d="M166 193q14 20 28 0" fill="none"/><path d="m115 128 10 9m80-13 12-7m31 59 10 8m-89-49 0 12" fill="none"/>`);
-scenes.castle=sheet(`<path data-region="hill" d="M0 370Q180 317 360 370V440H0Z" fill="white"/><path data-region="tower1" d="M52 180h69v180H52Z" fill="white"/><path data-region="tower2" d="M239 180h69v180h-69Z" fill="white"/><path data-region="roof1" d="m38 180 48-77 49 77Z" fill="white"/><path data-region="roof2" d="m225 180 49-77 48 77Z" fill="white"/><path data-region="main" d="M115 231h130v143H115Z" fill="white"/><path data-region="tower3" d="M144 138h72v97h-72Z" fill="white"/><path data-region="roof3" d="m129 139 51-81 51 81Z" fill="white"/><path data-region="door" d="M153 374v-50a27 27 0 0 1 54 0v50Z" fill="white"/><path data-region="window1" d="M73 236v-24a13 13 0 0 1 26 0v24Z" fill="white"/><path data-region="window2" d="M261 236v-24a13 13 0 0 1 26 0v24Z" fill="white"/><path data-region="window3" d="M167 190v-19a13 13 0 0 1 26 0v19Z" fill="white"/><path d="M180 58V21" fill="none"/><path data-region="flag" d="M180 21h43l-14 13 14 13h-43Z" fill="white"/><path d="M180 328v46" fill="none"/><path data-region="cloud" d="M30 79q-9-26 16-31 13-26 33-3 29-8 33 18 22 24-8 29H42Q29 92 30 79Z" fill="white"/>`);
-const blankPreview='<img src="assets/ui/pen.svg" alt="">';
-const ASSET_VERSION='44';
-const artworkURL=id=>`assets/coloring/${id}.svg?v=${ASSET_VERSION}`;
-let catalog=[{"id":"dragon-riders-clean","category":"dragons","source":"https://tv.dreamworks.com/printables/HowToTrainYourDragon/coloring/ColoringPagesDragonRiders.pdf","name":"馴龍高手","replaces":"dragon-riders"},{"id":"toothless-clean","category":"dragons","source":"https://www.cutecoloring.page/how-to-train-your-dragon-coloring-pages","name":"夜煞・沒牙","replaces":"toothless"},{"id":"light-fury-clean","category":"dragons","source":"https://www.coloringbook.ai/how-to-train-your-dragon/toothlessand-light-fury-magical-encounter","name":"光煞","replaces":"light-fury"},{"id":"night-lights-clean","category":"dragons","source":"https://thetoyzone.com/how-to-train-your-dragon-coloring-pages","name":"三隻小龍","replaces":"night-lights"},{"id":"fury-pair-clean","category":"dragons","source":"Composite of toothless-clean and light-fury-clean","name":"夜煞與光煞","replaces":"fury-pair","bounds":{"w":318.5,"h":194,"cx":182.875,"cy":210.625}},{"id":"hiccup-toothless-clean","name":"小嗝嗝與夜煞","category":"dragons","replaces":"hiccup-toothless","source":"User-provided ColoringBook.ai coloring page"},{"id":"kitty","category":"land","source":"Built-in imagegen","name":"貓咪"},{"id":"rabbit","category":"land","source":"Built-in imagegen","name":"兔子"},{"id":"lion","category":"land","source":"Built-in imagegen","name":"獅子"},{"id":"elephant","category":"land","source":"Built-in imagegen","name":"大象"},{"id":"giraffe","category":"land","source":"Built-in imagegen","name":"長頸鹿"},{"id":"panda","category":"land","source":"Built-in imagegen","name":"貓熊"},{"id":"dolphin","category":"ocean","source":"Built-in imagegen","name":"海豚"},{"id":"turtle","category":"ocean","source":"Built-in imagegen","name":"海龜"},{"id":"whale","category":"ocean","source":"Built-in imagegen","name":"鯨魚"},{"id":"octopus","category":"ocean","source":"Built-in imagegen","name":"章魚"},{"id":"fish","category":"ocean","source":"Built-in imagegen","name":"熱帶魚"},{"id":"seahorse","category":"ocean","source":"Built-in imagegen","name":"海馬"},{"id":"peppa","category":"peppa","source":"Built-in imagegen","name":"佩佩豬"},{"id":"george","category":"peppa","source":"Built-in imagegen","name":"喬治"},{"id":"snow-white-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/snow-white-apple-coloring.pdf","name":"白雪公主","replaces":"snow-white"},{"id":"cinderella-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/cinderella-dress-coloring3.pdf","name":"仙杜瑞拉","replaces":"cinderella"},{"id":"aurora-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/briar-rose-coloring2.pdf","name":"奧蘿拉","replaces":"aurora"},{"id":"ariel-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/little-mermaid-coloring2.pdf","name":"愛麗兒","replaces":"ariel"},{"id":"belle-simple","name":"貝兒・簡單","category":"princess","simpleOf":"belle-clean","bounds":{"w":324,"h":322}},{"id":"belle-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/beauty-and-the-beast-belle-rose-coloring.pdf","name":"貝兒","replaces":"belle"},{"id":"jasmine-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/jasmine-coloring5.pdf","name":"茉莉","replaces":"jasmine"},{"id":"pocahontas-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/pocahontas-coloring2.pdf","name":"寶嘉康蒂","replaces":"pocahontas"},{"id":"mulan-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/mulan-coloring6.pdf","name":"花木蘭","replaces":"mulan"},{"id":"tiana-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/princess-and-the-frog-tiana-bird-coloring.pdf","name":"蒂安娜","replaces":"tiana"},{"id":"rapunzel-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/rapunzel-coloring5.pdf","name":"樂佩","replaces":"rapunzel"},{"id":"merida-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/brave-merida-coloring-page.pdf","name":"梅莉達","replaces":"merida"},{"id":"moana-simple","name":"莫娜・簡單","category":"princess","simpleOf":"moana-clean","bounds":{"w":323.75,"h":291.25,"cx":180,"cy":220}},{"id":"moana-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/moana-coloring2.pdf","name":"莫娜","replaces":"moana"},{"id":"elsa-simple","name":"艾莎・簡單","category":"princess","simpleOf":"elsa-clean","bounds":{"w":260,"h":399.5,"cx":179.875,"cy":220.125}},{"id":"elsa-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/elsa-coloring8.pdf","name":"艾莎","replaces":"elsa"},{"id":"anna-simple","name":"安娜・簡單","category":"princess","simpleOf":"anna-clean","bounds":{"w":216.5,"h":400,"cx":180.125,"cy":220.125}},{"id":"anna-clean","category":"princess","source":"https://www.disneyclips.com/funstuff/pdf/frozen2-anna-coloring3.pdf","name":"安娜","replaces":"anna"},{"id":"raya-clean","category":"princess","source":"Built-in imagegen","name":"拉雅","replaces":"raya"},{"id":"winger","category":"rescue","source":"Built-in imagegen","name":"翼龍 Winger"},{"id":"burple","category":"rescue","source":"Built-in imagegen","name":"Burple"},{"id":"toothless-crouching-clean","name":"夜煞・蓄勢待發","category":"dragons","replaces":"toothless-crouching","source":"User-provided line art; Supercoloring","bounds":{"w":324.0,"h":247.367}},{"id":"toothless-soaring-clean","name":"夜煞・展翅飛翔","category":"dragons","replaces":"toothless-soaring","source":"User-provided ColoringBook.ai line art","bounds":{"w":324.0,"h":221.119}},{"id":"toothless-gliding-clean","name":"夜煞・滑翔","category":"dragons","replaces":"toothless-gliding","source":"User-provided ColoringBook.ai line art","bounds":{"w":324.0,"h":191.755}},{"id":"toothless-sitting-clean","name":"夜煞・坐姿","category":"dragons","replaces":"toothless-sitting","source":"User-provided ColoringBook.ai line art","bounds":{"w":324.0,"h":330.957}},{"id":"gabby-clean","name":"蓋比 Gabby","category":"gabby","replaces":"gabby","source":"https://tv.dreamworks.com/printables/Gabby/coloring/DW2021_Gabby_ColoringPages_Printable_.pdf","bounds":{"w":173.001,"h":400.0}},{"id":"pandy-clean","name":"熊貓貓 Pandy Paws","category":"gabby","replaces":"pandy","source":"https://tv.dreamworks.com/printables/Gabby/coloring/DW2021_Gabby_ColoringPages_Printable_.pdf","bounds":{"w":277.488,"h":400.0}},{"id":"cakey-clean","name":"蛋糕貓 Cakey Cat","category":"gabby","replaces":"cakey","source":"https://tv.dreamworks.com/printables/Gabby/coloring/DW2021_Gabby_ColoringPages_Printable_.pdf","bounds":{"w":324.0,"h":304.823}},{"id":"dj-catnip-clean","name":"DJ 貓薄荷","category":"gabby","replaces":"dj-catnip","source":"https://wakethekids.com/gabbys-dollhouse-coloring-pages/","bounds":{"w":269.937,"h":400.0}},{"id":"kitty-fairy-clean","name":"貓咪仙子 Kitty Fairy","category":"gabby","replaces":"kitty-fairy","source":"https://wakethekids.com/gabbys-dollhouse-coloring-pages/","bounds":{"w":265.326,"h":400.0}},{"id":"mercat-clean","name":"美人魚貓 MerCat","category":"gabby","replaces":"mercat","source":"https://wakethekids.com/gabbys-dollhouse-coloring-pages/","bounds":{"w":318.37,"h":400.0}},{"id":"pillow-cat-clean","name":"枕頭貓 Pillow Cat","category":"gabby","replaces":"pillow-cat","source":"https://wakethekids.com/gabbys-dollhouse-coloring-pages/","bounds":{"w":271.562,"h":400.0}},{"id":"baby-box-clean","name":"盒子寶寶 Baby Box","category":"gabby","replaces":"baby-box","source":"https://wakethekids.com/gabbys-dollhouse-coloring-pages/","bounds":{"w":294.935,"h":400.0}},{"id":"catrat-clean","name":"貓鼠 CatRat","category":"gabby","replaces":"catrat","source":"https://wakethekids.com/gabbys-dollhouse-coloring-pages/","bounds":{"w":279.183,"h":400.0}},{"id":"carlita-clean","name":"卡莉塔 Carlita","category":"gabby","replaces":"carlita","source":"https://wakethekids.com/gabbys-dollhouse-coloring-pages/","bounds":{"w":324.0,"h":222.233}},{"id":"mama-box-clean","name":"盒子媽媽 Mama Box","category":"gabby","replaces":"mama-box","source":"https://wakethekids.com/gabbys-dollhouse-coloring-pages/","bounds":{"w":281.753,"h":400.0}},{"id":"marty-clean","name":"派對貓 Marty","category":"gabby","replaces":"marty","source":"https://www.coloringpages101.com/Gabby-s-Dollhouse-coloring-pages/101979-Marty-the-Party-Cat-Gabby-s-Dollhouse-coloring-page","bounds":{"w":290.759,"h":400.0}}],homeCategory=null,showDetailed=false;
-let editorLoaded=false,pendingState,loadingEditor;
-async function ensureCurrent(){if(editorLoaded)return;if(loadingEditor)return loadingEditor;loadingEditor=restore(pendingState||{scene,fills:[]}).then(()=>{editorLoaded=true;pendingState=null}).finally(()=>loadingEditor=null);return loadingEditor}
-const sheetSessions=new Map();
-const detailedSheets=new Set(['moana-clean','elsa-clean','anna-clean','belle-clean','dragon-riders-clean','hiccup-toothless-clean','gabby-clean','mercat-clean','mama-box-clean','carlita-clean','cinderella-clean','ariel-clean','jasmine-clean','rapunzel-clean','merida-clean','raya-clean']);
-const categories=[['princess','公主'],['dragons','馴龍高手'],['rescue','救援騎士'],['peppa','佩佩豬'],['gabby','蓋比娃娃屋'],['ocean','海洋生物'],['land','陸地生物']];
-function sceneCard(id,name,preview=artworkURL(id)){const b=document.createElement('button');b.dataset.scene=id;b.setAttribute('aria-label',name);if(id==='blank'){b.innerHTML=blankPreview;b.className='blank-card'}else{const img=new Image();img.src=preview;img.decoding='async';img.loading=homeCategory?'lazy':'eager';img.alt=name;b.append(img)}return b}
-function renderHome(){const grid=$('home-grid');grid.replaceChildren();grid.dataset.view=homeCategory?'sheets':'categories';$('category-back').hidden=!homeCategory;$('difficulty').hidden=!homeCategory;document.body.classList.toggle('in-category',!!homeCategory);$('category-title').textContent=categories.find(c=>c[0]===homeCategory)?.[1]||'';if(homeCategory){const level=$('difficulty').value;for(const item of catalog.filter(i=>i.category===homeCategory&&(level==='all'||(level==='detailed')===detailedSheets.has(i.id))))grid.append(sceneCard(item.id,item.name));if(!grid.children.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='這個分類都是簡單圖案';grid.append(empty)}}else{for(const [index,[id,name]]of categories.entries()){const item=catalog.find(i=>i.category===id&&!detailedSheets.has(i.id));if(!item)continue;const card=sceneCard(item.id,name,id==='gabby'?'assets/ui/category-gabby.png':`assets/ui/category-${item.replaces||item.id}.png`);delete card.dataset.scene;card.dataset.category=id;card.dataset.theme=index;const label=document.createElement('span');label.textContent=name;card.append(label);grid.append(card)}const blank=sceneCard('blank','空白畫布');const label=document.createElement('span');label.textContent='自由畫畫';blank.append(label);grid.append(blank)}}
-$('difficulty').onchange=renderHome;
-$('category-back').onclick=()=>{homeCategory=null;renderHome()};
-async function ensureScene(id){if(Object.hasOwn(scenes,id))return;const r=await fetch(artworkURL(id));if(!r.ok)throw Error('Unable to load coloring page');const doc=new DOMParser().parseFromString(await r.text(),'image/svg+xml');scenes[id]=doc.documentElement.innerHTML}
-async function showEditor(){busy=true;try{await ensureCurrent();setTool('pen');document.body.classList.remove('at-home');location.hash='draw';const next=surfaceGeometry();if(Math.abs(next.w-surface.w)>.01||Math.abs(next.h-surface.h)>.01)await restore(snapshot(true))}finally{busy=false;await refitEditor()}}
-$('editor-back').onclick=()=>{if(busy||stroke)return;showHome();historyBack()};
-$('settings-open').onclick=()=>$('about-modal').showModal();
-function showHome(){document.body.classList.add('at-home');save();refreshAfterUpdate()}
-$('home-back').onclick=()=>{if(busy||stroke)return;homeCategory=null;renderHome();showHome();if(location.hash)historyBack()};
-function historyBack(){window.history.replaceState(null,'',location.pathname+location.search)}
-window.addEventListener('hashchange',()=>{if(!location.hash)showHome()});
-function surfaceGeometry(){const home=document.body.classList.contains('at-home');if(home)document.body.classList.remove('at-home');const r=canvas.getBoundingClientRect();if(home)document.body.classList.add('at-home');if(scene==='blank'){const ratio=r.width/r.height,w=Math.max(360,440*ratio),h=Math.max(440,360/ratio);return {x:(360-w)/2,y:(440-h)/2,w,h}}const bounds=catalog.find(item=>item.id===scene)?.bounds||(scene==='hiccup-toothless-clean'?{w:264,h:400}:{w:360,h:440});const top=64,bottom=24,side=16;const scale=Math.min(Math.max(1,r.width-side*2)/bounds.w,Math.max(1,r.height-top-bottom)/bounds.h);const w=r.width/scale,h=r.height/scale;return {x:(bounds.cx??180)-w/2,y:(bounds.cy??220)-h/2-(top-bottom)/(2*scale),w,h}}
-let surface;
-function prepareCopy(copy){copy.setAttribute('viewBox',`${surface.x} ${surface.y} ${surface.w} ${surface.h}`);copy.setAttribute('preserveAspectRatio','none');copy.setAttribute('width',canvas.width);copy.setAttribute('height',canvas.height);const sky=copy.querySelector('[data-region="sky"]');if(sky)sky.setAttribute('d',`M${surface.x} ${surface.y}h${surface.w}v${surface.h}h${-surface.w}Z`);return copy}
-function syncBackground(){svg.style.background=svg.querySelector('[data-region="sky"]')?.getAttribute('fill')||'white'}
-function snapshot(memory=false){let pixels;if(memory){pixels=document.createElement('canvas');pixels.width=canvas.width;pixels.height=canvas.height;pixels.getContext('2d').drawImage(canvas,0,0)}else pixels=canvas.toDataURL();return {assetVersion:44,scene,surface,width:canvas.width,height:canvas.height,fills:[...svg.querySelectorAll('[data-region]')].map(e=>[e.dataset.region,e.getAttribute('fill')]),pixels}}
-function remember(){history.push(snapshot(true));if(history.length>20)history.shift();future=[];buttons()}
-function buttons(){$('undo').disabled=!history.length;$('redo').disabled=!future.length;}
-function setTool(value){tool=value;$('size').value=toolSizes[value==='eraser'?'eraser':'pen'];syncSizes();canvas.style.pointerEvents=value==='fill'?'none':'auto';['fill','pen','rainbow','eraser'].forEach(t=>$(t).classList.toggle('active',t===value));$('fill').disabled=scene==='blank';$('pen').classList.toggle('active',value==='pen'||value==='rainbow');$('color-open').classList.toggle('rainbow',value==='rainbow');$('rainbow-quick')?.classList.toggle('active',value==='rainbow');$('rainbow-quick')?.setAttribute('aria-pressed',String(value==='rainbow'));document.querySelectorAll('#quick-colors [data-color]').forEach(b=>b.classList.toggle('active',value!=='rainbow'&&b.dataset.color===color))}
-async function restore(s){await ensureScene(s.scene);scene=s.scene;canvas.style.objectFit='fill';surface=surfaceGeometry();canvas.height=Math.round(720*surface.h/surface.w);ink.height=canvas.height;svg.innerHTML=scenes[scene];prepareCopy(svg);s.fills.forEach(([id,c])=>{const mapped=s.assetVersion<32?svg.querySelectorAll(`[data-previous-region="${id}"]`):[];if(mapped.length)mapped.forEach(e=>e.setAttribute("fill",c));else if(!(s.assetVersion<32&&svg.querySelector("[data-previous-region]")&&id!=="sky"))svg.querySelector(`[data-region="${id}"]`)?.setAttribute("fill",c)});ctx.clearRect(0,0,canvas.width,canvas.height);if(s.pixels){const img=s.pixels instanceof HTMLCanvasElement?s.pixels:new Image();if(typeof s.pixels==='string'){img.src=s.pixels;await img.decode()}if(s.surface){const scale=canvas.width/surface.w;ctx.drawImage(img,(s.surface.x-surface.x)*scale,(s.surface.y-surface.y)*scale,s.surface.w*scale,s.surface.h*scale)}else if(scene==='blank'){ctx.drawImage(img,0,0,canvas.width,canvas.height)}else{const scale=Math.min(canvas.width/720,canvas.height/880);ctx.drawImage(img,(canvas.width-720*scale)/2,(canvas.height-880*scale)/2,720*scale,880*scale)}}if((s.assetVersion||0)<43){const oldCostume={'anna-simple':'cell20','elsa-simple':'cell36','moana-simple':'cell30'}[scene];const previous=oldCostume&&s.fills.find(([id])=>id===oldCostume);if(previous)svg.querySelector('[data-region^="simple-"][data-fill-group]')?.setAttribute('fill',previous[1])}if(scene==='belle-simple'&&s.assetVersion<37){const rose=s.fills.find(([id])=>id==='simple-rose');if(rose)svg.querySelectorAll('[data-fill-group="rose"]').forEach(el=>el.setAttribute('fill',rose[1]))}document.querySelectorAll('[data-scene]').forEach(b=>b.classList.toggle('active',b.dataset.scene===scene));syncBackground();setTool(scene==='blank'&&tool==='fill'?'pen':tool);buttons();await buildMasks();}
-function request(store,mode,action){return new Promise((resolve,reject)=>{const tx=db.transaction(store,mode);let result;const req=action(tx.objectStore(store));req.onsuccess=()=>result=req.result;tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}
-async function save(){if(!ready||!db||!editorLoaded)return;try{await request('state','readwrite',s=>s.put(snapshot(),'current'));$('hint').textContent='已保存到這台手機 ✦'}catch{$('hint').textContent='儲存空間不足，請用「存成圖片」保存作品'}}
-async function exportImage(){const out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height;const c=out.getContext('2d');c.fillStyle='white';c.fillRect(0,0,canvas.width,canvas.height);if(scene!=='blank'){const copy=prepareCopy(svg.cloneNode(true));copy.setAttribute('xmlns','http://www.w3.org/2000/svg');const img=new Image();img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(copy));await img.decode();c.drawImage(img,0,0,canvas.width,canvas.height)}c.drawImage(canvas,0,0);return out.toDataURL('image/png')}
-async function keepArtwork(){if(!ready||!db||!editorLoaded)return;try{const image=await exportImage();await request('art','readwrite',s=>s.put({id:Date.now(),image}));const all=await request('art','readonly',s=>s.getAll());for(const old of all.sort((a,b)=>b.id-a.id).slice(20))await request('art','readwrite',s=>s.delete(old.id))}catch{$('hint').textContent='相簿儲存失敗，請先下載圖片'}}
-function chooseColor(c){color=c;$('color-preview').style.background=c;document.querySelectorAll('#palette button').forEach(b=>b.classList.toggle('active',b.dataset.color===c));if(tool==='rainbow')setTool('pen');document.querySelectorAll('#quick-colors button[data-color]').forEach(b=>b.classList.toggle('active',b.dataset.color===c));$('color-modal').close()}
-colors.forEach((c,i)=>{const b=document.createElement('button');b.dataset.color=c;b.style.background=c;b.setAttribute('aria-label',['粉紅','橘','黃','綠','藍','紫','淡粉','淡綠','棕','黑','白','紅','金黃','深綠','深藍'][i]);b.onclick=()=>chooseColor(c);$('palette').append(b)});$('palette').firstChild.classList.add('active');
-$('color-open').onclick=()=>$('color-modal').showModal();document.querySelectorAll('.dismiss').forEach(b=>b.onclick=()=>b.closest('dialog').close());document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close()}}));
-function mixedColor(){return `hsl(${$('hue').value} ${$('saturation').value}% ${$('lightness').value}%)`}
-['hue','saturation','lightness'].forEach(id=>$(id).oninput=()=>{$('mix-preview').style.background=mixedColor()});$('mix-preview').style.background=mixedColor();$('use-color').onclick=()=>chooseColor(mixedColor());
-let regionLabels,regionColors=new Map(),regionIds=new Map();
-async function buildMasks(){masks=new Map();regionColors=new Map();regionIds=new Map();regionLabels=null;if(scene==='blank')return;const copy=prepareCopy(svg.cloneNode(true));copy.setAttribute('xmlns','http://www.w3.org/2000/svg');copy.querySelectorAll('g,path,ellipse,circle').forEach(el=>{if(el.hasAttribute('stroke')&&el.getAttribute('stroke')!=='none')el.setAttribute('stroke','#000');if(el.getAttribute('fill')!=='none')el.setAttribute('fill','#000')});let index=0;copy.querySelectorAll('[data-region]').forEach(el=>{const key=el.dataset.fillGroup?'group:'+el.dataset.fillGroup:el.dataset.region;let c=regionColors.get(key);if(!c){const v=++index*8191;c=[v>>16&255,v>>8&255,v&255];regionColors.set(key,c);regionIds.set(v,key)}el.setAttribute('fill',`rgb(${c.join(',')})`)});const img=new Image();img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(copy));await img.decode();const c=document.createElement('canvas');c.width=canvas.width;c.height=canvas.height;const dc=c.getContext('2d');dc.drawImage(img,0,0,c.width,c.height);regionLabels=dc.getImageData(0,0,c.width,c.height)}
-function regionMask(id){if(masks.has(id))return masks.get(id);const rgb=regionColors.get(id);if(!rgb||!regionLabels)return null;const mask=document.createElement('canvas');mask.width=canvas.width;mask.height=canvas.height;const c=mask.getContext('2d'),pixels=c.createImageData(mask.width,mask.height),src=regionLabels.data;for(let i=0;i<src.length;i+=4)if(src[i]===rgb[0]&&src[i+1]===rgb[1]&&src[i+2]===rgb[2]){pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=pixels.data[i+3]=255}c.putImageData(pixels,0,0);if(masks.size>=3)masks.delete(masks.keys().next().value);masks.set(id,mask);return mask}
-function startRegion(p){
- if(scene==='blank'||!regionLabels)return null;
- const x=Math.floor(p.x),y=Math.floor(p.y),data=regionLabels.data;
- if(x<0||y<0||x>=canvas.width||y>=canvas.height)return null;
- const i=(y*canvas.width+x)*4;
- return regionIds.get((data[i]<<16)|(data[i+1]<<8)|data[i+2])||null;
+const categories = [
+  ["princess", "公主"],
+  ["dragons", "馴龍高手"],
+  ["rescue", "救援騎士"],
+  ["peppa", "佩佩豬"],
+  ["gabby", "蓋比娃娃屋"],
+  ["ocean", "海洋生物"],
+  ["land", "陸地生物"],
+];
+function sceneCard(id, name, preview = artworkURL(id)) {
+  const b = document.createElement("button");
+  b.dataset.scene = id;
+  b.setAttribute("aria-label", name);
+  if (id === "blank") {
+    b.innerHTML = blankPreview;
+    b.className = "blank-card";
+  } else {
+    const img = new Image();
+    img.src = preview;
+    img.decoding = "async";
+    img.loading = homeCategory ? "lazy" : "eager";
+    img.alt = name;
+    b.append(img);
+  }
+  return b;
 }
-let saveTimer,compressionTimer;
-function pauseBackgroundWork(){clearTimeout(saveTimer);clearTimeout(compressionTimer)}
-function scheduleCompression(){
- clearTimeout(compressionTimer);
- compressionTimer=setTimeout(()=>{
-  if(stroke||busy){scheduleCompression();return}
-  const states=[...history,...future,...[...sheetSessions.values()].flatMap(s=>[s.state,...s.history,...s.future])];
-  const state=states.find(s=>s.pixels instanceof HTMLCanvasElement);
-  if(state){state.pixels=state.pixels.toDataURL();scheduleCompression()}
- },700);
+function renderHome() {
+  const grid = $("home-grid");
+  grid.replaceChildren();
+  grid.dataset.view = homeCategory ? "sheets" : "categories";
+  $("category-back").hidden = !homeCategory;
+  $("difficulty").hidden = !homeCategory;
+  document.body.classList.toggle("in-category", !!homeCategory);
+  $("category-title").textContent =
+    categories.find((c) => c[0] === homeCategory)?.[1] || "";
+  if (homeCategory) {
+    const level = $("difficulty").value;
+    for (const item of catalog.filter(
+      (i) =>
+        i.category === homeCategory &&
+        (level === "all" || i.difficulty === level),
+    ))
+      grid.append(sceneCard(item.id, item.name));
+    if (!grid.children.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty";
+      empty.textContent = "這個分類都是簡單圖案";
+      grid.append(empty);
+    }
+  } else {
+    for (const [index, [id, name]] of categories.entries()) {
+      const item = catalog.find(
+        (i) => i.category === id && i.difficulty === "simple",
+      );
+      if (!item) continue;
+      const card = sceneCard(
+        item.id,
+        name,
+        id === "gabby"
+          ? "assets/ui/category-gabby.png"
+          : `assets/ui/category-${item.replaces || item.id}.png`,
+      );
+      delete card.dataset.scene;
+      card.dataset.category = id;
+      card.dataset.theme = index;
+      const label = document.createElement("span");
+      label.textContent = name;
+      card.append(label);
+      grid.append(card);
+    }
+    const blank = sceneCard("blank", "空白畫布");
+    const label = document.createElement("span");
+    label.textContent = "自由畫畫";
+    blank.append(label);
+    grid.append(blank);
+  }
 }
-function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(stroke||busy){scheduleSave();return}save();scheduleCompression()},700)}
-svg.addEventListener('pointerdown',e=>{const region=e.target.closest('[data-region]');if(!ready||busy||tool!=='fill'||!region||(!region.dataset.fillGroup&&region.getAttribute('fill')===color))return;pauseBackgroundWork();remember();const group=region.dataset.fillGroup;const targets=group?svg.querySelectorAll(`[data-fill-group="${group}"]`):[region];targets.forEach(el=>el.setAttribute('fill',color));syncBackground();scheduleSave()});
-function point(e,r=stroke?.bounds||canvas.getBoundingClientRect()){return {x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
-canvas.style.objectFit='fill';
-function mark(p,previous){
- const padding=stroke.width/2+2,from=previous||p;
- const x=Math.max(0,Math.floor(Math.min(from.x,p.x)-padding)),y=Math.max(0,Math.floor(Math.min(from.y,p.y)-padding));
- const right=Math.min(canvas.width,Math.ceil(Math.max(from.x,p.x)+padding)),bottom=Math.min(canvas.height,Math.ceil(Math.max(from.y,p.y)+padding));
- const w=right-x,h=bottom-y;if(w<=0||h<=0)return;
- inkCtx.save();inkCtx.beginPath();inkCtx.rect(x,y,w,h);inkCtx.clip();inkCtx.clearRect(x,y,w,h);inkCtx.globalCompositeOperation='source-over';
- inkCtx.strokeStyle=inkCtx.fillStyle=tool==='rainbow'?`hsl(${hue++*5%360} 85% 65%)`:color;
- if(tool==='eraser')inkCtx.strokeStyle=inkCtx.fillStyle='white';
- inkCtx.lineWidth=stroke.width;inkCtx.lineCap=inkCtx.lineJoin='round';inkCtx.beginPath();
- if(previous){inkCtx.moveTo(previous.x,previous.y);inkCtx.lineTo(p.x,p.y);inkCtx.stroke()}
- else{inkCtx.arc(p.x,p.y,stroke.width/2,0,Math.PI*2);inkCtx.fill()}
- if(stroke.mask){inkCtx.globalCompositeOperation='destination-in';inkCtx.drawImage(stroke.mask,0,0)}
- inkCtx.restore();ctx.globalCompositeOperation=tool==='eraser'&&scene==='blank'?'destination-out':'source-over';
- ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(ink,0,0);ctx.restore();ctx.globalCompositeOperation='source-over';
-}
-canvas.onpointerdown=e=>{
- if(!ready||busy||stroke)return;
- pauseBackgroundWork();const bounds=canvas.getBoundingClientRect(),p=point(e,bounds),region=startRegion(p);
- if(scene!=='blank'&&!regionColors.has(region)){scheduleSave();return}
- remember();canvas.setPointerCapture(e.pointerId);
- stroke={id:e.pointerId,p,region,bounds,width:+$('size').value*canvas.width/bounds.width,mask:region?regionMask(region):null};mark(p);
+$("difficulty").onchange = renderHome;
+$("category-back").onclick = () => {
+  homeCategory = null;
+  renderHome();
 };
-canvas.onpointermove=e=>{if(!stroke||stroke.id!==e.pointerId)return;const samples=e.getCoalescedEvents?.();for(const sample of samples?.length?samples:[e]){const p=point(sample);mark(p,stroke.p);stroke.p=p}};
-function finish(e){if(stroke?.id!==e.pointerId)return;stroke=null;scheduleSave()}
-canvas.onpointerup=finish;canvas.onpointercancel=finish;
-$('fill').onclick=()=>setTool('fill');$('eraser').onclick=()=>setTool('eraser');$('pen').onclick=()=>setTool('pen');
-function syncSizes(){$('size').disabled=tool==='fill';$('size').setAttribute('aria-label',tool==='eraser'?'橡皮擦粗細':'鉛筆粗細')}syncSizes();$('size').addEventListener('input',()=>{toolSizes[tool==='eraser'?'eraser':'pen']=+$('size').value});$('rainbow').onclick=()=>{setTool('rainbow');$('color-modal').close()};
-let busy=false;async function travel(from,to){if(busy||stroke||!from.length)return;busy=true;to.push(snapshot(true));await restore(from.pop());await save();busy=false}
-$('undo').onclick=()=>travel(history,future);$('redo').onclick=()=>travel(future,history);
-$('home-grid').onclick=async e=>{const b=e.target.closest('button');if(!b||busy||!ready)return;if(b.dataset.category){homeCategory=b.dataset.category;$('difficulty').value='simple';showDetailed=false;renderHome();return}if(!b.dataset.scene)return;busy=true;try{await ensureCurrent()}catch{busy=false;return}busy=false;if(b.dataset.scene===scene){await showEditor();return}busy=true;try{await keepArtwork();sheetSessions.set(scene,{state:snapshot(true),history:[...history],future:[...future]});const previous=sheetSessions.get(b.dataset.scene);await restore(previous?.state||{scene:b.dataset.scene,fills:[],pixels:null});history=previous?.history||[];future=previous?.future||[];buttons();setTool('pen');await save();busy=false;await showEditor()}catch{busy=false;$('hint').textContent='圖片暫時無法開啟，請連網後再試'}};
-$('clear').onclick=async()=>{if(busy||stroke||!ready)return;busy=true;await keepArtwork();remember();ctx.clearRect(0,0,canvas.width,canvas.height);svg.querySelectorAll('[data-region]').forEach(e=>e.setAttribute('fill','white'));syncBackground();await save();busy=false};
-function positionTools(){const menu=$('tool-modal'),r=$('more').getBoundingClientRect();menu.style.left=Math.max(8,Math.min(innerWidth-menu.offsetWidth-8,r.right-menu.offsetWidth))+'px';menu.style.top=Math.max(8,Math.min(innerHeight-menu.offsetHeight-8,r.top-menu.offsetHeight-8))+'px'}
-$('more').onclick=()=>{const menu=$('tool-modal');if(menu.matches(':popover-open'))menu.hidePopover();else{menu.showPopover();positionTools()}};
-$('tool-modal').addEventListener('toggle',e=>{$('more').setAttribute('aria-expanded',String(e.newState==='open'))});
-$('tool-modal').addEventListener('keydown',e=>{const items=[...$('tool-modal').querySelectorAll('button')],index=items.indexOf(document.activeElement);if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();items[e.key==='Home'?0:e.key==='End'?items.length-1:(index+(e.key==='ArrowDown'?1:items.length-1))%items.length].focus()}});
-window.addEventListener('resize',()=>{if($('tool-modal').matches(':popover-open'))positionTools()});
-$('about-open').onclick=()=>{$('tool-modal').hidePopover();$('about-modal').showModal()};$('download').onclick=async()=>{const a=document.createElement('a');a.href=await exportImage();a.download='小小畫室.png';a.click();keepArtwork();$('hint').textContent='作品已儲存，也可以下載圖片'};
-$('gallery').onclick=async()=>{if(!ready||!db){$('hint').textContent='相簿無法保存，請下載圖片';return}await keepArtwork();const all=await request('art','readonly',s=>s.getAll());$('artworks').replaceChildren();for(const art of all.sort((a,b)=>b.id-a.id)){const a=document.createElement('a');a.href=art.image;a.download='小小畫室-'+art.id+'.png';const img=new Image();img.src=art.image;img.alt='我的畫作';a.append(img);$('artworks').append(a)}$('album').showModal()};$('close').onclick=()=>$('album').close();
-async function init(){renderHome();try{db=await new Promise((resolve,reject)=>{const r=indexedDB.open('little-art-studio',1);r.onupgradeneeded=()=>{r.result.createObjectStore('state');r.result.createObjectStore('art',{keyPath:'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});pendingState=await request('state','readonly',x=>x.get('current'));if(pendingState)scene=pendingState.scene;ready=true}catch{ready=true;$('hint').textContent='此瀏覽器無法保存，畫完請下載圖片'}}
-let updatePending=false;
-function refreshAfterUpdate(){if(!updatePending||!ready||busy||stroke||!document.body.classList.contains('at-home'))return;updatePending=false;save().finally(()=>location.reload())}
-init().then(refreshAfterUpdate);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
-if('serviceWorker'in navigator){
- const hadController=!!navigator.serviceWorker.controller;
- navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController){updatePending=true;refreshAfterUpdate()}});
- navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+const ensureScene = loadArtwork;
+let artwork;
+$("editor-back").onclick = () => {
+  if (busy || stroke) return;
+  showHome();
+  historyBack();
+};
+$("settings-open").onclick = () => $("about-modal").showModal();
+function showHome() {
+  document.body.classList.add("at-home");
+  save();
+  refreshAfterUpdate();
+}
+$("home-back").onclick = () => {
+  if (busy || stroke) return;
+  homeCategory = null;
+  renderHome();
+  showHome();
+  if (location.hash) historyBack();
+};
+function historyBack() {
+  window.history.replaceState(null, "", location.pathname + location.search);
+}
+window.addEventListener("hashchange", () => {
+  if (!location.hash) showHome();
+});
+function surfaceGeometry() {
+  const home = document.body.classList.contains("at-home");
+  if (home) document.body.classList.remove("at-home");
+  const r = canvas.getBoundingClientRect();
+  if (home) document.body.classList.add("at-home");
+  if (scene === "blank") {
+    const ratio = r.width / r.height,
+      w = Math.max(360, 440 * ratio),
+      h = Math.max(440, 360 / ratio);
+    return { x: (360 - w) / 2, y: (440 - h) / 2, w, h };
+  }
+  const bounds =
+    catalog.find((item) => item.id === scene)?.bounds ||
+    (scene === "hiccup-toothless-clean"
+      ? { w: 264, h: 400 }
+      : { w: 360, h: 440 });
+  const top = 64,
+    bottom = 24,
+    side = 16;
+  const scale = Math.min(
+    Math.max(1, r.width - side * 2) / bounds.w,
+    Math.max(1, r.height - top - bottom) / bounds.h,
+  );
+  const w = r.width / scale,
+    h = r.height / scale;
+  return {
+    x: (bounds.cx ?? 180) - w / 2,
+    y: (bounds.cy ?? 220) - h / 2 - (top - bottom) / (2 * scale),
+    w,
+    h,
+  };
+}
+let surface;
+function prepareCopy(copy) {
+  copy.setAttribute(
+    "viewBox",
+    `${surface.x} ${surface.y} ${surface.w} ${surface.h}`,
+  );
+  copy.setAttribute("preserveAspectRatio", "none");
+  copy.setAttribute("width", canvas.width);
+  copy.setAttribute("height", canvas.height);
+  const sky = copy.querySelector('[data-region="sky"]');
+  if (sky)
+    sky.setAttribute(
+      "d",
+      `M${surface.x} ${surface.y}h${surface.w}v${surface.h}h${-surface.w}Z`,
+    );
+  return copy;
+}
+function syncBackground() {
+  svg.style.background =
+    svg.querySelector('[data-region="sky"]')?.getAttribute("fill") || "white";
+}
+function buttons() {
+  $("undo").disabled = !canUndo(currentWork);
+  $("redo").disabled = !canRedo(currentWork);
+}
+function commitAction(action) {
+  record(currentWork, action);
+  buttons();
+  save();
+  checkpointWork();
+}
+function setTool(value) {
+  tool = value;
+  $("size").value = toolSizes[value === "eraser" ? "eraser" : "pen"];
+  syncSizes(tool);
+  canvas.style.pointerEvents = value === "fill" ? "none" : "auto";
+  ["fill", "pen", "rainbow", "eraser"].forEach((t) =>
+    $(t).classList.toggle("active", t === value),
+  );
+  $("fill").disabled = scene === "blank";
+  $("pen").classList.toggle("active", value === "pen" || value === "rainbow");
+  $("color-open").classList.toggle("rainbow", value === "rainbow");
+  $("rainbow-quick")?.classList.toggle("active", value === "rainbow");
+  $("rainbow-quick")?.setAttribute("aria-pressed", String(value === "rainbow"));
+  document
+    .querySelectorAll("#quick-colors [data-color]")
+    .forEach((b) =>
+      b.classList.toggle(
+        "active",
+        value !== "rainbow" && b.dataset.color === color,
+      ),
+    );
+}
+async function restore(s) {
+  artwork = await ensureScene(s.scene);
+  scene = s.scene;
+  canvas.style.objectFit = "fill";
+  surface = surfaceGeometry();
+  canvas.height = Math.round((720 * surface.h) / surface.w);
+  painter.resize();
+  svg.innerHTML = artwork.paint;
+  outlines.innerHTML = artwork.lines;
+  prepareCopy(svg);
+  prepareCopy(outlines);
+  s.fills.forEach(([id, c]) => {
+    const mapped =
+      s.assetVersion < 32
+        ? svg.querySelectorAll(`[data-previous-region="${id}"]`)
+        : [];
+    if (mapped.length) mapped.forEach((e) => e.setAttribute("fill", c));
+    else if (
+      !(
+        s.assetVersion < 32 &&
+        svg.querySelector("[data-previous-region]") &&
+        id !== "sky"
+      )
+    )
+      svg.querySelector(`[data-region="${id}"]`)?.setAttribute("fill", c);
+  });
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (s.pixels) {
+    const img = new Image();
+    const url =
+      s.pixels instanceof Blob ? URL.createObjectURL(s.pixels) : s.pixels;
+    img.src = url;
+    try {
+      await img.decode();
+    } finally {
+      if (s.pixels instanceof Blob) URL.revokeObjectURL(url);
+    }
+    if (s.surface) {
+      const scale = canvas.width / surface.w;
+      ctx.drawImage(
+        img,
+        (s.surface.x - surface.x) * scale,
+        (s.surface.y - surface.y) * scale,
+        s.surface.w * scale,
+        s.surface.h * scale,
+      );
+    } else if (scene === "blank") {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    } else {
+      const scale = Math.min(canvas.width / 720, canvas.height / 880);
+      ctx.drawImage(
+        img,
+        (canvas.width - 720 * scale) / 2,
+        (canvas.height - 880 * scale) / 2,
+        720 * scale,
+        880 * scale,
+      );
+    }
+  }
+  if ((s.assetVersion || 0) < 43) {
+    const oldCostume = {
+      "anna-simple": "cell20",
+      "elsa-simple": "cell36",
+      "moana-simple": "cell30",
+    }[scene];
+    const previous = oldCostume && s.fills.find(([id]) => id === oldCostume);
+    if (previous)
+      svg
+        .querySelector('[data-region^="simple-"][data-fill-group]')
+        ?.setAttribute("fill", previous[1]);
+  }
+  if (scene === "belle-simple" && s.assetVersion < 37) {
+    const rose = s.fills.find(([id]) => id === "simple-rose");
+    if (rose)
+      svg
+        .querySelectorAll('[data-fill-group="rose"]')
+        .forEach((el) => el.setAttribute("fill", rose[1]));
+  }
+  document
+    .querySelectorAll("[data-scene]")
+    .forEach((b) => b.classList.toggle("active", b.dataset.scene === scene));
+  syncBackground();
+  setTool(scene === "blank" && tool === "fill" ? "pen" : tool);
+  buttons();
+  await buildMasks();
+}
+function canvasBlob(node) {
+  return new Promise((resolve, reject) =>
+    node.toBlob(
+      (blob) =>
+        blob ? resolve(blob) : reject(Error("Unable to encode artwork")),
+      "image/png",
+    ),
+  );
+}
+let checkpointPending = false;
+async function checkpointWork() {
+  const lastCheckpoint = currentWork?.checkpoints?.at(-1)?.cursor || 0;
+  if (
+    checkpointPending ||
+    !currentWork ||
+    currentWork.cursor - lastCheckpoint < 20
+  )
+    return;
+  if (stroke || busy) {
+    scheduleSave();
+    return;
+  }
+  const work = currentWork,
+    revision = work.revision,
+    state = {
+      scene,
+      assetVersion: 44,
+      assetRevision: artwork.revision,
+      surface: { ...surface },
+      width: canvas.width,
+      height: canvas.height,
+      fills: [...svg.querySelectorAll("[data-region]")].map((el) => [
+        el.dataset.region,
+        el.getAttribute("fill"),
+      ]),
+    };
+  checkpointPending = true;
+  try {
+    state.pixels = await canvasBlob(canvas);
+    if (work !== currentWork || work.revision !== revision) return;
+    addCheckpoint(work, state);
+    await save();
+  } catch (error) {
+    console.warn("Checkpoint skipped", error);
+  } finally {
+    checkpointPending = false;
+    if (currentWork === work && work.revision !== revision) scheduleSave();
+  }
+}
+async function save() {
+  if (!ready || !studio || !editorLoaded || !currentWork) return;
+  try {
+    await studio.save(structuredClone(currentWork));
+    $("hint").textContent = "已保存到這台手機 ✦";
+  } catch {
+    $("hint").textContent = "儲存空間不足，請用「儲存」下載作品";
+  }
+}
+async function exportCanvas() {
+  const out = document.createElement("canvas");
+  out.width = canvas.width;
+  out.height = canvas.height;
+  const c = out.getContext("2d");
+  c.fillStyle = "white";
+  c.fillRect(0, 0, canvas.width, canvas.height);
+  async function layer(node) {
+    const copy = prepareCopy(node.cloneNode(true));
+    copy.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    const img = new Image();
+    img.src =
+      "data:image/svg+xml;charset=utf-8," +
+      encodeURIComponent(new XMLSerializer().serializeToString(copy));
+    await img.decode();
+    c.drawImage(img, 0, 0);
+  }
+  if (scene !== "blank") await layer(svg);
+  c.drawImage(canvas, 0, 0);
+  if (scene !== "blank") await layer(outlines);
+  return out;
+}
+async function keepArtwork() {
+  if (!ready || !editorLoaded || !currentWork) return;
+  if (
+    !currentWork.actions.length &&
+    !currentWork.base.pixels &&
+    currentWork.base.fills.every(([, c]) => c === "white")
+  ) {
+    await save();
+    return;
+  }
+  if (
+    currentWork.preview &&
+    currentWork.previewRevision === currentWork.revision
+  ) {
+    await save();
+    return;
+  }
+  const exported = await exportCanvas(),
+    thumb = document.createElement("canvas");
+  const scale = Math.min(1, 300 / exported.width, 300 / exported.height);
+  thumb.width = Math.round(exported.width * scale);
+  thumb.height = Math.round(exported.height * scale);
+  thumb.getContext("2d").drawImage(exported, 0, 0, thumb.width, thumb.height);
+  currentWork.preview = await canvasBlob(thumb);
+  currentWork.previewRevision = currentWork.revision;
+  await save();
+}
+function chooseColor(c) {
+  color = c;
+  $("color-preview").style.background = c;
+  document
+    .querySelectorAll("#palette button")
+    .forEach((b) => b.classList.toggle("active", b.dataset.color === c));
+  if (tool === "rainbow") setTool("pen");
+  document
+    .querySelectorAll("#quick-colors button[data-color]")
+    .forEach((b) => b.classList.toggle("active", b.dataset.color === c));
+  $("color-modal").close();
+}
+let regions;
+async function buildMasks() {
+  regions =
+    scene === "blank"
+      ? null
+      : await loadRegions(svg, artwork, canvas.width, canvas.height, surface);
+}
+function regionMask(id) {
+  return regions?.mask(id) || null;
+}
+function startRegion(p) {
+  return regions?.hit(p.x, p.y) || null;
+}
+let saveTimer;
+function pauseBackgroundWork() {
+  clearTimeout(saveTimer);
+}
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    if (stroke || busy) {
+      scheduleSave();
+      return;
+    }
+    save();
+    checkpointWork();
+  }, 350);
+}
+function paintRegion(key, c) {
+  const targets = key.startsWith("group:")
+    ? svg.querySelectorAll("[data-fill-group]")
+    : svg.querySelectorAll("[data-region]");
+  for (const el of targets)
+    if (
+      key.startsWith("group:")
+        ? el.dataset.fillGroup === key.slice(6)
+        : el.dataset.region === key
+    )
+      el.setAttribute("fill", c);
+  syncBackground();
+}
+svg.addEventListener("pointerdown", (e) => {
+  const region = e.target.closest("[data-region]");
+  if (!ready || busy || tool !== "fill" || !region) return;
+  const key = region.dataset.fillGroup
+    ? "group:" + region.dataset.fillGroup
+    : region.dataset.region;
+  const targets = region.dataset.fillGroup
+    ? [...svg.querySelectorAll("[data-fill-group]")].filter(
+        (el) => el.dataset.fillGroup === region.dataset.fillGroup,
+      )
+    : [region];
+  if (targets.every((el) => el.getAttribute("fill") === color)) return;
+  pauseBackgroundWork();
+  paintRegion(key, color);
+  commitAction({ type: "fill", region: key, color });
+});
+function point(e, r = stroke?.bounds || canvas.getBoundingClientRect()) {
+  return {
+    x: ((e.clientX - r.left) * canvas.width) / r.width,
+    y: ((e.clientY - r.top) * canvas.height) / r.height,
+  };
+}
+canvas.style.objectFit = "fill";
+function worldPoint(p) {
+  return [
+    Math.round((surface.x + (p.x * surface.w) / canvas.width) * 1000) / 1000,
+    Math.round((surface.y + (p.y * surface.h) / canvas.height) * 1000) / 1000,
+  ];
+}
+function pixelPoint(p) {
+  return {
+    x: ((p[0] - surface.x) * canvas.width) / surface.w,
+    y: ((p[1] - surface.y) * canvas.height) / surface.h,
+  };
+}
+function mark(p, previous) {
+  const action = stroke.action;
+  if (previous)
+    stroke.distance +=
+      (Math.hypot(p.x - previous.x, p.y - previous.y) * surface.w) /
+      canvas.width;
+  const c =
+    action.tool === "rainbow"
+      ? `hsl(${(action.hue + stroke.distance * 2) % 360} 85% 65%)`
+      : action.color;
+  painter.mark(
+    p,
+    previous,
+    stroke.width,
+    c,
+    action.tool === "eraser",
+    stroke.mask,
+  );
+}
+canvas.onpointerdown = (e) => {
+  if (!ready || busy || stroke || e.isPrimary === false) return;
+  const started = performance.now();
+  pauseBackgroundWork();
+  const bounds = canvas.getBoundingClientRect(),
+    p = point(e, bounds),
+    region = startRegion(p);
+  if (scene !== "blank" && !regions?.has(region)) {
+    scheduleSave();
+    return;
+  }
+  canvas.setPointerCapture(e.pointerId);
+  const width = (+$("size").value * canvas.width) / bounds.width;
+  const action = {
+    type: "stroke",
+    tool,
+    color,
+    region,
+    width: (width * surface.w) / canvas.width,
+    hue,
+    points: [worldPoint(p)],
+  };
+  hue = (hue + 30) % 360;
+  stroke = {
+    id: e.pointerId,
+    p,
+    region,
+    bounds,
+    width,
+    mask: region ? regionMask(region) : null,
+    action,
+    distance: 0,
+  };
+  mark(p);
+  if (new URLSearchParams(location.search).has("performance-qa")) {
+    console.info(
+      `first-stroke ${Math.round((performance.now() - started) * 100) / 100} ms`,
+    );
+  }
+};
+canvas.onpointermove = (e) => {
+  if (!stroke || stroke.id !== e.pointerId) return;
+  const samples = e.getCoalescedEvents?.();
+  for (const sample of samples?.length ? samples : [e]) {
+    const p = point(sample);
+    mark(p, stroke.p);
+    stroke.p = p;
+    stroke.action.points.push(worldPoint(p));
+  }
+};
+function finish(e) {
+  if (stroke?.id !== e.pointerId) return;
+  const action = stroke.action;
+  stroke = null;
+  commitAction(action);
+  if (canvas.hasPointerCapture(e.pointerId))
+    canvas.releasePointerCapture(e.pointerId);
+  refitEditor();
+}
+canvas.onpointerup = finish;
+canvas.onpointercancel = finish;
+async function replayWork(work) {
+  const checkpoint = replayStart(work);
+  await restore(checkpoint.state);
+  work.assetRevision = artwork.revision;
+  const savedTool = tool,
+    savedColor = color;
+  try {
+    for (let i = checkpoint.cursor; i < work.cursor; i++) {
+      const action = work.actions[i];
+      if (action.type === "fill") paintRegion(action.region, action.color);
+      else if (action.type === "clear") {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        svg
+          .querySelectorAll("[data-region]")
+          .forEach((el) => el.setAttribute("fill", "white"));
+        syncBackground();
+      } else if (action.type === "stroke") {
+        stroke = {
+          width: (action.width * canvas.width) / surface.w,
+          mask: action.region ? regionMask(action.region) : null,
+          action,
+          distance: 0,
+        };
+        let previous;
+        for (const wp of action.points) {
+          const p = pixelPoint(wp);
+          mark(p, previous);
+          previous = p;
+        }
+        stroke = null;
+      }
+      if (i % 10 === 9)
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+  } finally {
+    stroke = null;
+    setTool(savedTool);
+    color = savedColor;
+    buttons();
+  }
+}
+function showEditorError(error) {
+  console.error(error);
+  $("hint").textContent = /fetch|artwork|load|network/i.test(error.message)
+    ? "圖片暫時無法開啟，請連網或下載這個分類"
+    : "操作暫時沒有成功，請重新嘗試";
+}
+async function runEditor(action) {
+  if (busy || stroke) return;
+  busy = true;
+  $("paper").setAttribute("aria-busy", "true");
+  pauseBackgroundWork();
+  try {
+    await action();
+  } catch (error) {
+    showEditorError(error);
+  } finally {
+    busy = false;
+    $("paper").setAttribute("aria-busy", "false");
+    buttons();
+    await refitEditor();
+  }
+}
+let busy = false;
+async function travel(direction) {
+  return runEditor(async () => {
+    if (!currentWork) return;
+    const before = currentWork.cursor;
+    if (!moveCursor(currentWork, direction)) return;
+    try {
+      await replayWork(currentWork);
+      await save();
+    } catch (error) {
+      currentWork.cursor = before;
+      await replayWork(currentWork);
+      throw error;
+    }
+  });
+}
+$("undo").onclick = () => travel(-1);
+$("redo").onclick = () => travel(1);
+async function switchWork(next) {
+  await keepArtwork();
+  if (currentWork && !studio) {
+    workCache.delete(currentWork.scene);
+    workCache.set(currentWork.scene, currentWork);
+    if (workCache.size > 5) workCache.delete(workCache.keys().next().value);
+  }
+  const previous = currentWork;
+  currentWork = next;
+  try {
+    await replayWork(next);
+  } catch (error) {
+    currentWork = previous;
+    if (previous) await replayWork(previous);
+    throw error;
+  }
+  setTool("pen");
+  await save();
+  document.body.classList.remove("at-home");
+  location.hash = "draw";
+}
+$("home-grid").onclick = async (e) => {
+  const b = e.target.closest("button");
+  if (!b || busy || !ready) return;
+  if (b.dataset.category) {
+    homeCategory = b.dataset.category;
+    $("difficulty").value = "simple";
+    renderHome();
+    return;
+  }
+  if (!b.dataset.scene) return;
+  await runEditor(async () => {
+    if (!editorLoaded && pendingWork?.scene !== b.dataset.scene) {
+      // Open the requested sheet directly. Loading the default cat first would
+      // prevent a downloaded princess pack from opening on a fresh offline visit.
+      currentWork =
+        (await studio?.forScene(b.dataset.scene)) ||
+        createWork(b.dataset.scene);
+      await replayWork(currentWork);
+      editorLoaded = true;
+      pendingWork = null;
+      setTool("pen");
+      document.body.classList.remove("at-home");
+      location.hash = "draw";
+      await save();
+      return;
+    }
+    await ensureCurrent();
+    if (b.dataset.scene !== scene) {
+      const next =
+        (await studio?.forScene(b.dataset.scene)) ||
+        workCache.get(b.dataset.scene) ||
+        createWork(b.dataset.scene);
+      await switchWork(next);
+    } else {
+      setTool("pen");
+      document.body.classList.remove("at-home");
+      location.hash = "draw";
+    }
+  });
+};
+$("clear").onclick = () =>
+  runEditor(async () => {
+    await keepArtwork();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    svg
+      .querySelectorAll("[data-region]")
+      .forEach((e) => e.setAttribute("fill", "white"));
+    syncBackground();
+    commitAction({ type: "clear" });
+    await save();
+  });
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob),
+    a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+$("download").onclick = () =>
+  runEditor(async () => {
+    downloadBlob(await canvasBlob(await exportCanvas()), "小小畫室.png");
+    await keepArtwork();
+    $("hint").textContent = "作品已儲存，也可以下載圖片";
+  });
+let albumURLs = [];
+$("gallery").onclick = () =>
+  runEditor(async () => {
+    if (!ready || !studio) {
+      $("hint").textContent = "相簿無法保存，請下載圖片";
+      return;
+    }
+    await keepArtwork();
+    const all = await studio.list();
+    $("artworks").replaceChildren();
+    for (const art of all) {
+      const img = new Image();
+      img.alt = art.editable
+        ? catalog.find((i) => i.id === art.scene)?.name || "我的畫作"
+        : "以前的畫作";
+      const hasContent =
+        art.preview ||
+        art.actions?.length ||
+        art.base?.pixels ||
+        art.base?.fills?.some(([, c]) => c !== "white");
+      const picture =
+        art.preview ||
+        art.image ||
+        (art.editable && hasContent ? artworkURL(art.scene) : null);
+      if (!picture) continue;
+      img.src =
+        picture instanceof Blob ? URL.createObjectURL(picture) : picture;
+      if (picture instanceof Blob) albumURLs.push(img.src);
+      if (art.editable) {
+        const button = document.createElement("button");
+        button.setAttribute("aria-label", "繼續畫：" + img.alt);
+        button.append(img);
+        button.onclick = () =>
+          runEditor(async () => {
+            const work = await studio.get(art.id);
+            if (!work) throw Error("Work missing");
+            await ensureCurrent();
+            await switchWork(work);
+            $("album").close();
+          });
+        $("artworks").append(button);
+      } else {
+        const link = document.createElement("a");
+        link.href = img.src;
+        link.download = "小小畫室-" + art.id + ".png";
+        link.append(img);
+        $("artworks").append(link);
+      }
+    }
+    $("album").showModal();
+  });
+$("close").onclick = () => $("album").close();
+$("album").addEventListener("close", () => {
+  for (const url of albumURLs) URL.revokeObjectURL(url);
+  albumURLs = [];
+});
+async function init() {
+  renderHome();
+  try {
+    studio = await openStudio();
+    pendingWork = await studio.active();
+    if (pendingWork) scene = pendingWork.scene;
+    ready = true;
+  } catch (error) {
+    console.error(error);
+    ready = true;
+    $("hint").textContent = "此瀏覽器無法保存，畫完請下載圖片";
+  }
+}
+let updatePending = false;
+function refreshAfterUpdate() {
+  if (
+    !updatePending ||
+    !ready ||
+    busy ||
+    stroke ||
+    !document.body.classList.contains("at-home")
+  )
+    return;
+  updatePending = false;
+  save().finally(() => location.reload());
+}
+init().then(async () => {
+  if (location.hash === "#draw")
+    await runEditor(async () => {
+      await ensureCurrent();
+      setTool("pen");
+      document.body.classList.remove("at-home");
+    });
+  refreshAfterUpdate();
+});
+function flushDraft() {
+  if (stroke) finish({ pointerId: stroke.id });
+  save();
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) flushDraft();
+});
+window.addEventListener("pagehide", flushDraft);
+if (
+  "serviceWorker" in navigator &&
+  (!["localhost", "127.0.0.1"].includes(location.hostname) ||
+    new URLSearchParams(location.search).has("offline-qa"))
+) {
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hadController) {
+      updatePending = true;
+      refreshAfterUpdate();
+    }
+  });
+  navigator.serviceWorker
+    .register("./sw.js", { updateViaCache: "none" })
+    .then((r) => r.update())
+    .catch(() => {});
 }
 
-async function refitEditor(){if(!ready||!editorLoaded||document.body.classList.contains('at-home')||busy||stroke)return;const next=surfaceGeometry();if(Math.abs(next.w-surface.w)<.01&&Math.abs(next.h-surface.h)<.01&&Math.abs(next.x-surface.x)<.01&&Math.abs(next.y-surface.y)<.01)return;busy=true;try{const s=snapshot(true);await restore(s);await save()}finally{busy=false}}
-window.addEventListener('resize',refitEditor);
+async function refitEditor() {
+  if (
+    !ready ||
+    !editorLoaded ||
+    document.body.classList.contains("at-home") ||
+    busy ||
+    stroke
+  )
+    return;
+  const next = surfaceGeometry();
+  if (
+    Math.abs(next.w - surface.w) < 0.01 &&
+    Math.abs(next.h - surface.h) < 0.01 &&
+    Math.abs(next.x - surface.x) < 0.01 &&
+    Math.abs(next.y - surface.y) < 0.01
+  )
+    return;
+  busy = true;
+  $("paper").setAttribute("aria-busy", "true");
+  try {
+    await replayWork(currentWork);
+    await save();
+  } catch (error) {
+    showEditorError(error);
+  } finally {
+    busy = false;
+    $("paper").setAttribute("aria-busy", "false");
+    buttons();
+  }
+}
+window.addEventListener("resize", refitEditor);
 
-for(const c of colors.slice(0,6)){const b=document.createElement('button');b.dataset.color=c;b.style.setProperty('--swatch',c);b.setAttribute('aria-label','使用'+['粉紅','橘','黃','綠','藍','紫'][colors.indexOf(c)]);b.onclick=()=>chooseColor(c);$('quick-colors').append(b)}const custom=document.createElement('button');custom.id='rainbow-quick';custom.className='custom-color';custom.setAttribute('aria-label','彩虹筆');custom.setAttribute('aria-pressed','false');custom.innerHTML='<span class="rainbow-swatch"></span>';custom.onclick=()=>setTool('rainbow');$('quick-colors').append(custom);
-$('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else $('hint').textContent='這台手機請加入主畫面使用全螢幕'}catch{$('hint').textContent='此瀏覽器暫時無法進入全螢幕'}};
-document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const action=b.dataset.action;$('tool-modal').hidePopover();$(action).click()});
+const offlineSelect = $("offline-category");
+for (const [id, name] of categories) {
+  const option = document.createElement("option");
+  option.value = id;
+  option.textContent = name;
+  offlineSelect.append(option);
+}
+async function showOfflineStatus() {
+  try {
+    const status = await categoryStatus(offlineSelect.value);
+    $("offline-status").textContent =
+      `可離線使用 ${status.ready} / ${status.total} 張`;
+    $("offline-download").disabled = status.ready === status.total;
+  } catch {
+    $("offline-status").textContent = "此瀏覽器無法保存離線圖片";
+  }
+}
+offlineSelect.onchange = showOfflineStatus;
+$("offline-download").onclick = async () => {
+  const button = $("offline-download");
+  button.disabled = true;
+  offlineSelect.disabled = true;
+  try {
+    await downloadCategory(offlineSelect.value, (ready, total) => {
+      $("offline-status").textContent = `下載中 ${ready} / ${total} 張`;
+    });
+    await showOfflineStatus();
+  } catch (error) {
+    $("offline-status").textContent = error.message;
+    button.disabled = false;
+  } finally {
+    offlineSelect.disabled = false;
+  }
+};
+$("about-modal").addEventListener("toggle", (e) => {
+  if (e.newState === "open") showOfflineStatus();
+});
 
-new MutationObserver(()=>{const message=$('hint').textContent;if(/失敗|不足|無法|沒有成功|暫時|已儲存/.test(message)){$('notice').textContent=message;$('notice').hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('notice').hidden=true,4500)}}).observe($('hint'),{childList:true});let noticeTimer;
+installUI({ colors, toolSizes, getTool: () => tool, chooseColor, setTool });

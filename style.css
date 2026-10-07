@@ -31,3 +31,7 @@ dialog{border:1px solid var(--border);border-radius:24px;padding:24px;max-width:
 @media(min-width:768px){#home-grid[data-view=categories]{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}.home-hero{padding:8px 0 32px}.home-hero h1{font-size:34px}#home-grid[data-view=categories] button[data-category],#home-grid[data-view=categories] .blank-card{height:190px;padding:20px 16px 16px}#home-grid[data-view=categories] img{width:120px;height:120px}#home-grid[data-view=categories] .blank-card img{width:86px;height:120px}#home-grid[data-view=categories] button span{font-size:16px}}
 
 #home-grid [data-theme="6"]{background:#f4f7e9}
+
+/* The top ink layer protects outlines; paint and brush share semantic regions. */
+#outlines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;user-select:none}
+.offline-controls{padding:8px 0 16px;border-bottom:1px solid var(--border)}.offline-controls select{padding:0 12px;border:1px solid var(--border);width:100%;margin-bottom:8px}.offline-controls button{width:100%;background:#e8f7fc}.offline-controls p{font-size:14px;color:var(--muted);margin:12px 0 0}#artworks button{padding:0;overflow:hidden;background:var(--bg)}

@@ -1,6 +1,91 @@
-const CACHE='little-art-v44';const FILES=["./", "./index.html", "./style.css?v=44", "./app.js?v=44", "./manifest.json", "./icon.svg", "./assets/ui/eraser.svg", "./assets/ui/fullscreen.svg", "./assets/ui/home.svg", "./assets/ui/clear.svg", "./assets/ui/pen.svg", "./assets/ui/settings.svg", "./assets/ui/download.svg", "./assets/ui/category-kitty.png", "./assets/ui/gallery.svg", "./assets/ui/back.svg", "./assets/ui/category-dolphin.png", "./assets/ui/category-peppa.png", "./assets/ui/category-snow-white.png", "./assets/ui/redo.svg", "./assets/ui/more.svg", "./assets/ui/category-winger.png", "./assets/ui/category-gabby.png", "./assets/ui/sun.png", "./assets/ui/undo.svg", "./assets/ui/fill.svg", "./assets/ui/pastel-corners.png", "./assets/ui/category-toothless.png"];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES.map(url=>new Request(url,{cache:'reload'})))));self.skipWaiting()});self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{
- if(e.request.method!=='GET'||new URL(e.request.url).origin!==location.origin)return;
- const navigation=e.request.mode==='navigate';
- async function network(){const response=await fetch(e.request,navigation?{cache:'no-cache'}:{});if(response.ok){const copy=response.clone();e.waitUntil(caches.open(CACHE).then(cache=>cache.put(e.request,copy)).catch(()=>{}))}return response}
- e.respondWith((async()=>{const cache=await caches.open(CACHE);if(!navigation){const hit=await cache.match(e.request);if(hit)return hit}try{return await network()}catch{return await cache.match(e.request)||(navigation?await cache.match('./index.html'):Response.error())}})());
+importScripts("./offline-shell.js");
+const SHELL = `little-art-studio-shell-v${SHELL_VERSION}`;
+const ART = "little-art-studio-art-v1";
+const ROOT = new URL("./", self.location.href);
+function inside(request) {
+  return new URL(request.url).href.startsWith(ROOT.href);
+}
+function artwork(request) {
+  return (
+    new URL(request.url).pathname.startsWith(
+      ROOT.pathname + "assets/coloring/",
+    ) && !new URL(request.url).pathname.endsWith("/catalog.js")
+  );
+}
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches
+      .open(SHELL)
+      .then((cache) =>
+        cache.addAll(
+          SHELL_FILES.map((url) => new Request(url, { cache: "reload" })),
+        ),
+      )
+      .then(() => self.skipWaiting()),
+  );
+});
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      const art = await caches.open(ART);
+      // Copy runtime artwork from pre-module releases without changing other apps' caches.
+      for (const key of await caches.keys()) {
+        if (/^little-art-v\d+$/.test(key)) {
+          const old = await caches.open(key);
+          for (const request of await old.keys())
+            if (inside(request) && artwork(request)) {
+              const response = await old.match(request);
+              if (response) await art.put(request, response);
+            }
+        }
+        if (/^little-art-studio-shell-v\d+$/.test(key) && key !== SHELL)
+          await caches.delete(key);
+        // Old little-art-v caches remain as compatibility backups.
+      }
+      await self.clients.claim();
+    })(),
+  );
+});
+async function fetchNavigation(request, event) {
+  const controller = new AbortController(),
+    timer = setTimeout(() => controller.abort(), 2500);
+  try {
+    const response = await fetch(request, {
+      cache: "no-cache",
+      signal: controller.signal,
+    });
+    if (response.ok)
+      event.waitUntil(
+        caches
+          .open(SHELL)
+          .then((cache) => cache.put(request, response.clone())),
+      );
+    if (response.ok) return response;
+  } catch {
+  } finally {
+    clearTimeout(timer);
+  }
+  return (
+    (await (await caches.open(SHELL)).match("./index.html")) || Response.error()
+  );
+}
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET" || !inside(event.request)) return;
+  if (event.request.mode === "navigate") {
+    event.respondWith(fetchNavigation(event.request, event));
+    return;
+  }
+  event.respondWith(
+    (async () => {
+      const cache = await caches.open(artwork(event.request) ? ART : SHELL);
+      const hit = await cache.match(event.request);
+      if (hit) return hit;
+      const response = await fetch(event.request);
+      if (response.ok)
+        event.waitUntil(
+          cache.put(event.request, response.clone()).catch(() => {}),
+        );
+      return response;
+    })(),
+  );
 });

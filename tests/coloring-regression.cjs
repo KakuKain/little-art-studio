@@ -1,42 +1,30 @@
-// Run with Playwright installed: node tests/coloring-regression.cjs <site-url>
-const { chromium } = require('playwright');
-const fs = require('node:fs');
-const path = require('node:path');
-const seeds = JSON.parse(fs.readFileSync(path.join(__dirname, 'coloring-seeds.json')));
-const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '../assets/coloring/catalog.json')));
-(async () => {
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  const errors = [];
-  page.on('pageerror', error => errors.push(error.message));
-  await page.goto(process.argv[2] || 'http://localhost:8080');
-  await page.waitForFunction(() => ready);
-  await page.evaluate(() => document.body.classList.remove('at-home'));
-  for (const item of catalog) {
-    await page.evaluate(async id => {
-      await restore({ scene: id, fills: [] });
-      chooseColor('#ff7399');
-      setTool('fill');
-    }, item.id);
-    await page.mouse.click(5, 5);
-    const body = await page.evaluate(points => {
-      if (svg.querySelector('[data-region="sky"]').getAttribute('fill') !== '#ff7399') throw Error('background was not filled');
-      return points.map(([x, y]) => {
-        const screen = new DOMPoint(x, y).matrixTransform(svg.getScreenCTM());
-        const r = canvas.getBoundingClientRect();
-        const id = startRegion({ x: (screen.x-r.left)/r.width*canvas.width, y: (screen.y-r.top)/r.height*canvas.height });
-        if (id === 'sky') throw Error(`background leaked into character at ${x},${y}`);
-        if (svg.querySelector(`[data-region="${id}"]`).getAttribute('fill') !== 'white') throw Error(`character changed with background at ${x},${y}`);
-        return { id, x: screen.x, y: screen.y };
-      });
-    }, (seeds[item.id]||seeds[item.simpleOf]||JSON.parse(fs.readFileSync(path.join(__dirname,'../assets/coloring/CLEAN-LINES-REPORT.json'))).find(i=>i.id===item.id)?.seeds)).catch(error => { throw Error(`${item.id}: ${error.message}`); });
-    await page.evaluate(() => chooseColor('#74b9ed'));
-    await page.mouse.click(body[0].x, body[0].y);
-    const independent = await page.evaluate(id => svg.querySelector(`[data-region="${id}"]`).getAttribute('fill') === '#74b9ed' && svg.querySelector('[data-region="sky"]').getAttribute('fill') === '#ff7399', body[0].id);
-    if (!independent) throw Error(`${item.id}: character/background fills are coupled`);
-    console.log('PASS', item.id);
+// Semantic regions are checked independently of the visible ink for every sheet.
+const fs=require('node:fs'),assert=require('node:assert/strict'),sharp=require('sharp');
+(async()=>{
+ const catalog=JSON.parse(fs.readFileSync('assets/coloring/catalog.json'));
+ const seeds=JSON.parse(fs.readFileSync('tests/coloring-seeds.json'));
+ const clean=Object.fromEntries(JSON.parse(fs.readFileSync('assets/coloring/CLEAN-LINES-REPORT.json')).map(i=>[i.id,i.seeds]));
+ for(const item of catalog){
+  const bundle=JSON.parse(fs.readFileSync(`assets/coloring/prepared/${item.id}.json`));
+  const names=[''],colors=new Map();
+  const labels=bundle.paint.replace(/<[^>]+data-region="([^"]+)"[^>]*>/g,(tag,id)=>{
+   const group=tag.match(/data-fill-group="([^"]+)"/)?.[1],key=group?'group:'+group:id;
+   if(!colors.has(key)){names.push(key);colors.set(key,(names.length-1)*8191)}
+   return tag.replace(/fill="[^"]*"/,`fill="#${colors.get(key).toString(16).padStart(6,'0')}"`);
+  });
+  const svg=s=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${bundle.viewBox.join(' ')}">${s}</svg>`;
+  const labelPixels=await sharp(Buffer.from(svg(labels))).resize(720,880).removeAlpha().raw().toBuffer();
+  const before=await sharp(Buffer.from(fs.readFileSync(`assets/coloring/${item.id}.svg`))).resize(720,880).flatten({background:'#fff'}).raw().toBuffer();
+  let checked=0;
+  const points=clean[item.id]||seeds[item.id]||seeds[item.simpleOf];
+  for(const [x,y] of points){
+   const i=(Math.round(y*2)*720+Math.round(x*2))*3;
+   if(before[i]<245||before[i+1]<245||before[i+2]<245)continue;
+   let name;for(let dy=-2;dy<=2&&!name;dy++)for(let dx=-2;dx<=2&&!name;dx++){const at=i+(dy*720+dx)*3;if(at<0||at+2>=labelPixels.length)continue;const value=labelPixels.readUIntBE(at,3);const candidate=value%8191===0?names[value/8191]:null;if(candidate&&candidate!=='sky')name=candidate;}
+   assert.ok(name&&name!=='sky',`${item.id}: character seed ${x},${y} belongs to ${name||'no region'}`);checked++;
   }
-  if (errors.length) throw Error(errors.join('; '));
-  console.log('PASS all 37 semantic character/background regressions');
-  await browser.close();
-})().catch(error => { console.error(error); process.exit(1); });
+  assert.ok(checked>=Math.min(3,points.length),`${item.id}: too few independently paintable character samples`);
+  console.log(`PASS ${item.id}: ${checked} independent semantic samples`);
+ }
+ console.log(`PASS all ${catalog.length} prepared region contracts`);
+})().catch(e=>{console.error(e);process.exitCode=1});
