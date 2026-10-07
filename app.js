@@ -1,5 +1,5 @@
-import { installUI, syncSizes } from "./modules/ui.js?v=46";
-import { categoryStatus, downloadCategory } from "./modules/offline.js?v=46";
+import { installUI, syncSizes, setStatus } from "./modules/ui.js?v=47";
+import { categoryStatus, downloadCategory } from "./modules/offline.js?v=47";
 import {
   createWork,
   record,
@@ -8,12 +8,12 @@ import {
   moveCursor,
   replayStart,
   addCheckpoint,
-} from "./modules/history.js?v=46";
-import { openStudio } from "./modules/storage.js?v=46";
-import { createPainter } from "./modules/painter.js?v=46";
-import { ART_CATALOG, ART_METADATA } from "./assets/coloring/catalog.js?v=46";
-import { loadArtwork } from "./modules/assets.js?v=46";
-import { loadRegions } from "./modules/regions.js?v=46";
+} from "./modules/history.js?v=47";
+import { openStudio } from "./modules/storage.js?v=47";
+import { createPainter } from "./modules/painter.js?v=47";
+import { ART_CATALOG, ART_METADATA } from "./assets/coloring/catalog.js?v=47";
+import { loadArtwork } from "./modules/assets.js?v=47";
+import { loadRegions } from "./modules/regions.js?v=47";
 const $ = (id) => document.getElementById(id),
   canvas = $("drawing"),
   ctx = canvas.getContext("2d"),
@@ -47,7 +47,7 @@ let scene = "kitty",
   currentWork,
   ready = false;
 const blankPreview = '<img src="assets/ui/pen.svg" alt="">';
-const ASSET_VERSION='46';
+const ASSET_VERSION='47';
 const artworkURL = (id) =>
   `assets/coloring/${id}.svg?rev=${ART_METADATA[id]?.revision || ASSET_VERSION}`;
 let catalog = ART_CATALOG,
@@ -401,9 +401,9 @@ async function save() {
   if (!ready || !studio || !editorLoaded || !currentWork) return;
   try {
     await studio.save(structuredClone(currentWork));
-    $("hint").textContent = "已保存到這台手機 ✦";
+    setStatus("已保存到這台手機 ✦");
   } catch {
-    $("hint").textContent = "儲存空間不足，請用「儲存」下載作品";
+    setStatus("儲存空間不足，請用「儲存」下載作品", { notify: true });
   }
 }
 async function exportCanvas() {
@@ -666,9 +666,10 @@ async function replayWork(work) {
 }
 function showEditorError(error) {
   console.error(error);
-  $("hint").textContent = /fetch|artwork|load|network/i.test(error.message)
+  const message = /fetch|artwork|load|network/i.test(error.message)
     ? "圖片暫時無法開啟，請連網或下載這個分類"
     : "操作暫時沒有成功，請重新嘗試";
+  setStatus(message, { notify: true });
 }
 async function runEditor(action) {
   if (busy || stroke) return;
@@ -788,13 +789,13 @@ $("download").onclick = () =>
   runEditor(async () => {
     downloadBlob(await canvasBlob(await exportCanvas()), "小小畫室.png");
     await keepArtwork();
-    $("hint").textContent = "作品已儲存，也可以下載圖片";
+    setStatus("作品已儲存，也可以下載圖片", { notify: true });
   });
 let albumURLs = [];
 $("gallery").onclick = () =>
   runEditor(async () => {
     if (!ready || !studio) {
-      $("hint").textContent = "相簿無法保存，請下載圖片";
+      setStatus("相簿無法保存，請下載圖片", { notify: true });
       return;
     }
     await keepArtwork();
@@ -856,11 +857,10 @@ async function init() {
   } catch (error) {
     console.error(error);
     ready = true;
-    $("hint").textContent = ["storage-blocked", "storage-timeout"].includes(
-      error.code,
-    )
+    const message = ["storage-blocked", "storage-timeout"].includes(error.code)
       ? error.message
       : "此瀏覽器無法保存，畫完請下載圖片";
+    setStatus(message, { notify: true });
   }
 }
 let updatePending = false;

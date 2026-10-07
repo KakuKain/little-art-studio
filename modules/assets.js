@@ -1,5 +1,5 @@
-import { ART_METADATA } from "../assets/coloring/catalog.js?v=46";
-import { legacyScenes } from "./legacy-scenes.js?v=46";
+import { ART_METADATA } from "../assets/coloring/catalog.js?v=47";
+import { legacyScenes } from "./legacy-scenes.js?v=47";
 
 const cache = new Map();
 export async function loadArtwork(id) {

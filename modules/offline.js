@@ -1,4 +1,4 @@
-import { ART_CATALOG, ART_METADATA } from "../assets/coloring/catalog.js?v=46";
+import { ART_CATALOG, ART_METADATA } from "../assets/coloring/catalog.js?v=47";
 export const ART_CACHE = "little-art-studio-art-v1";
 export function artworkURLs(id) {
   const meta = ART_METADATA[id];

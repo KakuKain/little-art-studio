@@ -1,4 +1,16 @@
 const $ = (id) => document.getElementById(id);
+let noticeTimer;
+export function setStatus(message, { notify = false } = {}) {
+  $("hint").textContent = message;
+  if (!notify) return;
+  $("notice").textContent = message;
+  $("notice").hidden = false;
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(
+    () => ($("notice").hidden = true),
+    Math.max(4500, message.length * 180),
+  );
+}
 export function syncSizes(tool) {
   $("size").disabled = tool === "fill";
   $("size").setAttribute(
@@ -144,9 +156,9 @@ export function installUI({
       if (document.fullscreenElement) await document.exitFullscreen();
       else if (document.documentElement.requestFullscreen)
         await document.documentElement.requestFullscreen();
-      else $("hint").textContent = "這台手機請加入主畫面使用全螢幕";
+      else setStatus("這台手機請加入主畫面使用全螢幕", { notify: true });
     } catch {
-      $("hint").textContent = "此瀏覽器暫時無法進入全螢幕";
+      setStatus("此瀏覽器暫時無法進入全螢幕", { notify: true });
     }
   };
   document.querySelectorAll("[data-action]").forEach(
@@ -157,17 +169,6 @@ export function installUI({
         $(action).click();
       }),
   );
-
-  new MutationObserver(() => {
-    const message = $("hint").textContent;
-    if (/失敗|不足|無法|沒有成功|暫時|已儲存/.test(message)) {
-      $("notice").textContent = message;
-      $("notice").hidden = false;
-      clearTimeout(noticeTimer);
-      noticeTimer = setTimeout(() => ($("notice").hidden = true), 4500);
-    }
-  }).observe($("hint"), { childList: true });
-  let noticeTimer;
 
   $("fill").onclick = () => setTool("fill");
   $("eraser").onclick = () => setTool("eraser");
