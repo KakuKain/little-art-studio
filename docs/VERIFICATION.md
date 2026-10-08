@@ -1,6 +1,6 @@
 # V48 架構修繕驗收
 
-2026-10-08。本機驗收完成；尚未推上 GitHub，CI 與正式網站尚未驗證。
+2026-10-08。本機驗收、GitHub Actions 檢查與線上驗證完成。
 
 ## 自動檢查
 
@@ -23,7 +23,14 @@ Claude Code 內建瀏覽器，本機 Python 伺服器；CSS viewport 1024×768�
 - 資料升級：在獨立來源（127.0.0.1）由頁面開啟資料庫 v3，升級未被阻擋；本頁顯示「畫室已在其他分頁更新，回到首頁會重新整理」，之後填色不再誤報儲存空間不足。
 - `index.html`、`style.css` 格式化前後，五個畫面所有元素位置在 375×740 與 1024×768 均無差異。
 
-未驗證：實體手機、GitHub Actions 實際執行、GitHub Pages 線上版本。
+## 發布
+
+- GitHub Pages 來源改為 GitHub Actions；推送 main 後由工作流程檢查並發布。
+- 程式 commit：bc32d718628a0167250331f4584bcd86b6b851bd。工作流程 run 37753637768：Ubuntu 上 `npm run build` 無差異、`npm test` 通過，deploy 成功。
+- 正式網址：https://kakukain.github.io/little-art-studio/?v=48。線上 DOM 確認 app.js?v=48、Service Worker 已註冊、七個分類由資料產生。
+- 線上選公主：縮圖為 WebP（360 寬）；開啟安娜・簡單有 56 個語意區域，披風填色後復原變白、下一步可用；console 無錯誤。
+
+未驗證：實體手機。
 
 ---
 
