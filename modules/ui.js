@@ -1,3 +1,4 @@
+import { PALETTE, QUICK_COLORS } from "./palette.js?v=47";
 const $ = (id) => document.getElementById(id);
 let noticeTimer;
 export function setStatus(message, { notify = false } = {}) {
@@ -18,40 +19,15 @@ export function syncSizes(tool) {
     tool === "eraser" ? "橡皮擦粗細" : "鉛筆粗細",
   );
 }
-export function installUI({
-  colors,
-  toolSizes,
-  getTool,
-  chooseColor,
-  setTool,
-}) {
-  colors.forEach((c, i) => {
+export function installUI({ toolSizes, getTool, chooseColor, setTool }) {
+  for (const { color: c, name } of PALETTE) {
     const b = document.createElement("button");
     b.dataset.color = c;
     b.style.background = c;
-    b.setAttribute(
-      "aria-label",
-      [
-        "粉紅",
-        "橘",
-        "黃",
-        "綠",
-        "藍",
-        "紫",
-        "淡粉",
-        "淡綠",
-        "棕",
-        "黑",
-        "白",
-        "紅",
-        "金黃",
-        "深綠",
-        "深藍",
-      ][i],
-    );
+    b.setAttribute("aria-label", name);
     b.onclick = () => chooseColor(c);
     $("palette").append(b);
-  });
+  }
   $("palette").firstChild.classList.add("active");
   $("color-open").onclick = () => $("color-modal").showModal();
   document
@@ -132,14 +108,11 @@ export function installUI({
     $("tool-modal").hidePopover();
     $("about-modal").showModal();
   };
-  for (const c of colors.slice(0, 6)) {
+  for (const { color: c, name } of QUICK_COLORS) {
     const b = document.createElement("button");
     b.dataset.color = c;
     b.style.setProperty("--swatch", c);
-    b.setAttribute(
-      "aria-label",
-      "使用" + ["粉紅", "橘", "黃", "綠", "藍", "紫"][colors.indexOf(c)],
-    );
+    b.setAttribute("aria-label", "使用" + name);
     b.onclick = () => chooseColor(c);
     $("quick-colors").append(b);
   }

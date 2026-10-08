@@ -1,7 +1,7 @@
 // Only the stroke's dirty rectangle is composited, not the entire canvas.
-export function createPainter(canvas) {
-  const ctx = canvas.getContext("2d"),
-    ink = document.createElement("canvas");
+// Painters that never draw at the same time may share one ink buffer.
+export function createPainter(canvas, ink = document.createElement("canvas")) {
+  const ctx = canvas.getContext("2d");
   const inkCtx = ink.getContext("2d");
   return {
     resize() {

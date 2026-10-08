@@ -9,7 +9,6 @@ for file in [root / 'app.js', *sorted((root / 'modules').glob('*.js'))]:
     text = file.read_text()
     text = re.sub(r"(from ['\"])(\.{1,2}/[^'\"?]+\.js)(?:\?v=\d+)?(['\"])",
                   lambda m: f'{m[1]}{m[2]}?v={version}{m[3]}', text)
-    text = re.sub(r"const ASSET_VERSION\s*=\s*['\"]\d+['\"]", f"const ASSET_VERSION='{version}'", text)
     file.write_text(text)
 html = root / 'index.html'
 html.write_text(re.sub(r'\?v=\d+', f'?v={version}', html.read_text()))

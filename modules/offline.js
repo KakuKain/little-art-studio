@@ -1,11 +1,10 @@
 import { ART_CATALOG, ART_METADATA } from "../assets/coloring/catalog.js?v=47";
 export const ART_CACHE = "little-art-studio-art-v1";
+const ROOT = new URL("../", import.meta.url);
+// An offline sheet needs its layered bundle and its grid thumbnail.
 export function artworkURLs(id) {
   const meta = ART_METADATA[id];
-  return [
-    `${meta.bundle}?rev=${meta.revision}`,
-    `assets/coloring/${id}.svg?rev=${meta.revision}`,
-  ];
+  return [`${meta.bundle}?rev=${meta.revision}`, meta.thumb];
 }
 export async function categoryStatus(category) {
   const items = ART_CATALOG.filter((i) => i.category === category);
@@ -49,4 +48,34 @@ export async function downloadCategory(category, progress) {
   }
   await Promise.all([worker(), worker()]);
   return { ready: completed, total: items.length };
+}
+// Deletes artwork a newer cached copy has replaced. An outdated copy stays
+// until its replacement arrives, because it can still open the sheet offline.
+// Retired sheets are kept: old drafts may still open them.
+export async function pruneArtCache() {
+  if (!("caches" in globalThis)) return 0;
+  const cache = await caches.open(ART_CACHE),
+    requests = await cache.keys(),
+    present = new Set(requests.map((request) => request.url));
+  let removed = 0;
+  for (const request of requests) {
+    const url = new URL(request.url);
+    if (url.origin !== ROOT.origin || !url.pathname.startsWith(ROOT.pathname))
+      continue;
+    const match = url.pathname
+      .slice(ROOT.pathname.length)
+      .match(
+        /^assets\/coloring\/(?:prepared\/([a-z0-9-]+)\.json|thumbs\/([a-z0-9-]+)\.webp|([a-z0-9-]+)\.svg)$/,
+      );
+    const id = match && (match[1] || match[2] || match[3]),
+      meta = id && ART_METADATA[id];
+    if (!meta) continue;
+    const [bundle, thumb] = artworkURLs(id).map((u) => new URL(u, ROOT).href);
+    if (url.href === bundle || url.href === thumb) continue;
+    // Source SVGs served as thumbnails and offline fallbacks before V48;
+    // the current bundle replaces both.
+    const replacement = match[2] ? thumb : bundle;
+    if (present.has(replacement) && (await cache.delete(request))) removed++;
+  }
+  return removed;
 }
