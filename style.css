@@ -550,6 +550,7 @@ h3 {
 #artworks img {
   display: block;
   width: 100%;
+  height: auto;
   border: 1px solid var(--border);
   border-radius: 16px;
 }
