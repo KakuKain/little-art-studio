@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { IDBFactory } from "fake-indexeddb";
+import { IDBFactory, IDBKeyRange } from "fake-indexeddb";
+globalThis.IDBKeyRange ??= IDBKeyRange;
 import { openStudio } from "../modules/storage.js";
 import { createWork, record } from "../modules/history.js";
 function legacyDB(indexed) {
@@ -105,6 +106,64 @@ test("blocked upgrades report recovery and close a late connection without losin
   assert.equal((await recovered.active()).scene, "anna-simple");
   assert.ok((await recovered.list()).some((art) => art.id === 123));
   recovered.close();
+});
+test("the album reads light summaries, including works saved before summaries existed", async () => {
+  const indexed = new IDBFactory();
+  let studio = await openStudio(indexed);
+  const drawn = createWork("anna-simple"),
+    empty = createWork("kitty");
+  record(drawn, { type: "fill", region: "sky", color: "pink" });
+  await studio.save(drawn);
+  await studio.save(empty);
+  studio.close();
+  // A work written by an older release has no summary yet.
+  const older = createWork("elsa-simple");
+  older.preview = new Blob(["thumb"]);
+  await new Promise((resolve, reject) => {
+    const request = indexed.open("little-art-studio", 2);
+    request.onsuccess = () => {
+      const tx = request.result.transaction("works", "readwrite");
+      tx.objectStore("works").put(older);
+      tx.oncomplete = () => {
+        request.result.close();
+        resolve();
+      };
+      tx.onerror = () => reject(tx.error);
+    };
+  });
+  studio = await openStudio(indexed);
+  const list = await studio.list();
+  assert.equal(list.length, 3);
+  for (const item of list) {
+    assert.equal(item.editable, true);
+    assert.equal(item.actions, undefined, "summaries omit strokes");
+  }
+  const byScene = Object.fromEntries(list.map((i) => [i.scene, i]));
+  assert.equal(byScene["anna-simple"].hasContent, true);
+  assert.equal(byScene.kitty.hasContent, false);
+  assert.ok(byScene["elsa-simple"].preview instanceof Blob);
+  assert.equal((await studio.get(older.id)).id, older.id);
+  assert.equal((await studio.list()).length, 3, "migration runs once");
+  studio.close();
+});
+test("a newer tab's upgrade closes this connection with an explainable code, not a storage-full error", async () => {
+  const indexed = new IDBFactory();
+  let notified = 0;
+  const studio = await openStudio(indexed, { onClose: () => notified++ });
+  await studio.save(createWork("kitty"));
+  const upgraded = await new Promise((resolve, reject) => {
+    const request = indexed.open("little-art-studio", 3);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+    request.onblocked = () => reject(Error("upgrade must not stay blocked"));
+  });
+  assert.equal(notified, 1);
+  assert.equal(studio.closed, true);
+  await assert.rejects(studio.save(createWork("kitty")), {
+    code: "storage-closed",
+  });
+  await assert.rejects(studio.list(), { code: "storage-closed" });
+  upgraded.close();
 });
 test("an open request stuck behind another upgrade cannot block startup indefinitely", async () => {
   const request = {

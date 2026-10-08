@@ -11,9 +11,31 @@ function transaction(db, store, mode, action) {
     tx.onabort = () => reject(tx.error);
   });
 }
+// The album reads a small summary stored beside each work, so opening it does
+// not load every stroke and checkpoint into memory.
+const SUMMARY = "summary:";
+function summarize(work) {
+  return {
+    id: work.id,
+    scene: work.scene,
+    updatedAt: work.updatedAt,
+    preview: work.preview || null,
+    hasContent: !!(
+      work.preview ||
+      work.actions.length ||
+      work.base.pixels ||
+      work.base.fills.some(([, color]) => color !== "white")
+    ),
+  };
+}
+function closedError() {
+  const error = new Error("畫室已在其他分頁更新，回到首頁會重新整理");
+  error.code = "storage-closed";
+  return error;
+}
 export async function openStudio(
   indexed = indexedDB,
-  { timeoutMs = 3000 } = {},
+  { timeoutMs = 3000, onClose = () => {} } = {},
 ) {
   const db = await new Promise((resolve, reject) => {
     let settled = false;
@@ -59,9 +81,19 @@ export async function openStudio(
     req.onerror = () => fail(req.error);
     req.onblocked = () => fail(unavailable("storage-blocked"));
   });
-  db.onversionchange = () => db.close();
-  const get = (store, key) =>
-    transaction(db, store, "readonly", (s) => s.get(key));
+  let closed = false;
+  // Another tab is upgrading the database. Release it, and fail later requests
+  // with a code the interface can explain instead of reporting a full disk.
+  db.onversionchange = () => {
+    closed = true;
+    db.close();
+    onClose();
+  };
+  const run = (store, mode, action) =>
+    closed
+      ? Promise.reject(closedError())
+      : transaction(db, store, mode, action);
+  const get = (store, key) => run(store, "readonly", (s) => s.get(key));
   const studio = {
     async active() {
       const id = await get("state", "activeId");
@@ -95,17 +127,19 @@ export async function openStudio(
     },
     async save(work) {
       if (!validWork(work)) throw new Error("Invalid editable work");
+      if (closed) throw closedError();
       return new Promise((resolve, reject) => {
         const tx = db.transaction(["state", "works"], "readwrite");
         tx.objectStore("works").put(work);
         tx.objectStore("state").put(work.id, "activeId");
+        tx.objectStore("state").put(summarize(work), SUMMARY + work.id);
         tx.oncomplete = resolve;
         tx.onerror = () => reject(tx.error);
         tx.onabort = () => reject(tx.error);
       });
     },
     async forScene(scene) {
-      const all = await transaction(db, "works", "readonly", (s) =>
+      const all = await run("works", "readonly", (s) =>
         s.index("scene").getAll(scene),
       );
       return (
@@ -115,20 +149,36 @@ export async function openStudio(
     },
     get: (id) => get("works", id),
     async list() {
-      const works = await transaction(db, "works", "readonly", (s) =>
-        s.getAll(),
+      const ids = new Set(
+        await run("works", "readonly", (s) => s.getAllKeys()),
       );
-      const legacy = await transaction(db, "art", "readonly", (s) =>
-        s.getAll(),
-      );
+      const summaries = (
+        await run("state", "readonly", (s) =>
+          s.getAll(IDBKeyRange.bound(SUMMARY, SUMMARY + "\uffff")),
+        )
+      ).filter((summary) => ids.has(summary.id));
+      const known = new Set(summaries.map((summary) => summary.id));
+      // Works saved before summaries existed are summarized once.
+      for (const id of ids) {
+        if (known.has(id)) continue;
+        const work = await get("works", id);
+        if (!validWork(work)) continue;
+        const summary = summarize(work);
+        await run("state", "readwrite", (s) => s.put(summary, SUMMARY + id));
+        summaries.push(summary);
+      }
+      const legacy = await run("art", "readonly", (s) => s.getAll());
       return [
-        ...works.filter(validWork).map((work) => ({ ...work, editable: true })),
+        ...summaries.map((summary) => ({ ...summary, editable: true })),
         ...legacy.map((art) => ({
           ...art,
           updatedAt: art.id,
           editable: false,
         })),
       ].sort((a, b) => b.updatedAt - a.updatedAt);
+    },
+    get closed() {
+      return closed;
     },
     close: () => db.close(),
   };
