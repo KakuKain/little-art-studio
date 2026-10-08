@@ -1,0 +1,9 @@
+[
+  { "id": "princess", "name": "公主", "cover": "assets/ui/category-snow-white.png" },
+  { "id": "dragons", "name": "馴龍高手", "cover": "assets/ui/category-toothless.png" },
+  { "id": "rescue", "name": "救援騎士", "cover": "assets/ui/category-winger.png" },
+  { "id": "peppa", "name": "佩佩豬", "cover": "assets/ui/category-peppa.png" },
+  { "id": "gabby", "name": "蓋比娃娃屋", "cover": "assets/ui/category-gabby.png" },
+  { "id": "ocean", "name": "海洋生物", "cover": "assets/ui/category-dolphin.png" },
+  { "id": "land", "name": "陸地生物", "cover": "assets/ui/category-kitty.png" }
+]

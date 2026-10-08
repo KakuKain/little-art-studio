@@ -51,6 +51,10 @@
     "category": "dragons",
     "replaces": "hiccup-toothless",
     "source": "User-provided ColoringBook.ai coloring page",
+    "bounds": {
+      "w": 264,
+      "h": 400
+    },
     "difficulty": "detailed"
   },
   {

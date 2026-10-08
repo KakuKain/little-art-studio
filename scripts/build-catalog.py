@@ -8,6 +8,16 @@ import xml.etree.ElementTree as ET
 root = Path(__file__).resolve().parents[1]
 folder = root / 'assets/coloring'
 items = json.loads((folder / 'catalog.json').read_text())
+categories = json.loads((folder / 'categories.json').read_text())
+thumbs = json.loads((folder / 'thumbs/manifest.json').read_text())
+category_ids = [c['id'] for c in categories]
+assert len(category_ids) == len(set(category_ids)), 'Duplicate category ID'
+for category in categories:
+    assert category.get('name'), f"Missing category name: {category['id']}"
+    assert (root / category['cover']).is_file(), f"Missing category cover: {category['id']}"
+    # The home card opens a category only when it has a simple sheet to start with.
+    assert any(i['category'] == category['id'] and i['difficulty'] == 'simple' for i in items), \
+        f"Category without a simple sheet: {category['id']}"
 seen = set()
 prepared = folder / 'prepared'
 prepared.mkdir(exist_ok=True)
@@ -39,6 +49,10 @@ for item in items:
     assert ident not in seen, f'Duplicate catalog ID: {ident}'
     seen.add(ident)
     assert item.get('name') and item.get('category'), f'Missing metadata: {ident}'
+    assert item['category'] in category_ids, f'Unknown category: {ident}'
+    assert item.get('difficulty') in ('simple', 'detailed'), f'Invalid difficulty: {ident}'
+    assert thumbs.get(ident) and (folder / f'thumbs/{ident}.webp').is_file(), \
+        f'Missing thumbnail (run node scripts/build-thumbnails.cjs): {ident}'
     svg = ET.parse(folder / f'{ident}.svg').getroot()
     box = list(map(float, svg.attrib['viewBox'].split()))
     assert len(box) == 4 and box[2] > 0 and box[3] > 0, f'Invalid viewBox: {ident}'
@@ -92,16 +106,22 @@ for item in items:
             name = element.get('id')
             line_xml = line_xml.replace(f'id="{name}"', f'id="outline-{name}"')
             line_xml = line_xml.replace(f'url(#{name})', f'url(#outline-{name})')
-    raw = (folder / f'{ident}.svg').read_bytes()
-    revision = hashlib.sha256(raw + Path(__file__).read_bytes()).hexdigest()[:16]
-    payload = {'schemaVersion': 1, 'id': ident, 'revision': revision,
+    content = {'schemaVersion': 1, 'id': ident,
                'viewBox': box, 'paint': children_xml(paints), 'lines': line_xml,
                'regions': [{'id': e.get('data-region'), 'group': e.get('data-fill-group')}
                            for e in svg.iter() if 'data-region' in e.attrib]}
+    # The revision follows the generated bundle, so editing this script only
+    # changes download URLs (and offline packs) when the output changes.
+    revision = hashlib.sha256(json.dumps(content, ensure_ascii=False, sort_keys=True)
+                              .encode()).hexdigest()[:16]
+    payload = {'schemaVersion': 1, 'id': ident, 'revision': revision, **content}
     (prepared / f'{ident}.json').write_text(json.dumps(payload, ensure_ascii=False, separators=(',', ':')) + '\n')
-    metadata[ident] = {'revision': revision, 'bundle': f'assets/coloring/prepared/{ident}.json', 'regionCount': len(regions)}
+    metadata[ident] = {'revision': revision, 'bundle': f'assets/coloring/prepared/{ident}.json',
+                       'thumb': f'assets/coloring/thumbs/{ident}.webp?rev={thumbs[ident]}',
+                       'regionCount': len(regions)}
 (folder / 'catalog.js').write_text(
     '// Generated from catalog.json by scripts/build-catalog.py. Do not edit.\n'
+    'export const ART_CATEGORIES=' + json.dumps(categories, ensure_ascii=False, separators=(',', ':')) + ';\n'
     'export const ART_CATALOG=' + json.dumps(items, ensure_ascii=False, separators=(',', ':')) + ';\n'
     'export const ART_METADATA=' + json.dumps(metadata, ensure_ascii=False, separators=(',', ':')) + ';\n'
 )
