@@ -13,7 +13,17 @@
 * {
   box-sizing: border-box;
 }
+/* App feel: no page bounce or pull-to-refresh, no pinch or double-tap zoom,
+   no text selection, tap flash or image drag on long press. */
+html,
 body {
+  overscroll-behavior: none;
+}
+body {
+  touch-action: pan-x pan-y;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
   margin: 0;
   color: var(--text);
   font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
@@ -41,7 +51,14 @@ button {
     background 120ms ease;
 }
 button:active {
-  transform: scale(0.97);
+  transform: scale(0.95);
+}
+img {
+  -webkit-user-drag: none;
+}
+#home,
+dialog {
+  overscroll-behavior: contain;
 }
 /* Screens fade in like an app. Showing an element restarts its animation.
    The drawing surface only fades: moving it would offset an early stroke. */

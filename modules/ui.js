@@ -29,6 +29,8 @@ export function installUI({ toolSizes, getTool, chooseColor, setTool }) {
     $("palette").append(b);
   }
   $("palette").firstChild.classList.add("active");
+  // A long press on a picture or button must not open the browser's menu.
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
   $("color-open").onclick = () => $("color-modal").showModal();
   document
     .querySelectorAll(".dismiss")
