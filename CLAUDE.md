@@ -12,7 +12,7 @@ Requires Node.js ≥ 22 and Python 3.
 
 ```sh
 npm ci
-npm run build          # thumbnails → validate catalog + prepared bundles → stamp release version
+npm run build          # thumbnails → catalog + prepared bundles → stamp release version (+ Prettier)
 npm test               # full suite (node:test unit tests + .cjs artwork/renderer regressions)
 npm run serve          # python http.server on :8088
 npm run format         # Prettier (format:check to verify); see .prettierignore
@@ -35,8 +35,21 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 
 - `scripts/build-thumbnails.cjs` generates `assets/coloring/thumbs/<id>.webp` plus `manifest.json`. The manifest stores source hashes, so unchanged thumbnails are never re-encoded. This keeps CI's no-diff check platform-independent.
 - `scripts/build-catalog.py` generates `assets/coloring/catalog.js` (`ART_CATEGORIES`, `ART_CATALOG`, `ART_METADATA`) and `assets/coloring/prepared/<id>.json` from `catalog.json`, `categories.json`, and the source SVGs.
-- `scripts/prepare-release.py` generates `offline-shell.js` (the SW shell file list). It also rewrites every `?v=N` in `index.html` and every relative `from "./x.js"` import in `app.js` and `modules/*.js`. Keep imports relative and static so the regex stamps them.
-- To release a new version, bump `version` in `release.json` (the single source of the UI version), then run `npm run build`. Without a bump, existing service workers keep serving the old `?v=N` files. New files in `modules/` and new `.svg`/`.png` files in `assets/ui/` join the offline shell automatically.
+- `scripts/prepare-release.py` generates `offline-shell.js` (the SW shell file list and cache name). It also stamps the release version into several places:
+  - every `?v=…` in `index.html`
+  - every relative `from "./x.js"` import in `app.js` and `modules/*.js` (keep imports relative and static so the regex stamps them)
+  - the `<span data-release>` shown in the about dialog
+  - the `version` in `package.json` and `package-lock.json`
+
+## Versioning and releases
+
+- The version is a semantic version string in `release.json`, its single source of truth. Edit `release.json` only, then run `npm run build`; the script rejects anything else.
+  - During beta it is `1.0.0-beta.N`. Bump N for every release.
+  - After `1.0.0`: `1.0.x` for fixes, `1.x.0` for features, `x.0.0` for incompatible changes.
+- Every deployed change needs a bump. Without one, installed service workers keep serving the old `?v=…` files.
+- Release commits are titled `Release <version>` and tagged `v<version>`.
+- V1–V49 were plain internal numbers; their shells (`little-art-studio-shell-v49`) are still cleaned up by prefix.
+- New files in `modules/` and new `.svg`/`.png` files in `assets/ui/` join the offline shell automatically.
 
 ## Architecture
 

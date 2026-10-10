@@ -1,13 +1,13 @@
 {
   "name": "little-art-studio",
-  "version": "49.0.0",
+  "version": "1.0.0-beta.1",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "build": "node scripts/build-thumbnails.cjs && python3 scripts/build-catalog.py && python3 scripts/prepare-release.py",
+    "build": "node scripts/build-thumbnails.cjs && python3 scripts/build-catalog.py && python3 scripts/prepare-release.py && prettier --write --log-level warn app.js modules index.html",
     "test": "node --test tests/*.test.js && node tests/asset-layers.cjs && node tests/svg-background.cjs && node tests/coloring-regression.cjs && node tests/continuous-costume.cjs && node tests/gliding-claws.cjs && node tests/simplified-art.cjs && node tests/home-cache.cjs && node tests/drawing-performance.cjs",
     "serve": "python3 -m http.server 8088",
     "format": "prettier --write .",

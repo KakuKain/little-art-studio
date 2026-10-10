@@ -1075,6 +1075,11 @@ h3 {
   pointer-events: none;
   user-select: none;
 }
+.app-version {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: var(--muted);
+}
 .install-controls,
 .offline-controls {
   padding: 8px 0 16px;

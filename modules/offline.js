@@ -1,4 +1,7 @@
-import { ART_CATALOG, ART_METADATA } from "../assets/coloring/catalog.js?v=49";
+import {
+  ART_CATALOG,
+  ART_METADATA,
+} from "../assets/coloring/catalog.js?v=1.0.0-beta.1";
 export const ART_CACHE = "little-art-studio-art-v1";
 const ROOT = new URL("../", import.meta.url);
 // An offline sheet needs its layered bundle and its grid thumbnail.

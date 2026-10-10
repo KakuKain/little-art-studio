@@ -38,7 +38,8 @@ self.addEventListener("activate", (event) => {
               if (response) await art.put(request, response);
             }
         }
-        if (/^little-art-studio-shell-v\d+$/.test(key) && key !== SHELL)
+        // Shells are named by release: numbered (v49) before 1.0.0-beta.1.
+        if (key.startsWith("little-art-studio-shell-v") && key !== SHELL)
           await caches.delete(key);
         // Old little-art-v caches remain as compatibility backups.
       }

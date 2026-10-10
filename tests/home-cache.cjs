@@ -94,6 +94,8 @@ async function request(path, mode = "cors") {
   );
   store("unrelated-app");
   store("little-art-studio-shell-v1");
+  // Shells were numbered (v49) before semantic versions (v1.0.0-beta.1).
+  store("little-art-studio-shell-v49");
   handlers.activate({ waitUntil: (p) => (job = p) });
   await job;
   assert.equal(
@@ -106,8 +108,15 @@ async function request(path, mode = "cors") {
   );
   assert.ok(stores.has("unrelated-app"), "must not delete other apps caches");
   assert.ok(
-    !stores.has("little-art-studio-shell-v1"),
+    !stores.has("little-art-studio-shell-v1") &&
+      !stores.has("little-art-studio-shell-v49"),
     "retire only our old shells",
+  );
+  assert.ok(
+    stores.has(
+      "little-art-studio-shell-v" + vm.runInContext("SHELL_VERSION", context),
+    ),
+    "keep the current shell",
   );
   assert.equal(
     await (await request(prepared)).text(),

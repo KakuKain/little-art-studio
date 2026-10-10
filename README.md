@@ -30,7 +30,21 @@ npm run format
 
 一般 localhost 開發不啟用 Service Worker，避免測試到舊版程式；加上 `?offline-qa=1` 可驗證離線流程。正式 GitHub Pages 正常啟用。
 
-`release.json` 是介面版本的唯一來源。修改版本後執行 `npm run build`，產生統一的模組網址與離線介面清單。`assets/coloring/catalog.json` 是圖片目錄的唯一來源，難度與角色範圍也記錄在此；首頁分類、名稱與封面記錄在 `assets/coloring/categories.json`。
+`assets/coloring/catalog.json` 是圖片目錄的唯一來源，難度與角色範圍也記錄在此；首頁分類、名稱與封面記錄在 `assets/coloring/categories.json`。
+
+## 版本
+
+採語意化版本（SemVer）`主版號.次版號.修訂號`。正式版之前是測試版，格式為 `1.0.0-beta.N`。
+
+| 變更 | 測試版期間 | 正式版之後 |
+|---|---|---|
+| 修正錯誤 | 遞增 N：`1.0.0-beta.2` | 遞增修訂號：`1.0.1` |
+| 新增功能 | 遞增 N：`1.0.0-beta.3` | 遞增次版號：`1.1.0`，修訂號歸零 |
+| 不相容的變更（例如舊作品無法遷移） | 遞增 N | 遞增主版號：`2.0.0` |
+
+測試版完成後發布 `1.0.0`（可先發 `1.0.0-rc.1` 候選版）。版本只改 `release.json` 的 `version`，再執行 `npm run build`，會同步 `package.json`、`package-lock.json`、模組網址、離線快取名稱，以及「設定與資訊」顯示的版本。每次發布都要更新版本，已安裝的 App 才會下載新檔案。發布的 commit 標上同名 tag（例如 `v1.0.0-beta.1`）。
+
+作品資料格式（`workSchemaVersion`）與素材格式（`assetSchemaVersion`）各自獨立，不跟介面版本一起變動。V49 以前使用內部流水號（V1–V49）；`1.0.0-beta.1` 是第一個語意化版本。
 
 ## 結構
 

@@ -1,3 +1,21 @@
+# 1.0.0-beta.1 像 App 的體驗（Android）與語意化版本
+
+2026-10-10。本機驗收；Android 實機安裝與手勢尚未驗證。第一個語意化版本；V49 以前為內部流水號，開發中的 V50 未發布，內容併入此版。
+
+- 版本：`release.json` 為 `1.0.0-beta.1`；`npm run build` 同步 package.json、package-lock.json、模組 `?v=`、index.html 與資訊頁顯示、Service Worker 快取名稱。新增的 release 測試檢查各處一致與版本格式；格式檢查擋下 `50`、`1.0.0-beta`、`v1.0.0` 等寫法。Service Worker 測試確認舊的流水號快取（v49）與更早的快取都會清除、目前版本的快取保留。
+
+- `npm test` 成功（31 項單元測試及全部回歸）。導覽與安裝屬於 DOM 行為，以下以瀏覽器 Android 手機模擬（375×812、Android UA）驗證。
+- Manifest：192、512 與 maskable 512 PNG 圖示皆可載入且尺寸正確；maskable 圖示的鉛筆位於 40% 安全區內，以圓形與圓角方形裁切檢視。
+- 手感：body 的 touch-action 為 `pan-x pan-y`（無縮放）、overscroll 為 `none`、user-select 為 `none`；長按圖片的 contextmenu 被取消。
+- 返回：分類 → 圖片 → 返回到分類（捲動位置保留）→ 返回到首頁（depth 0）。回選圖箭頭回分類、回分類箭頭回首頁、回首頁按鈕從畫布直接到第一層。圖片載入中按返回，載入完成後停在首頁。在畫布頁重新整理後回到第一筆紀錄並顯示首頁。
+- 卡住回歸：按住畫布時返回，300ms 內顯示分類頁，之後可開啟其他圖片。
+- 轉場：先以 View Transitions 實作時，轉場被中止（`Transition was aborted because of invalid state`）會延後畫面狀態切換，按住畫布時返回後 800ms 仍顯示畫布。改為同步切換畫面、以 CSS 動畫淡入，問題消失。
+- 安裝：此測試瀏覽器不發出 `beforeinstallprompt`，顯示選單安裝說明。以模擬事件驗證：Chrome 橫幅被取消、出現「安裝小小畫家」按鈕；按下後收到 `appinstalled`，按鈕隱藏並顯示「已安裝」。
+
+未驗證：Android 實機的安裝、開啟畫面、返回手勢與 standalone 顯示。
+
+---
+
 # V49 彩虹筆漸層、進入網站與上一頁
 
 本機驗收：彩虹筆 2026-10-08，進入網站與上一頁 2026-10-10。
