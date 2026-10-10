@@ -33,6 +33,7 @@ import {
 } from "./modules/renderer.js?v=49";
 import { createScheduler } from "./modules/scheduler.js?v=49";
 import { PALETTE } from "./modules/palette.js?v=49";
+import { installAppSupport } from "./modules/install.js?v=49";
 const $ = (id) => document.getElementById(id),
   canvas = $("drawing"),
   ctx = canvas.getContext("2d"),
@@ -895,3 +896,4 @@ $("about-modal").addEventListener("toggle", (e) => {
 });
 
 installUI({ toolSizes, getTool: () => tool, chooseColor, setTool });
+installAppSupport();

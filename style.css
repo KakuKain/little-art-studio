@@ -1075,6 +1075,7 @@ h3 {
   pointer-events: none;
   user-select: none;
 }
+.install-controls,
 .offline-controls {
   padding: 8px 0 16px;
   border-bottom: 1px solid var(--border);
@@ -1085,10 +1086,16 @@ h3 {
   width: 100%;
   margin-bottom: 8px;
 }
+.install-controls button,
 .offline-controls button {
   width: 100%;
   background: #e8f7fc;
 }
+.install-controls[hidden],
+.install-controls button[hidden] {
+  display: none;
+}
+.install-controls p,
 .offline-controls p {
   font-size: 14px;
   color: var(--muted);

@@ -1,1 +1,40 @@
-{"name":"小小畫家","short_name":"小小畫家","start_url":"./","scope":"./","display":"standalone","background_color":"#f7fafc","theme_color":"#f7fafc","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]}
+{
+  "id": "./",
+  "name": "小小畫家",
+  "short_name": "小小畫家",
+  "description": "給 3–6 歲小朋友的著色與畫畫 App，不需登入、沒有廣告，可離線使用。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7fafc",
+  "theme_color": "#f7fafc",
+  "categories": ["kids", "education", "entertainment"],
+  "icons": [
+    {
+      "src": "assets/ui/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/ui/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/ui/app-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
