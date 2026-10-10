@@ -12,6 +12,8 @@ import {
   strokeColor,
   pixelPlacement,
 } from "../modules/renderer.js";
+import { createPainter } from "../modules/painter.js";
+import { createCanvas } from "@napi-rs/canvas";
 
 const stroke = (
   color,
@@ -98,15 +100,50 @@ test("strokes and rainbow colors replay identically at another canvas size", () 
     small.map((m) => m[3]),
     large.map((m) => m[3]),
   );
-  assert.deepEqual(
-    small.map((m) => m[3]),
-    ["hsl(40 85% 65%)", "hsl(140 85% 65%)", "hsl(240 85% 65%)"],
-  );
+  const hue = (stop) => +stop[1].match(/hsl\(([\d.]+)/)[1];
+  const [dot, first, second] = small.map((m) => m[3]);
+  assert.equal(dot, "hsl(40 85% 65%)", "the first point paints a dot");
+  assert.deepEqual([hue(first[0]), hue(first.at(-1))], [40, 140]);
+  assert.deepEqual(second[0], [0, first.at(-1)[1]], "segments join seamlessly");
+  assert.equal(hue(second.at(-1)), 240);
+  for (const stops of [first, second])
+    for (let i = 1; i < stops.length; i++)
+      assert.ok(Math.abs(hue(stops[i]) - hue(stops[i - 1])) <= 15);
   assert.equal(small[0][2], 9);
   assert.equal(large[0][2], 18);
-  assert.equal(small[0][1], null, "the first point paints a dot");
+  assert.equal(small[0][1], null);
   assert.deepEqual(small[1][1], { x: 0, y: 0 });
   assert.equal(strokeColor({ tool: "eraser", color: "#fff" }, 99), "#fff");
+});
+
+test("one long rainbow segment is a saturated gradient, not a solid block", () => {
+  const canvas = createCanvas(400, 60),
+    painter = createPainter(canvas, createCanvas(400, 60));
+  painter.resize();
+  const action = { ...stroke(), tool: "rainbow", hue: 0, width: 20 },
+    view = { surface: { x: 0, y: 0, w: 400, h: 60 }, width: 400, height: 60 },
+    pen = strokePen(painter, action, view);
+  // Only two samples, as a fast swipe on a slow device produces.
+  pen({ x: 20, y: 30 });
+  pen({ x: 380, y: 30 });
+  const pixels = canvas.getContext("2d").getImageData(0, 0, 400, 60).data;
+  for (const x of [65, 110, 155, 245, 290, 335]) {
+    const at = (30 * 400 + x) * 4,
+      [r, g, b] = [0, 1, 2].map((k) => pixels[at + k] / 255),
+      max = Math.max(r, g, b),
+      min = Math.min(r, g, b);
+    let h =
+      max === r
+        ? ((g - b) / (max - min)) % 6
+        : max === g
+          ? (b - r) / (max - min) + 2
+          : (r - g) / (max - min) + 4;
+    h = (h * 60 + 360) % 360;
+    const expected = ((x - 20) * 2) % 360,
+      gap = Math.min(Math.abs(h - expected), 360 - Math.abs(h - expected));
+    assert.ok(gap < 12, `x=${x}: hue ${h.toFixed(1)}, expected ${expected}`);
+    assert.ok(max - min > 0.3, `x=${x} must stay saturated`);
+  }
 });
 
 test("checkpoint rasters return to the same SVG position", () => {

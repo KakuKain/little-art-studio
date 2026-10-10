@@ -15,19 +15,36 @@ export function planReplay(work) {
     strokes: live.filter((action) => action.type === "stroke"),
   };
 }
+// The rainbow pen turns 2° of hue per SVG unit travelled.
+const rainbowHue = (action, distance) => action.hue + distance * 2;
+const hsl = (hue) => `hsl(${hue % 360} 85% 65%)`;
 export function strokeColor(action, distance) {
   return action.tool === "rainbow"
-    ? `hsl(${(action.hue + distance * 2) % 360} 85% 65%)`
+    ? hsl(rainbowHue(action, distance))
     : action.color;
+}
+// Gradient stops for one rainbow segment. Canvas gradients interpolate in RGB,
+// which turns grey across large hue gaps, so stops are at most 15° apart.
+export function rainbowStops(action, from, to) {
+  const start = rainbowHue(action, from),
+    end = rainbowHue(action, to),
+    steps = Math.max(1, Math.ceil(Math.abs(end - start) / 15));
+  return Array.from({ length: steps + 1 }, (_, i) => [
+    i / steps,
+    hsl(start + ((end - start) * i) / steps),
+  ]);
 }
 // Returns a function that extends the stroke to each pixel point it receives.
 // Rainbow hue advances with the distance travelled in SVG units, so a replay
-// at another size reproduces the same colors.
+// at another size reproduces the same colors. Each rainbow segment is a
+// gradient from the previous segment's end color, so sparse pointer samples
+// (fast strokes) still blend instead of showing solid color blocks.
 export function strokePen(painter, action, view, mask = null) {
   const width = (action.width * view.width) / view.surface.w;
   let previous = null,
     distance = 0;
   return (p) => {
+    const before = distance;
     if (previous)
       distance +=
         (Math.hypot(p.x - previous.x, p.y - previous.y) * view.surface.w) /
@@ -36,7 +53,9 @@ export function strokePen(painter, action, view, mask = null) {
       p,
       previous,
       width,
-      strokeColor(action, distance),
+      action.tool === "rainbow" && previous
+        ? rainbowStops(action, before, distance)
+        : strokeColor(action, distance),
       action.tool === "eraser",
       mask,
     );

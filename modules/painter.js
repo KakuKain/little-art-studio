@@ -1,3 +1,12 @@
+// A color is a CSS color or gradient stops [[offset, color], …] along the segment.
+function paintFor(ctx, color, from, p) {
+  if (typeof color === "string") return color;
+  // A gradient between identical points paints nothing; use the end color.
+  if (from.x === p.x && from.y === p.y) return color.at(-1)[1];
+  const gradient = ctx.createLinearGradient(from.x, from.y, p.x, p.y);
+  for (const [offset, stop] of color) gradient.addColorStop(offset, stop);
+  return gradient;
+}
 // Only the stroke's dirty rectangle is composited, not the entire canvas.
 // Painters that never draw at the same time may share one ink buffer.
 export function createPainter(canvas, ink = document.createElement("canvas")) {
@@ -24,7 +33,7 @@ export function createPainter(canvas, ink = document.createElement("canvas")) {
       inkCtx.clip();
       inkCtx.clearRect(x, y, w, h);
       inkCtx.globalCompositeOperation = "source-over";
-      inkCtx.strokeStyle = inkCtx.fillStyle = color;
+      inkCtx.strokeStyle = inkCtx.fillStyle = paintFor(inkCtx, color, from, p);
       inkCtx.lineWidth = width;
       inkCtx.lineCap = inkCtx.lineJoin = "round";
       inkCtx.beginPath();
