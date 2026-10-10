@@ -143,40 +143,57 @@ function renderHome() {
   grid.append(label(blank, "自由畫畫"));
 }
 $("difficulty").onchange = renderHome;
+// Screens are history entries, so Android's back gesture steps from the
+// editor to its category, then home, and only then leaves the app. The URL
+// never changes, so every visit and reload starts at home.
+let navigation = 0;
+const screen = () => history.state || { screen: "home", depth: 0 };
+function pushScreen(state) {
+  history.pushState({ ...state, depth: screen().depth + 1 }, "");
+}
+function goHome() {
+  const depth = screen().depth;
+  if (depth > 0) history.go(-depth);
+  else showHome(null);
+}
 $("category-back").onclick = () => {
-  homeCategory = null;
-  renderHome();
+  if (screen().screen === "category") history.back();
+  else showHome(null);
 };
 $("editor-back").onclick = () => {
   if (scheduler.busy || stroke) return;
-  showHome();
-  historyBack();
+  if (screen().screen === "editor") history.back();
+  else showHome();
+};
+$("home-back").onclick = () => {
+  if (scheduler.busy || stroke) return;
+  goHome();
 };
 $("settings-open").onclick = () => $("about-modal").showModal();
-function showHome() {
+function showHome(category = homeCategory) {
   // A stroke still pressed when the editor closes (a back gesture that began
   // on the canvas) never receives its pointerup and would block every tap.
   if (stroke) finish({ pointerId: stroke.id });
+  if (category !== homeCategory) {
+    homeCategory = category;
+    if (category) $("difficulty").value = "simple";
+    renderHome();
+  }
   document.body.classList.add("at-home");
   save();
   refreshAfterUpdate();
 }
 function showEditor() {
+  if (screen().screen !== "editor")
+    pushScreen({ screen: "editor", category: homeCategory });
   document.body.classList.remove("at-home");
-  location.hash = "draw";
 }
-$("home-back").onclick = () => {
-  if (scheduler.busy || stroke) return;
-  homeCategory = null;
-  renderHome();
-  showHome();
-  if (location.hash) historyBack();
-};
-function historyBack() {
-  window.history.replaceState(null, "", location.pathname + location.search);
-}
-window.addEventListener("hashchange", () => {
-  if (!location.hash) showHome();
+window.addEventListener("popstate", () => {
+  navigation++;
+  const state = screen();
+  if (state.screen === "editor" && editorLoaded && currentWork)
+    document.body.classList.remove("at-home");
+  else showHome(state.category || null);
 });
 // Returning through browser history can restore the page exactly as it was
 // left. Start from home, like any other visit.
@@ -184,10 +201,7 @@ window.addEventListener("pageshow", (e) => {
   if (!e.persisted) return;
   document.querySelectorAll("dialog[open]").forEach((d) => d.close());
   if ($("tool-modal").matches(":popover-open")) $("tool-modal").hidePopover();
-  homeCategory = null;
-  renderHome();
-  showHome();
-  if (location.hash) historyBack();
+  goHome();
 });
 // The editor is hidden at home; measure it as it will appear once opened.
 function measurePaper() {
@@ -656,19 +670,19 @@ async function switchWork(next) {
   currentWork = next;
   setTool("pen");
   await save();
-  showEditor();
 }
 $("home-grid").onclick = (e) => {
   const b = e.target.closest("button");
   if (!b || scheduler.busy || !ready) return;
   if (b.dataset.category) {
-    homeCategory = b.dataset.category;
-    $("difficulty").value = "simple";
-    renderHome();
+    pushScreen({ screen: "category", category: b.dataset.category });
+    showHome(b.dataset.category);
     return;
   }
   const id = b.dataset.scene;
   if (!id) return;
+  // Going back while a sheet loads means the child changed their mind.
+  const opened = navigation;
   scheduler.run(async () => {
     if (!editorLoaded && pendingWork?.scene !== id) {
       // Open the requested sheet directly. Loading the default cat first would
@@ -678,19 +692,16 @@ $("home-grid").onclick = (e) => {
       editorLoaded = true;
       pendingWork = null;
       setTool("pen");
-      showEditor();
       await save();
-      return;
+    } else {
+      await ensureCurrent();
+      if (id !== scene)
+        await switchWork(
+          (await savedWork(id)) || workCache.get(id) || createWork(id),
+        );
+      else setTool("pen");
     }
-    await ensureCurrent();
-    if (id !== scene)
-      await switchWork(
-        (await savedWork(id)) || workCache.get(id) || createWork(id),
-      );
-    else {
-      setTool("pen");
-      showEditor();
-    }
+    if (navigation === opened) showEditor();
   });
 };
 $("clear").onclick = () =>
@@ -744,14 +755,17 @@ $("gallery").onclick = () =>
         const button = document.createElement("button");
         button.setAttribute("aria-label", "繼續畫：" + img.alt);
         button.append(img);
-        button.onclick = () =>
+        button.onclick = () => {
+          const opened = navigation;
           scheduler.run(async () => {
             const work = await studio.get(art.id);
             if (!work) throw Error("Work missing");
             await ensureCurrent();
             await switchWork(work);
             $("album").close();
+            if (navigation === opened) showEditor();
           });
+        };
         $("artworks").append(button);
       } else {
         const link = document.createElement("a");
@@ -769,8 +783,15 @@ $("album").addEventListener("close", () => {
   albumURLs = [];
 });
 async function init() {
-  // Every visit starts at home, even if the page was left on the drawing page.
-  if (location.hash) historyBack();
+  // Every visit starts at home. A reload keeps this tab's history entries, so
+  // return to the first one instead of leaving editor entries behind it.
+  if (screen().depth > 0) history.go(-screen().depth);
+  else
+    history.replaceState(
+      { screen: "home", depth: 0 },
+      "",
+      location.pathname + location.search,
+    );
   renderHome();
   try {
     studio = await openStudio(indexedDB, { onClose: storageReplaced });

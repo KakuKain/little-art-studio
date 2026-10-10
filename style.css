@@ -43,6 +43,28 @@ button {
 button:active {
   transform: scale(0.97);
 }
+/* Screens fade in like an app. Showing an element restarts its animation.
+   The drawing surface only fades: moving it would offset an early stroke. */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.at-home #home,
+#home-grid > * {
+  animation: screen-in 200ms ease-out;
+}
+body:not(.at-home) > main,
+body:not(.at-home) > footer,
+body:not(.at-home) > #editor-nav {
+  animation: fade-in 200ms ease-out;
+}
 button:focus-visible,
 select:focus-visible,
 input:focus-visible {
@@ -709,6 +731,13 @@ h3 {
 @media (prefers-reduced-motion: reduce) {
   button {
     transition: none;
+  }
+  .at-home #home,
+  #home-grid > *,
+  body:not(.at-home) > main,
+  body:not(.at-home) > footer,
+  body:not(.at-home) > #editor-nav {
+    animation: none;
   }
 }
 
