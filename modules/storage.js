@@ -1,4 +1,4 @@
-import { createWork, validWork } from "./history.js?v=48";
+import { createWork, validWork } from "./history.js?v=49";
 
 function transaction(db, store, mode, action) {
   return new Promise((resolve, reject) => {

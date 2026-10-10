@@ -1,5 +1,5 @@
-import { ART_METADATA } from "../assets/coloring/catalog.js?v=48";
-import { legacyScenes } from "./legacy-scenes.js?v=48";
+import { ART_METADATA } from "../assets/coloring/catalog.js?v=49";
+import { legacyScenes } from "./legacy-scenes.js?v=49";
 
 const cache = new Map();
 // Errors carry a code so the interface never has to parse a message.

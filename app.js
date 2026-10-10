@@ -1,9 +1,9 @@
-import { installUI, syncSizes, setStatus } from "./modules/ui.js?v=48";
+import { installUI, syncSizes, setStatus } from "./modules/ui.js?v=49";
 import {
   categoryStatus,
   downloadCategory,
   pruneArtCache,
-} from "./modules/offline.js?v=48";
+} from "./modules/offline.js?v=49";
 import {
   createWork,
   record,
@@ -11,12 +11,12 @@ import {
   canRedo,
   moveCursor,
   addCheckpoint,
-} from "./modules/history.js?v=48";
-import { openStudio } from "./modules/storage.js?v=48";
-import { createPainter } from "./modules/painter.js?v=48";
-import { ART_CATALOG, ART_CATEGORIES } from "./assets/coloring/catalog.js?v=48";
-import { loadArtwork, thumbnailURL } from "./modules/assets.js?v=48";
-import { loadRegions } from "./modules/regions.js?v=48";
+} from "./modules/history.js?v=49";
+import { openStudio } from "./modules/storage.js?v=49";
+import { createPainter } from "./modules/painter.js?v=49";
+import { ART_CATALOG, ART_CATEGORIES } from "./assets/coloring/catalog.js?v=49";
+import { loadArtwork, thumbnailURL } from "./modules/assets.js?v=49";
+import { loadRegions } from "./modules/regions.js?v=49";
 import {
   surfaceFor,
   sameSurface,
@@ -24,15 +24,15 @@ import {
   toWorld,
   toPixel,
   CANVAS_WIDTH,
-} from "./modules/surface.js?v=48";
-import { fillOperations, FILL_VERSION } from "./modules/migrations.js?v=48";
+} from "./modules/surface.js?v=49";
+import { fillOperations, FILL_VERSION } from "./modules/migrations.js?v=49";
 import {
   planReplay,
   strokePen,
   pixelPlacement,
-} from "./modules/renderer.js?v=48";
-import { createScheduler } from "./modules/scheduler.js?v=48";
-import { PALETTE } from "./modules/palette.js?v=48";
+} from "./modules/renderer.js?v=49";
+import { createScheduler } from "./modules/scheduler.js?v=49";
+import { PALETTE } from "./modules/palette.js?v=49";
 const $ = (id) => document.getElementById(id),
   canvas = $("drawing"),
   ctx = canvas.getContext("2d"),
