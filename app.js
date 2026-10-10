@@ -154,6 +154,9 @@ $("editor-back").onclick = () => {
 };
 $("settings-open").onclick = () => $("about-modal").showModal();
 function showHome() {
+  // A stroke still pressed when the editor closes (a back gesture that began
+  // on the canvas) never receives its pointerup and would block every tap.
+  if (stroke) finish({ pointerId: stroke.id });
   document.body.classList.add("at-home");
   save();
   refreshAfterUpdate();
@@ -174,6 +177,17 @@ function historyBack() {
 }
 window.addEventListener("hashchange", () => {
   if (!location.hash) showHome();
+});
+// Returning through browser history can restore the page exactly as it was
+// left. Start from home, like any other visit.
+window.addEventListener("pageshow", (e) => {
+  if (!e.persisted) return;
+  document.querySelectorAll("dialog[open]").forEach((d) => d.close());
+  if ($("tool-modal").matches(":popover-open")) $("tool-modal").hidePopover();
+  homeCategory = null;
+  renderHome();
+  showHome();
+  if (location.hash) historyBack();
 });
 // The editor is hidden at home; measure it as it will appear once opened.
 function measurePaper() {
@@ -525,7 +539,16 @@ function point(e, r = stroke?.bounds || canvas.getBoundingClientRect()) {
 }
 canvas.style.objectFit = "fill";
 canvas.onpointerdown = (e) => {
-  if (!ready || scheduler.busy || stroke || e.isPrimary === false) return;
+  // Only touch, pen and the main mouse button draw. The mouse's back button
+  // must not start a stroke that the navigation then leaves unfinished.
+  if (
+    !ready ||
+    scheduler.busy ||
+    stroke ||
+    e.isPrimary === false ||
+    e.button !== 0
+  )
+    return;
   const started = performance.now();
   pauseBackgroundWork();
   const bounds = canvas.getBoundingClientRect(),
@@ -582,6 +605,8 @@ function finish(e) {
 }
 canvas.onpointerup = finish;
 canvas.onpointercancel = finish;
+// Hiding the canvas or a system gesture takes the pointer away mid-stroke.
+canvas.onlostpointercapture = finish;
 function showEditorError(error) {
   console.error(error);
   const message = error?.code?.startsWith("artwork-")
@@ -744,6 +769,8 @@ $("album").addEventListener("close", () => {
   albumURLs = [];
 });
 async function init() {
+  // Every visit starts at home, even if the page was left on the drawing page.
+  if (location.hash) historyBack();
   renderHome();
   try {
     studio = await openStudio(indexedDB, { onClose: storageReplaced });
@@ -772,13 +799,7 @@ function refreshAfterUpdate() {
   updatePending = false;
   save().finally(() => location.reload());
 }
-init().then(async () => {
-  if (location.hash === "#draw")
-    await scheduler.run(async () => {
-      await ensureCurrent();
-      setTool("pen");
-      document.body.classList.remove("at-home");
-    });
+init().then(() => {
   refreshAfterUpdate();
   // Tidy offline artwork once the first screen is ready.
   setTimeout(() => pruneArtCache().catch(() => {}), 5000);
