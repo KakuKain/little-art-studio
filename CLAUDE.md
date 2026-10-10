@@ -47,6 +47,17 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 - `migrations.js`: maps fills saved by older artwork generations to current region IDs.
 - `scheduler.js`: serializes editor work.
 - `palette.js`: the fixed colors and their names.
+- `install.js`: the parents' "install to home screen" section. It suppresses Chrome's automatic install banner so children can't trigger it.
+
+**Navigation** (Android-first PWA): each screen (`home`, `category`, `editor`) is a `history.pushState` entry `{screen, category?, depth}`, and the URL never changes.
+- Android's back gesture goes editor → category → home → exit. A `popstate` handler re-shows the matching screen.
+- The on-screen ← buttons call `history.back()`. The home button calls `history.go(-depth)`.
+- `init()` returns to the root entry (or replaces it), so every visit and reload starts at home.
+- `navigation` counts back/forward moves. A sheet that finishes loading after the child went back does not open the editor.
+- `showHome()`/`showEditor()` toggle `body.at-home` synchronously. Don't move screen state into View Transition callbacks: they run asynchronously and are aborted in some states, which once delayed the switch.
+- Screen fade-ins are plain CSS animations. The drawing surface only fades and never moves, because moving it would offset an early stroke.
+
+**App feel** (`style.css`): `body` has `touch-action: pan-x pan-y` (no pinch or double-tap zoom), `overscroll-behavior: none`, `user-select: none`, and no tap highlight. `ui.js` cancels `contextmenu`.
 
 **Three-layer canvas** (`#paper` in `index.html`):
 - `svg#coloring` is the paint layer. Regions are filled by setting the `fill` attribute.
@@ -114,6 +125,8 @@ Home categories, their order, names, and cover PNGs live in `categories.json`. T
 - an unknown category
 - a missing cover
 - a category without a `simple` sheet
+
+`scripts/build-app-icons.cjs` regenerates the manifest PNG icons (`assets/ui/app-icon-*.png`, including the maskable one) from `icon.svg`. Run it by hand; it is not part of `npm run build`, because cross-platform PNG output would break CI's no-diff check.
 
 The other `scripts/*.py|cjs` files are one-off tracing and simplification tools for regenerating art. `tmp/` and raster originals are gitignored scratch.
 
