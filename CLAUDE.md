@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-小小畫家 (Little Art Studio): a mobile-first coloring/drawing PWA for children aged about 3–6. It is plain browser JavaScript (ES modules, no framework, no bundler), deployed as static files to GitHub Pages at https://kakukain.github.io/little-art-studio/. UI strings and project docs are in Traditional Chinese (zh-Hant).
+小小遊樂園 (formerly 小小畫家, Little Art Studio): a mobile-first PWA for children aged about 3–6. It has a coloring/drawing studio plus small ad-free puzzle games (no timers, lives or purchases). The repo, URL, IndexedDB name and cache names still say little-art-studio. It is plain browser JavaScript (ES modules, no framework, no bundler), deployed as static files to GitHub Pages at https://kakukain.github.io/little-art-studio/. UI strings and project docs are in Traditional Chinese (zh-Hant).
 
 ## Commands
 
@@ -62,13 +62,24 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 - `palette.js`: the fixed colors and their names.
 - `install.js`: the parents' "install to home screen" section. It suppresses Chrome's automatic install banner so children can't trigger it.
 
-**Navigation** (Android-first PWA): each screen (`home`, `category`, `editor`) is a `history.pushState` entry `{screen, category?, depth}`, and the URL never changes.
-- Android's back gesture goes editor → category → home → exit. A `popstate` handler re-shows the matching screen.
+**Navigation** (Android-first PWA): each screen is a `history.pushState` entry `{screen, category?, game?, depth}`, and the URL never changes. Screens: `home` (game hub) → `coloring` → `category` → `editor`, or `home` → `game`.
+- Android's back gesture goes one screen back, and exits only from home. A `popstate` handler re-shows the matching screen.
 - The on-screen ← buttons call `history.back()`. The home button calls `history.go(-depth)`.
 - `init()` returns to the root entry (or replaces it), so every visit and reload starts at home.
 - `navigation` counts back/forward moves. A sheet that finishes loading after the child went back does not open the editor.
 - `showHome()`/`showEditor()` toggle `body.at-home` synchronously. Don't move screen state into View Transition callbacks: they run asynchronously and are aborted in some states, which once delayed the switch.
 - Screen fade-ins are plain CSS animations. The drawing surface only fades and never moves, because moving it would offset an early stroke.
+
+**Games**: the hub card list is `GAMES` in `app.js`.
+- Each game has rules in a pure module with unit tests (e.g. `blocks.js`) and a screen module (e.g. `game-blocks.js`, exporting `create…(root, {onBack})` → `{open, close}`).
+- Each game has a `<section id="game-<id>" class="game">` in `index.html`, shown by `body[data-game="<id>"]`.
+- Each game has an entry in `gameScreens` in `app.js`.
+- A game screen keeps `body.at-home` and adds `at-game`, so editor refits ignore it and update reloads wait until the child leaves the game.
+- Progress is a per-device convenience in `localStorage` (`little-playground.<game>`).
+- 方塊出門 (`blocks.js`):
+  - Blocks move cell by cell after the finger (`dragTo`) and leave through a same-colored door at least as wide as the block.
+  - `generateLevel(n)` is deterministic and accepts only boards where blocks can be exited one by one (`exitOrder`), so no level can dead-end.
+  - Use the seeded PRNG and the Fisher–Yates `shuffle`, never `sort()` with a random comparator: sort algorithms differ between engines and would change the levels.
 
 **App feel** (`style.css`): `body` has `touch-action: pan-x pan-y` (no pinch or double-tap zoom), `overscroll-behavior: none`, `user-select: none`, and no tap highlight. `ui.js` cancels `contextmenu`.
 
