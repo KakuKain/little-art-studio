@@ -1,0 +1,292 @@
+// 方塊出門 rules and levels. Pure logic: no DOM, so every rule is unit-tested.
+//
+// A level is a w × h grid with rectangular blocks and colored doors on its
+// edges. A block slides one cell at a time through empty cells, in any
+// direction the child drags it, and leaves the board when it is pushed out
+// through a door of its own color that is at least as wide as the block.
+export const COLORS = ["pink", "yellow", "blue", "green", "purple"];
+
+const SIDES = {
+  top: [0, -1],
+  bottom: [0, 1],
+  left: [-1, 0],
+  right: [1, 0],
+};
+
+export function cloneBlocks(blocks) {
+  return blocks.map((block) => ({ ...block }));
+}
+
+function occupied(level, blocks, except) {
+  const cells = new Uint8Array(level.w * level.h);
+  for (const b of blocks)
+    if (b.id !== except)
+      for (let y = b.y; y < b.y + b.h; y++)
+        for (let x = b.x; x < b.x + b.w; x++) cells[y * level.w + x] = 1;
+  return cells;
+}
+
+function fits(level, cells, block, x, y) {
+  if (x < 0 || y < 0 || x + block.w > level.w || y + block.h > level.h)
+    return false;
+  for (let cy = y; cy < y + block.h; cy++)
+    for (let cx = x; cx < x + block.w; cx++)
+      if (cells[cy * level.w + cx]) return false;
+  return true;
+}
+
+// The door this block would leave through when pushed from (x, y) towards
+// `side`, or null. The block must touch that edge, match the door's color
+// and lie entirely within the door's span.
+export function doorFor(level, block, x, y, side) {
+  const along = side === "top" || side === "bottom";
+  const touching =
+    (side === "top" && y === 0) ||
+    (side === "bottom" && y + block.h === level.h) ||
+    (side === "left" && x === 0) ||
+    (side === "right" && x + block.w === level.w);
+  if (!touching) return null;
+  const start = along ? x : y,
+    size = along ? block.w : block.h;
+  return (
+    level.doors.find(
+      (d) =>
+        d.side === side &&
+        d.color === block.color &&
+        start >= d.at &&
+        start + size <= d.at + d.size,
+    ) || null
+  );
+}
+
+// One drag step by (dx, dy) ∈ {-1, 0, 1}². Returns the new position, an
+// exit through a matching door, or null when the move is blocked.
+export function moveStep(level, blocks, id, dx, dy) {
+  const block = blocks.find((b) => b.id === id);
+  if (!block || Math.abs(dx) + Math.abs(dy) !== 1) return null;
+  const x = block.x + dx,
+    y = block.y + dy;
+  const leaving =
+    x < 0 || y < 0 || x + block.w > level.w || y + block.h > level.h;
+  if (leaving) {
+    const side = Object.keys(SIDES).find(
+      (s) => SIDES[s][0] === dx && SIDES[s][1] === dy,
+    );
+    const door = doorFor(level, block, block.x, block.y, side);
+    return door ? { exit: true, door } : null;
+  }
+  return fits(level, occupied(level, blocks, id), block, x, y)
+    ? { x, y }
+    : null;
+}
+
+// Follows the child's finger: moves the block one cell at a time towards a
+// target position (in cells, may be fractional or off the board), along the
+// axis with the larger distance first and the other axis when that is
+// blocked. Each step shortens the distance, so this always ends. Pushing a
+// block past the edge through its door makes it leave.
+export function dragTo(level, blocks, id, tx, ty) {
+  const moved = cloneBlocks(blocks),
+    block = moved.find((b) => b.id === id);
+  for (;;) {
+    const dx = tx - block.x,
+      dy = ty - block.y;
+    const steps = [
+      [Math.sign(dx), 0, Math.abs(dx)],
+      [0, Math.sign(dy), Math.abs(dy)],
+    ]
+      .filter(([, , distance]) => distance >= 0.5)
+      .sort((a, b) => b[2] - a[2]);
+    let stepped = false;
+    for (const [sx, sy] of steps) {
+      const result = moveStep(level, moved, id, sx, sy);
+      if (result?.exit)
+        return { blocks: moved.filter((b) => b.id !== id), exit: result.door };
+      if (result) {
+        block.x = result.x;
+        block.y = result.y;
+        stepped = true;
+        break;
+      }
+    }
+    if (!stepped) return { blocks: moved, exit: null };
+  }
+}
+
+// Every position the block can reach with the other blocks left in place.
+export function reachable(level, blocks, id) {
+  const block = blocks.find((b) => b.id === id),
+    cells = occupied(level, blocks, id),
+    seen = new Set([block.y * level.w + block.x]),
+    queue = [[block.x, block.y]];
+  for (let i = 0; i < queue.length; i++) {
+    const [x, y] = queue[i];
+    for (const [dx, dy] of Object.values(SIDES)) {
+      const nx = x + dx,
+        ny = y + dy,
+        key = ny * level.w + nx;
+      if (!seen.has(key) && fits(level, cells, block, nx, ny)) {
+        seen.add(key);
+        queue.push([nx, ny]);
+      }
+    }
+  }
+  return queue;
+}
+
+export function canExit(level, blocks, id) {
+  const block = blocks.find((b) => b.id === id);
+  return reachable(level, blocks, id).some(([x, y]) =>
+    Object.keys(SIDES).some((side) => doorFor(level, block, x, y, side)),
+  );
+}
+
+// Removing a block only frees space, so if some block can always leave next
+// the level is solvable. Levels are only accepted when this holds, which
+// guarantees a child can never reach a dead end by exiting blocks.
+export function exitOrder(level, blocks = level.blocks) {
+  let left = cloneBlocks(blocks);
+  const order = [];
+  while (left.length) {
+    const next = left.find((b) => canExit(level, left, b.id));
+    if (!next) return null;
+    order.push(next.id);
+    left = left.filter((b) => b.id !== next.id);
+  }
+  return order;
+}
+
+export function blockedCount(level) {
+  return level.blocks.filter((b) => !canExit(level, level.blocks, b.id)).length;
+}
+
+// Small deterministic PRNG so level n is the same on every device.
+function random(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const FIRST_LEVELS = [
+  // 1: drag one block out of its door.
+  {
+    w: 3,
+    h: 3,
+    blocks: [{ id: "a", x: 1, y: 1, w: 1, h: 1, color: "pink" }],
+    doors: [{ side: "top", at: 1, size: 1, color: "pink" }],
+  },
+  // 2: the yellow block is in the blue block's way; it must leave first.
+  {
+    w: 3,
+    h: 3,
+    blocks: [
+      { id: "a", x: 1, y: 1, w: 1, h: 1, color: "blue" },
+      { id: "b", x: 1, y: 0, w: 1, h: 1, color: "yellow" },
+    ],
+    doors: [
+      { side: "top", at: 1, size: 1, color: "blue" },
+      { side: "right", at: 0, size: 1, color: "yellow" },
+    ],
+  },
+];
+
+// Board size, block count, colors, chance of two-cell blocks and how many
+// blocks must start without a way out.
+export function levelSpec(n) {
+  if (n <= 4)
+    return { w: 4, h: 4, count: [2, 3], colors: 2, long: 0, blocked: 1 };
+  if (n <= 8)
+    return { w: 4, h: 4, count: [3, 4], colors: 3, long: 0.3, blocked: 1 };
+  if (n <= 14)
+    return { w: 5, h: 5, count: [4, 6], colors: 3, long: 0.4, blocked: 2 };
+  if (n <= 24)
+    return { w: 5, h: 5, count: [6, 8], colors: 4, long: 0.5, blocked: 3 };
+  if (n <= 40)
+    return { w: 6, h: 6, count: [7, 10], colors: 4, long: 0.5, blocked: 3 };
+  return { w: 6, h: 6, count: [9, 12], colors: 5, long: 0.6, blocked: 4 };
+}
+
+// Fisher–Yates: unlike sort() with a random comparator, it gives the same
+// order in every JavaScript engine.
+function shuffle(list, rand) {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+function attempt(spec, rand) {
+  const pick = (list) => list[Math.floor(rand() * list.length)];
+  const count =
+    spec.count[0] + Math.floor(rand() * (spec.count[1] - spec.count[0] + 1));
+  const palette = shuffle(COLORS, rand).slice(0, Math.min(spec.colors, count));
+  const level = { w: spec.w, h: spec.h, blocks: [], doors: [] };
+  for (let i = 0; i < count; i++) {
+    const long = rand() < spec.long,
+      wide = long && rand() < 0.5;
+    const block = {
+      id: String.fromCharCode(97 + i),
+      w: wide ? 2 : 1,
+      h: long && !wide ? 2 : 1,
+      // Every chosen color is used at least once.
+      color: i < palette.length ? palette[i] : pick(palette),
+    };
+    const cells = occupied(level, level.blocks);
+    const spots = [];
+    for (let y = 0; y < spec.h; y++)
+      for (let x = 0; x < spec.w; x++)
+        if (fits(level, cells, block, x, y)) spots.push([x, y]);
+    if (!spots.length) return null;
+    [block.x, block.y] = pick(spots);
+    level.blocks.push(block);
+  }
+  for (const color of palette) {
+    const own = level.blocks.filter((b) => b.color === color);
+    const sides = shuffle(Object.keys(SIDES), rand);
+    let placed = false;
+    for (const side of sides) {
+      const along = side === "top" || side === "bottom",
+        length = along ? spec.w : spec.h,
+        size = Math.max(...own.map((b) => (along ? b.w : b.h)));
+      const free = [];
+      for (let at = 0; at + size <= length; at++)
+        if (
+          !level.doors.some(
+            (d) => d.side === side && at < d.at + d.size && d.at < at + size,
+          )
+        )
+          free.push(at);
+      if (!free.length) continue;
+      level.doors.push({ side, at: pick(free), size, color });
+      placed = true;
+      break;
+    }
+    if (!placed) return null;
+  }
+  return level;
+}
+
+const cache = new Map();
+export function generateLevel(n) {
+  let level = cache.get(n) || FIRST_LEVELS[n - 1];
+  if (!level) {
+    const spec = levelSpec(n),
+      rand = random(Math.imul(n, 2654435761) ^ 0x5bd1e995);
+    for (let tries = 0; !level; tries++) {
+      // Relax the "blocked at start" goal if a board refuses to cooperate.
+      const goal = Math.max(1, spec.blocked - Math.floor(tries / 400));
+      const candidate = attempt(spec, rand);
+      if (candidate && exitOrder(candidate) && blockedCount(candidate) >= goal)
+        level = candidate;
+    }
+  }
+  cache.set(n, { ...level, n });
+  // Callers may move blocks around; never hand out the cached ones.
+  return { ...level, n, blocks: cloneBlocks(level.blocks) };
+}
