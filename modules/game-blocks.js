@@ -1,6 +1,6 @@
 // 方塊出門 screen: draws a level, turns finger drags into block moves and
 // remembers the child's progress on this device. The rules live in blocks.js.
-import { generateLevel, dragTo, cloneBlocks } from "./blocks.js?v=1.0.0-beta.1";
+import { generateLevel, dragTo, cloneBlocks } from "./blocks.js?v=1.0.0-beta.2";
 
 // Each color also carries a symbol, so colors are told apart without color.
 const LOOK = {
