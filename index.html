@@ -14,12 +14,12 @@
     <link rel="stylesheet" href="style.css?v=1.0.0-beta.1" />
   </head>
   <body class="at-home">
-    <section id="home" aria-label="選擇畫布">
+    <section id="home" aria-label="選擇遊戲">
       <div class="home-content">
         <div class="home-top">
-          <button id="category-back" class="" aria-label="回分類首頁">
+          <button id="category-back" class="" aria-label="返回">
             <img src="assets/ui/back.svg" alt="" /><span class="tool-label"
-              >回分類首頁</span
+              >返回</span
             >
           </button>
           <div class="category-title"><h2 id="category-title"></h2></div>
@@ -48,6 +48,38 @@
         </div>
         <div id="home-grid"></div>
       </div>
+    </section>
+    <section id="game-blocks" class="game" aria-label="方塊出門">
+      <div class="game-top">
+        <button class="game-back" aria-label="返回">
+          <img src="assets/ui/back.svg" alt="" />
+        </button>
+        <h2 class="game-title">方塊出門</h2>
+        <div class="game-actions">
+          <button class="game-undo" aria-label="上一步">
+            <img src="assets/ui/undo.svg" alt="" /></button
+          ><button class="game-restart" aria-label="重來">
+            <img src="assets/ui/restart.svg" alt="" /></button
+          ><button class="game-levels" aria-label="選關卡">
+            <img src="assets/ui/levels.svg" alt="" />
+          </button>
+        </div>
+      </div>
+      <p class="game-hint">把方塊拖到同顏色的門</p>
+      <div class="game-stage">
+        <div class="blocks-board" aria-label="遊戲盤面"></div>
+      </div>
+      <div class="game-win" hidden>
+        <p class="game-win-title">過關了！</p>
+        <button class="game-next">下一關</button>
+      </div>
+      <dialog class="game-levels-dialog" aria-label="選關卡">
+        <div class="dialog-head">
+          <h2>選關卡</h2>
+          <button class="dismiss" aria-label="關閉">✕</button>
+        </div>
+        <div class="levels-grid"></div>
+      </dialog>
     </section>
     <nav id="editor-nav" aria-label="畫布導覽">
       <button id="editor-back" class="" aria-label="回選圖">

@@ -1111,3 +1111,205 @@ h3 {
   overflow: hidden;
   background: var(--bg);
 }
+
+/* Home hub: one big card per game. */
+#home-grid[data-view="hub"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 640px;
+}
+#home-grid[data-view="hub"] button {
+  height: 200px;
+  border: 0;
+  padding: 18px 18px 14px;
+}
+#home-grid[data-view="hub"] img {
+  width: 116px;
+  height: 116px;
+  flex: 1;
+  min-height: 0;
+}
+#home-grid[data-view="hub"] button span {
+  font-size: 19px;
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  #home-grid[data-view="hub"] button {
+    height: 150px;
+  }
+}
+
+/* Game screens replace the home screen; the editor stays hidden. */
+.game {
+  display: none;
+  position: relative;
+  flex-direction: column;
+  height: 100dvh;
+  padding: max(12px, env(safe-area-inset-top)) 14px
+    max(14px, env(safe-area-inset-bottom));
+  background: var(--bg);
+  animation: screen-in 200ms ease-out;
+}
+.at-home.at-game #home {
+  display: none;
+}
+body[data-game="blocks"] #game-blocks {
+  display: flex;
+}
+.game-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.game-top button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 3px 12px #32506408;
+}
+.game-top button:disabled {
+  opacity: 0.35;
+}
+.game-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 20px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.game-actions {
+  display: flex;
+  gap: 6px;
+}
+.game-hint {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.game-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+.blocks-board {
+  position: relative;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 3px #d9e3e9,
+    0 10px 30px #32506414;
+}
+.blocks-door {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 800;
+  line-height: 1;
+}
+.blocks-block {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  color: #ffffffe6;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow:
+    inset 0 -5px 0 #00000024,
+    0 2px 0 #263e4d33;
+  transition: transform 90ms ease-out;
+  touch-action: none;
+  cursor: grab;
+}
+.blocks-block.dragging {
+  z-index: 2;
+  transition-duration: 40ms;
+  cursor: grabbing;
+}
+.blocks-block.leaving {
+  transition:
+    transform 260ms ease-in,
+    opacity 260ms ease-in;
+  opacity: 0;
+}
+.game-win {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: #ffffffd9;
+  animation: fade-in 240ms ease-out;
+}
+.game-win[hidden] {
+  display: none;
+}
+.game-win-title {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 800;
+  color: #087bac;
+  animation: cheer 600ms ease-out;
+}
+.game-next {
+  min-width: 180px;
+  min-height: 64px;
+  font-size: 22px;
+  font-weight: 800;
+  background: #ffe7a3;
+  box-shadow: inset 0 -4px 0 #e9bd44;
+}
+@keyframes cheer {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+}
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+.levels-grid button {
+  min-width: 0;
+  aspect-ratio: 1;
+  font-size: 18px;
+  font-weight: 700;
+  background: var(--bg);
+}
+.levels-grid button.current {
+  background: #fff0bd;
+  box-shadow: inset 0 0 0 2px #e9bd44;
+}
+@media (prefers-reduced-motion: reduce) {
+  .game,
+  .game-win,
+  .game-win-title {
+    animation: none;
+  }
+  .blocks-block {
+    transition: none;
+  }
+}
+/* The album belongs to coloring, so it also shows in the coloring section. */
+.in-coloring #gallery {
+  display: flex;
+}

@@ -44,6 +44,7 @@ import {
 import { createScheduler } from "./modules/scheduler.js?v=1.0.0-beta.1";
 import { PALETTE } from "./modules/palette.js?v=1.0.0-beta.1";
 import { installAppSupport } from "./modules/install.js?v=1.0.0-beta.1";
+import { createBlocksGame } from "./modules/game-blocks.js?v=1.0.0-beta.1";
 const $ = (id) => document.getElementById(id),
   canvas = $("drawing"),
   ctx = canvas.getContext("2d"),
@@ -65,7 +66,13 @@ let scene = "kitty",
   currentWork,
   ready = false;
 let artwork, surface, regions, outlinesKey;
-let homeCategory = null;
+// Home shows the game hub, the coloring categories, or one category's sheets.
+const GAMES = [
+  { id: "coloring", name: "著色畫畫", cover: "assets/ui/game-coloring.svg" },
+  { id: "blocks", name: "方塊出門", cover: "assets/ui/game-blocks.svg" },
+];
+let homeSection = "hub",
+  homeCategory = null;
 let editorLoaded = false,
   pendingWork,
   loadingEditor;
@@ -113,14 +120,26 @@ function label(button, text) {
   return button;
 }
 function renderHome() {
-  const grid = $("home-grid");
+  const grid = $("home-grid"),
+    hub = homeSection === "hub";
   grid.replaceChildren();
-  grid.dataset.view = homeCategory ? "sheets" : "categories";
-  $("category-back").hidden = !homeCategory;
+  grid.dataset.view = hub ? "hub" : homeCategory ? "sheets" : "categories";
+  $("category-back").hidden = hub;
   $("difficulty").hidden = !homeCategory;
-  document.body.classList.toggle("in-category", !!homeCategory);
-  $("category-title").textContent =
-    ART_CATEGORIES.find((c) => c.id === homeCategory)?.name || "";
+  document.body.classList.toggle("in-category", !hub);
+  document.body.classList.toggle("in-coloring", !hub && !homeCategory);
+  $("category-title").textContent = hub
+    ? ""
+    : ART_CATEGORIES.find((c) => c.id === homeCategory)?.name || "著色畫畫";
+  if (hub) {
+    for (const [index, game] of GAMES.entries()) {
+      const button = label(card(game.name, game.cover), game.name);
+      button.dataset.game = game.id;
+      button.dataset.theme = index;
+      grid.append(button);
+    }
+    return;
+  }
   if (homeCategory) {
     const level = $("difficulty").value;
     for (const item of ART_CATALOG.filter(
@@ -154,22 +173,29 @@ function renderHome() {
   grid.append(label(blank, "自由畫畫"));
 }
 $("difficulty").onchange = renderHome;
-// Screens are history entries, so Android's back gesture steps from the
-// editor to its category, then home, and only then leaves the app. The URL
-// never changes, so every visit and reload starts at home.
+// Screens are history entries (home → coloring → category → editor, or
+// home → game), so Android's back gesture steps back one screen at a time and
+// only leaves the app from home. The URL never changes, so every visit and
+// reload starts at home.
 let navigation = 0;
 const screen = () => history.state || { screen: "home", depth: 0 };
+const HUB = { section: "hub", category: null };
 function pushScreen(state) {
   history.pushState({ ...state, depth: screen().depth + 1 }, "");
 }
 function goHome() {
   const depth = screen().depth;
   if (depth > 0) history.go(-depth);
-  else showHome(null);
+  else showHome(HUB);
+}
+function homeViewFor(state) {
+  return state.screen === "home"
+    ? HUB
+    : { section: "coloring", category: state.category || null };
 }
 $("category-back").onclick = () => {
-  if (screen().screen === "category") history.back();
-  else showHome(null);
+  if (screen().depth > 0) history.back();
+  else showHome(HUB);
 };
 $("editor-back").onclick = () => {
   if (scheduler.busy || stroke) return;
@@ -181,11 +207,15 @@ $("home-back").onclick = () => {
   goHome();
 };
 $("settings-open").onclick = () => $("about-modal").showModal();
-function showHome(category = homeCategory) {
+function showHome(
+  { section, category } = { section: homeSection, category: homeCategory },
+) {
   // A stroke still pressed when the editor closes (a back gesture that began
   // on the canvas) never receives its pointerup and would block every tap.
   if (stroke) finish({ pointerId: stroke.id });
-  if (category !== homeCategory) {
+  closeGame();
+  if (section !== homeSection || category !== homeCategory) {
+    homeSection = section;
     homeCategory = category;
     if (category) $("difficulty").value = "simple";
     renderHome();
@@ -197,14 +227,42 @@ function showHome(category = homeCategory) {
 function showEditor() {
   if (screen().screen !== "editor")
     pushScreen({ screen: "editor", category: homeCategory });
+  closeGame();
   document.body.classList.remove("at-home");
+}
+// A game screen covers home; the editor stays hidden underneath (at-home), so
+// editor refits and update reloads leave it alone.
+const gameScreens = {
+  blocks: () =>
+    createBlocksGame($("game-blocks"), { onBack: () => history.back() }),
+};
+const openedGames = new Map();
+let activeGame = null;
+function showGame(id) {
+  if (stroke) finish({ pointerId: stroke.id });
+  if (!openedGames.has(id)) openedGames.set(id, gameScreens[id]());
+  activeGame = openedGames.get(id);
+  document.body.dataset.game = id;
+  document.body.classList.add("at-home", "at-game");
+  save();
+  activeGame.open();
+}
+function closeGame() {
+  if (!activeGame) return;
+  activeGame.close();
+  activeGame = null;
+  document.body.classList.remove("at-game");
+  delete document.body.dataset.game;
 }
 window.addEventListener("popstate", () => {
   navigation++;
   const state = screen();
-  if (state.screen === "editor" && editorLoaded && currentWork)
+  if (state.screen === "editor" && editorLoaded && currentWork) {
+    closeGame();
     document.body.classList.remove("at-home");
-  else showHome(state.category || null);
+  } else if (state.screen === "game" && gameScreens[state.game])
+    showGame(state.game);
+  else showHome(homeViewFor(state));
 });
 // Returning through browser history can restore the page exactly as it was
 // left. Start from home, like any other visit.
@@ -685,9 +743,19 @@ async function switchWork(next) {
 $("home-grid").onclick = (e) => {
   const b = e.target.closest("button");
   if (!b || scheduler.busy || !ready) return;
+  if (b.dataset.game === "coloring") {
+    pushScreen({ screen: "coloring" });
+    showHome({ section: "coloring", category: null });
+    return;
+  }
+  if (b.dataset.game) {
+    pushScreen({ screen: "game", game: b.dataset.game });
+    showGame(b.dataset.game);
+    return;
+  }
   if (b.dataset.category) {
     pushScreen({ screen: "category", category: b.dataset.category });
-    showHome(b.dataset.category);
+    showHome({ section: "coloring", category: b.dataset.category });
     return;
   }
   const id = b.dataset.scene;
@@ -825,7 +893,9 @@ function refreshAfterUpdate() {
     !ready ||
     scheduler.busy ||
     stroke ||
-    !document.body.classList.contains("at-home")
+    !document.body.classList.contains("at-home") ||
+    // Never reload in the middle of a game; it reloads back at home.
+    document.body.classList.contains("at-game")
   )
     return;
   updatePending = false;
