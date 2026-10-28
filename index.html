@@ -81,6 +81,40 @@
         <div class="levels-grid"></div>
       </dialog>
     </section>
+    <section id="game-restaurant" class="game" aria-label="動物餐廳">
+      <div class="game-top">
+        <button class="game-back" aria-label="返回">
+          <img src="assets/ui/back.svg" alt="" />
+        </button>
+        <h2 class="game-title">動物餐廳</h2>
+        <div class="game-actions">
+          <button class="game-levels" aria-label="選關卡">
+            <img src="assets/ui/levels.svg" alt="" />
+          </button>
+        </div>
+      </div>
+      <p class="game-hint">點動物想吃的食物</p>
+      <div class="restaurant-queue" aria-hidden="true"></div>
+      <div class="restaurant-stage">
+        <div class="restaurant-guest">
+          <div class="restaurant-order" aria-hidden="true"></div>
+          <div class="restaurant-animal" role="img"></div>
+        </div>
+        <div class="restaurant-shelf" aria-label="食物"></div>
+      </div>
+      <p class="restaurant-said sr-only" role="status"></p>
+      <div class="game-win" hidden>
+        <p class="game-win-title">客人都吃飽了！</p>
+        <button class="game-next">下一關</button>
+      </div>
+      <dialog class="game-levels-dialog" aria-label="選關卡">
+        <div class="dialog-head">
+          <h2>選關卡</h2>
+          <button class="dismiss" aria-label="關閉">✕</button>
+        </div>
+        <div class="levels-grid"></div>
+      </dialog>
+    </section>
     <nav id="editor-nav" aria-label="畫布導覽">
       <button id="editor-back" class="" aria-label="回選圖">
         <img src="assets/ui/back.svg" alt="" /><span class="tool-label"

@@ -1131,6 +1131,12 @@ h3 {
 #home-grid[data-view="hub"] button span {
   font-size: 19px;
 }
+@media (min-width: 600px) {
+  #home-grid[data-view="hub"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 840px;
+  }
+}
 @media (max-height: 500px) and (orientation: landscape) {
   #home-grid[data-view="hub"] button {
     height: 150px;
@@ -1299,10 +1305,175 @@ body[data-game="blocks"] #game-blocks {
   background: #fff0bd;
   box-shadow: inset 0 0 0 2px #e9bd44;
 }
+/* 動物餐廳: the customer and its order on top, the food shelf below (beside
+   it in landscape). Emoji get the color emoji fonts first. */
+body[data-game="restaurant"] #game-restaurant {
+  display: flex;
+}
+.restaurant-queue {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.restaurant-queue span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #dfe7ec;
+  transition: background 200ms ease;
+}
+.restaurant-queue .current {
+  background: #ffd54f;
+  box-shadow: 0 0 0 3px #fff0bd;
+}
+.restaurant-queue .served {
+  background: #ff7399;
+}
+.restaurant-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+}
+.restaurant-guest {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+.restaurant-order {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 132px;
+  min-height: 80px;
+  padding: 10px 16px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow:
+    0 0 0 3px #d9e3e9,
+    0 10px 30px #32506414;
+}
+.restaurant-order::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  box-shadow: 3px 3px 0 #d9e3e9;
+  transform: translateX(-50%) rotate(45deg);
+}
+.restaurant-row {
+  display: flex;
+  gap: 4px;
+}
+.restaurant-animal,
+.restaurant-slot,
+.restaurant-shelf button,
+.restaurant-flying {
+  font-family:
+    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  line-height: 1;
+}
+.restaurant-slot {
+  width: 1.2em;
+  padding: 0.08em 0;
+  text-align: center;
+  font-size: clamp(34px, 10vmin, 52px);
+  border-radius: 14px;
+  opacity: 0.5;
+  filter: grayscale(0.4);
+  outline: 2px dashed #c9d6de;
+  outline-offset: -2px;
+}
+.restaurant-slot.served {
+  opacity: 1;
+  filter: none;
+  outline: 0;
+  animation: served 260ms ease-out;
+}
+@keyframes served {
+  0% {
+    transform: scale(0.6);
+  }
+  70% {
+    transform: scale(1.2);
+  }
+}
+.restaurant-thanks {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #d6457a;
+}
+.restaurant-animal {
+  font-size: clamp(96px, 30vmin, 170px);
+}
+.restaurant-shelf {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 4), minmax(0, 1fr));
+  gap: 10px;
+  width: min(100%, 520px);
+  padding: 14px;
+  background: #f6e3c4;
+  border-radius: 24px;
+  box-shadow: inset 0 -6px 0 #e8c999;
+}
+.restaurant-shelf button {
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  font-size: clamp(40px, 12vmin, 60px);
+  box-shadow: 0 4px 0 #e2c597;
+}
+.restaurant-flying {
+  position: fixed;
+  z-index: 10;
+  pointer-events: none;
+}
+@media (orientation: landscape) and (min-width: 600px) {
+  .restaurant-stage {
+    flex-direction: row;
+    justify-content: center;
+    gap: 32px;
+    padding-top: 0;
+  }
+  .restaurant-guest {
+    flex: 0 1 auto;
+  }
+  .restaurant-shelf {
+    width: min(48%, 460px);
+  }
+}
+/* Phones held sideways: a three-row order and the animal must fit. */
+@media (max-height: 500px) {
+  .restaurant-guest {
+    gap: 10px;
+  }
+  .restaurant-animal {
+    font-size: 24vmin;
+  }
+  .restaurant-slot {
+    font-size: 9vmin;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .game,
   .game-win,
-  .game-win-title {
+  .game-win-title,
+  .restaurant-slot.served {
     animation: none;
   }
   .blocks-block {

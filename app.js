@@ -45,6 +45,7 @@ import { createScheduler } from "./modules/scheduler.js?v=1.0.0-beta.2";
 import { PALETTE } from "./modules/palette.js?v=1.0.0-beta.2";
 import { installAppSupport } from "./modules/install.js?v=1.0.0-beta.2";
 import { createBlocksGame } from "./modules/game-blocks.js?v=1.0.0-beta.2";
+import { createRestaurantGame } from "./modules/game-restaurant.js?v=1.0.0-beta.2";
 const $ = (id) => document.getElementById(id),
   canvas = $("drawing"),
   ctx = canvas.getContext("2d"),
@@ -70,6 +71,11 @@ let artwork, surface, regions, outlinesKey;
 const GAMES = [
   { id: "coloring", name: "著色畫畫", cover: "assets/ui/game-coloring.svg" },
   { id: "blocks", name: "方塊出門", cover: "assets/ui/game-blocks.svg" },
+  {
+    id: "restaurant",
+    name: "動物餐廳",
+    cover: "assets/ui/game-restaurant.svg",
+  },
 ];
 let homeSection = "hub",
   homeCategory = null;
@@ -235,6 +241,10 @@ function showEditor() {
 const gameScreens = {
   blocks: () =>
     createBlocksGame($("game-blocks"), { onBack: () => history.back() }),
+  restaurant: () =>
+    createRestaurantGame($("game-restaurant"), {
+      onBack: () => history.back(),
+    }),
 };
 const openedGames = new Map();
 let activeGame = null;
