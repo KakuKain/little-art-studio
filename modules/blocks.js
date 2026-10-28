@@ -4,6 +4,8 @@
 // edges. A block slides one cell at a time through empty cells, in any
 // direction the child drags it, and leaves the board when it is pushed out
 // through a door of its own color that is at least as wide as the block.
+import { seeded, shuffle } from "./random.js?v=1.0.0-beta.2";
+
 export const COLORS = ["pink", "yellow", "blue", "green", "purple"];
 
 const SIDES = {
@@ -160,18 +162,6 @@ export function blockedCount(level) {
   return level.blocks.filter((b) => !canExit(level, level.blocks, b.id)).length;
 }
 
-// Small deterministic PRNG so level n is the same on every device.
-function random(seed) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 const FIRST_LEVELS = [
   // 1: drag one block out of its door.
   {
@@ -211,16 +201,6 @@ export function levelSpec(n) {
   return { w: 6, h: 6, count: [9, 12], colors: 5, long: 0.6, blocked: 4 };
 }
 
-// Fisher–Yates: unlike sort() with a random comparator, it gives the same
-// order in every JavaScript engine.
-function shuffle(list, rand) {
-  const out = [...list];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
 function attempt(spec, rand) {
   const pick = (list) => list[Math.floor(rand() * list.length)];
   const count =
@@ -277,7 +257,7 @@ export function generateLevel(n) {
   let level = cache.get(n) || FIRST_LEVELS[n - 1];
   if (!level) {
     const spec = levelSpec(n),
-      rand = random(Math.imul(n, 2654435761) ^ 0x5bd1e995);
+      rand = seeded(Math.imul(n, 2654435761) ^ 0x5bd1e995);
     for (let tries = 0; !level; tries++) {
       // Relax the "blocked at start" goal if a board refuses to cooperate.
       const goal = Math.max(1, spec.blocked - Math.floor(tries / 400));

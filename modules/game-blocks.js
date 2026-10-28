@@ -1,6 +1,11 @@
 // 方塊出門 screen: draws a level, turns finger drags into block moves and
 // remembers the child's progress on this device. The rules live in blocks.js.
 import { generateLevel, dragTo, cloneBlocks } from "./blocks.js?v=1.0.0-beta.2";
+import {
+  loadProgress,
+  saveProgress,
+  showLevelPicker,
+} from "./game-kit.js?v=1.0.0-beta.2";
 
 // Each color also carries a symbol, so colors are told apart without color.
 const LOOK = {
@@ -14,31 +19,13 @@ const ARROWS = { top: "▲", bottom: "▼", left: "◀", right: "▶" };
 const OUT = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] };
 const KEY = "little-playground.blocks";
 
-function loadProgress() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(KEY));
-    if (Number.isInteger(saved?.level) && Number.isInteger(saved?.unlocked))
-      return saved;
-  } catch {
-    // Private mode or blocked storage: start from the first level.
-  }
-  return { level: 1, unlocked: 1 };
-}
-function saveProgress(progress) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(progress));
-  } catch {
-    // Progress is a convenience; the game works without it.
-  }
-}
-
 export function createBlocksGame(root, { onBack }) {
   const $ = (selector) => root.querySelector(selector),
     board = $(".blocks-board"),
     stage = $(".game-stage"),
     win = $(".game-win"),
     elements = new Map(),
-    progress = loadProgress();
+    progress = loadProgress(KEY);
   let level = null,
     blocks = [],
     history = [],
@@ -139,7 +126,7 @@ export function createBlocksGame(root, { onBack }) {
     elements.clear();
     progress.level = n;
     progress.unlocked = Math.max(progress.unlocked, n);
-    saveProgress(progress);
+    saveProgress(KEY, progress);
     $(".game-title").textContent = `第 ${n} 關`;
     $(".game-hint").hidden = n > 3;
     win.hidden = true;
@@ -172,7 +159,7 @@ export function createBlocksGame(root, { onBack }) {
     render();
     if (!blocks.length) {
       progress.unlocked = Math.max(progress.unlocked, level.n + 1);
-      saveProgress(progress);
+      saveProgress(KEY, progress);
       setTimeout(() => {
         win.hidden = false;
         $(".game-next").focus();
@@ -236,22 +223,12 @@ export function createBlocksGame(root, { onBack }) {
   };
   $(".game-next").onclick = () => load(level.n + 1);
   const dialog = $(".game-levels-dialog");
-  $(".game-levels").onclick = () => {
-    const grid = dialog.querySelector(".levels-grid");
-    grid.replaceChildren();
-    for (let n = 1; n <= progress.unlocked; n++) {
-      const button = document.createElement("button");
-      button.textContent = n;
-      button.setAttribute("aria-label", `第 ${n} 關`);
-      button.classList.toggle("current", n === level.n);
-      button.onclick = () => {
-        dialog.close();
-        load(n);
-      };
-      grid.append(button);
-    }
-    dialog.showModal();
-  };
+  $(".game-levels").onclick = () =>
+    showLevelPicker(dialog, {
+      unlocked: progress.unlocked,
+      current: level.n,
+      onPick: load,
+    });
   new ResizeObserver(layout).observe(stage);
   return {
     open() {
