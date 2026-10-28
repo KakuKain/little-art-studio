@@ -6,12 +6,12 @@ import {
   generateLevel,
   serve,
   describeOrder,
-} from "./restaurant.js?v=1.0.0-beta.2";
+} from "./restaurant.js?v=1.0.0-beta.3";
 import {
   loadProgress,
   saveProgress,
   showLevelPicker,
-} from "./game-kit.js?v=1.0.0-beta.2";
+} from "./game-kit.js?v=1.0.0-beta.3";
 
 const KEY = "little-playground.restaurant";
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");

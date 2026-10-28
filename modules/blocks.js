@@ -4,7 +4,7 @@
 // edges. A block slides one cell at a time through empty cells, in any
 // direction the child drags it, and leaves the board when it is pushed out
 // through a door of its own color that is at least as wide as the block.
-import { seeded, shuffle } from "./random.js?v=1.0.0-beta.2";
+import { seeded, shuffle } from "./random.js?v=1.0.0-beta.3";
 
 export const COLORS = ["pink", "yellow", "blue", "green", "purple"];
 
