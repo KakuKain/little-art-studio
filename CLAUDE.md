@@ -75,11 +75,16 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 - Each game has a `<section id="game-<id>" class="game">` in `index.html`, shown by `body[data-game="<id>"]`.
 - Each game has an entry in `gameScreens` in `app.js`.
 - A game screen keeps `body.at-home` and adds `at-game`, so editor refits ignore it and update reloads wait until the child leaves the game.
-- Progress is a per-device convenience in `localStorage` (`little-playground.<game>`).
+- Progress is a per-device convenience in `localStorage` (`little-playground.<game>`). `game-kit.js` loads and saves it and shows the shared level picker.
+- Generated levels use `random.js`: the seeded PRNG `seeded()` and the Fisher–Yates `shuffle()`. Never use `sort()` with a random comparator: sort algorithms differ between engines and would change the levels.
 - 方塊出門 (`blocks.js`):
   - Blocks move cell by cell after the finger (`dragTo`) and leave through a same-colored door at least as wide as the block.
   - `generateLevel(n)` is deterministic and accepts only boards where blocks can be exited one by one (`exitOrder`), so no level can dead-end.
-  - Use the seeded PRNG and the Fisher–Yates `shuffle`, never `sort()` with a random comparator: sort algorithms differ between engines and would change the levels.
+- 動物餐廳 (`restaurant.js`):
+  - A level is a shelf of foods plus 3–5 animal customers. Each order is `[{food, count}]` drawn from the shelf. Levels 1–2 serve each animal its favorite food; later levels grow to 3 kinds and up to 5 of a kind.
+  - `serve()` takes only foods still wanted. Anything else is handed back with no penalty, so a level can always be finished.
+  - Foods and animals are Emoji up to Unicode 11. Food names carry their measure word (`unit`) for `describeOrder()`.
+  - The screen keeps the walk-away animation in `exit` and cancels it when the next customer arrives. Its timers keep running while the screen is hidden, so returning resumes with the next customer; `load()` cancels them.
 
 **App feel** (`style.css`): `body` has `touch-action: pan-x pan-y` (no pinch or double-tap zoom), `overscroll-behavior: none`, `user-select: none`, and no tap highlight. `ui.js` cancels `contextmenu`.
 
