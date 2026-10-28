@@ -520,7 +520,7 @@ async function save() {
   }
 }
 function storageReplaced() {
-  setStatus("畫室已在其他分頁更新，回到首頁會重新整理", { notify: true });
+  setStatus("遊樂園已在其他分頁更新，回到首頁會重新整理", { notify: true });
   updatePending = true;
   refreshAfterUpdate();
 }
@@ -803,7 +803,7 @@ function downloadBlob(blob, name) {
 }
 $("download").onclick = () =>
   scheduler.run(async () => {
-    downloadBlob(await canvasBlob(await exportCanvas()), "小小畫室.png");
+    downloadBlob(await canvasBlob(await exportCanvas()), "小小遊樂園.png");
     await keepArtwork();
     setStatus("作品已儲存，也可以下載圖片", { notify: true });
   });
@@ -849,7 +849,7 @@ $("gallery").onclick = () =>
       } else {
         const link = document.createElement("a");
         link.href = img.src;
-        link.download = "小小畫室-" + art.id + ".png";
+        link.download = "小小遊樂園-" + art.id + ".png";
         link.append(img);
         $("artworks").append(link);
       }

@@ -29,7 +29,7 @@ function summarize(work) {
   };
 }
 function closedError() {
-  const error = new Error("畫室已在其他分頁更新，回到首頁會重新整理");
+  const error = new Error("遊樂園已在其他分頁更新，回到首頁會重新整理");
   error.code = "storage-closed";
   return error;
 }
@@ -46,7 +46,7 @@ export async function openStudio(
       reject(error);
     }
     function unavailable(code) {
-      const error = new Error("儲存尚未就緒，請關閉其他畫室分頁後重新整理");
+      const error = new Error("儲存尚未就緒，請關閉其他遊樂園分頁後重新整理");
       error.code = code;
       return error;
     }

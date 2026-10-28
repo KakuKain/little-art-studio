@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "小小畫家",
-  "short_name": "小小畫家",
-  "description": "給 3–6 歲小朋友的著色與畫畫 App，不需登入、沒有廣告，可離線使用。",
+  "name": "小小遊樂園",
+  "short_name": "小小遊樂園",
+  "description": "給 3–6 歲小朋友的畫畫與益智遊戲，不需登入、沒有廣告，可離線使用。",
   "lang": "zh-Hant",
   "start_url": "./",
   "scope": "./",

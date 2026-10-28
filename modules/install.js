@@ -13,7 +13,7 @@ export function installAppSupport() {
     $("install-controls").hidden = runningInstalled();
     $("install-app").hidden = !prompt;
     $("install-status").textContent = installed
-      ? "已安裝，請從主畫面開啟小小畫家。"
+      ? "已安裝，請從主畫面開啟小小遊樂園。"
       : prompt
         ? "安裝後從主畫面開啟，全螢幕使用，也能離線畫畫。"
         : "請在 Chrome 右上角選單（⋮）選擇「安裝應用程式」或「加到主畫面」。";
