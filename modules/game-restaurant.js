@@ -7,6 +7,7 @@ import {
   generateLevel,
   serve,
   describeOrder,
+  spokenNumber,
 } from "./restaurant.js?v=1.0.0-beta.8";
 import {
   loadProgress,
@@ -188,6 +189,11 @@ export function createRestaurantGame({ onBack }) {
           slot.append(picture("food", food));
           row.append(slot);
         }
+        // The row's number, so the child links how many to the digit.
+        const number = document.createElement("span");
+        number.className = "restaurant-count";
+        number.textContent = count;
+        row.append(number);
         return row;
       }),
     );
@@ -329,7 +335,7 @@ export function createRestaurantGame({ onBack }) {
     thanks.textContent = "❤️ 謝謝！";
     bubble.replaceChildren(thanks);
     said.textContent = `${look.name}吃飽了，謝謝！`;
-    speak("謝謝！");
+    speak("謝謝！", { queue: true });
     animate(
       animal,
       [
@@ -392,9 +398,10 @@ export function createRestaurantGame({ onBack }) {
       return;
     }
     sounds.pop();
-    const slot = bubble.querySelectorAll(`[data-food="${food}"]`)[
-      plate.filter((f) => f === food).length
-    ];
+    // Each food is counted as it lands: 一、兩、三.
+    const nth = plate.filter((f) => f === food).length,
+      slot = bubble.querySelectorAll(`[data-food="${food}"]`)[nth];
+    speak(spokenNumber(nth + 1));
     plate = result.plate;
     fly(button, slot);
     later(() => slot.classList.add("served"), flight());

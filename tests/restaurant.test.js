@@ -7,6 +7,7 @@ import {
   stillWanted,
   orderDone,
   describeOrder,
+  spokenNumber,
   generateLevel,
   levelSpec,
 } from "../modules/restaurant.js";
@@ -52,6 +53,14 @@ test("orders are described with the right measure words", () => {
     describeOrder([...order, { food: "fish", count: 5 }], { spoken: true }),
     "兩顆蘋果、一根香蕉和五條魚",
   );
+  // Counting a food as it is served.
+  assert.deepEqual([1, 2, 3, 4, 5].map(spokenNumber), [
+    "一",
+    "兩",
+    "三",
+    "四",
+    "五",
+  ]);
 });
 
 test("the first days serve each animal its favorite food", () => {

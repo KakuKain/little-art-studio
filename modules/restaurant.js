@@ -77,10 +77,13 @@ export function serve(order, plate, food) {
 // 「2 顆蘋果和 1 根香蕉」, for screen readers, or spoken aloud as
 // 「兩顆蘋果和一根香蕉」, the way a voice should read it.
 const SPOKEN = ["零", "一", "兩", "三", "四", "五"];
+export function spokenNumber(n) {
+  return SPOKEN[n];
+}
 export function describeOrder(order, { spoken = false } = {}) {
   const parts = order.map(({ food, count }) =>
     spoken
-      ? `${SPOKEN[count]}${FOODS[food].unit}${FOODS[food].name}`
+      ? `${spokenNumber(count)}${FOODS[food].unit}${FOODS[food].name}`
       : `${count} ${FOODS[food].unit}${FOODS[food].name}`,
   );
   return parts.length > 1
