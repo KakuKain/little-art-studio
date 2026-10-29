@@ -67,25 +67,63 @@ export function makeHand(size) {
   return { hand, tip };
 }
 
-// Lists levels 1..unlocked; the current one is highlighted. Clearing a level
-// unlocks the next, so every level before `unlocked` has been cleared.
+// Lists levels 1..unlocked, twenty to a page, starting on the current
+// level's page; the current one is highlighted and a button above jumps to
+// the newest level. Clearing a level unlocks the next, so every level
+// before `unlocked` has been cleared.
+const PAGE = 20;
 export function showLevelPicker(dialog, { unlocked, current, onPick }) {
   const grid = dialog.querySelector(".levels-grid");
-  grid.replaceChildren();
-  for (let n = 1; n <= unlocked; n++) {
-    const button = document.createElement("button");
-    button.textContent = n;
-    button.setAttribute(
-      "aria-label",
-      `第 ${n} 關${n < unlocked ? "，已過關" : ""}`,
-    );
-    button.classList.toggle("current", n === current);
-    button.classList.toggle("cleared", n < unlocked);
-    button.onclick = () => {
-      dialog.close();
-      onPick(n);
-    };
-    grid.append(button);
+  let latest = dialog.querySelector(".levels-latest"),
+    pages = dialog.querySelector(".levels-pages");
+  if (!latest) {
+    latest = document.createElement("button");
+    latest.className = "levels-latest";
+    grid.before(latest);
+    pages = document.createElement("div");
+    pages.className = "levels-pages";
+    pages.innerHTML =
+      '<button class="levels-prev" aria-label="上一頁">‹</button><span></span><button class="levels-next" aria-label="下一頁">›</button>';
+    grid.after(pages);
   }
+  const pick = (n) => {
+    dialog.close();
+    onPick(n);
+  };
+  latest.textContent = `繼續第 ${unlocked} 關`;
+  latest.hidden = current === unlocked;
+  latest.onclick = () => pick(unlocked);
+  const last = Math.ceil(unlocked / PAGE);
+  let page = Math.floor(((current || unlocked) - 1) / PAGE);
+  function render() {
+    const from = page * PAGE + 1,
+      to = Math.min(unlocked, from + PAGE - 1);
+    grid.replaceChildren();
+    for (let n = from; n <= to; n++) {
+      const button = document.createElement("button");
+      button.textContent = n;
+      button.setAttribute(
+        "aria-label",
+        `第 ${n} 關${n < unlocked ? "，已過關" : ""}`,
+      );
+      button.classList.toggle("current", n === current);
+      button.classList.toggle("cleared", n < unlocked);
+      button.onclick = () => pick(n);
+      grid.append(button);
+    }
+    pages.hidden = last <= 1;
+    pages.querySelector("span").textContent = `${from}–${to}`;
+    pages.querySelector(".levels-prev").disabled = page === 0;
+    pages.querySelector(".levels-next").disabled = page === last - 1;
+  }
+  pages.querySelector(".levels-prev").onclick = () => {
+    page--;
+    render();
+  };
+  pages.querySelector(".levels-next").onclick = () => {
+    page++;
+    render();
+  };
+  render();
   dialog.showModal();
 }

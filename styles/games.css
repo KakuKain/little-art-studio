@@ -103,6 +103,36 @@
 .game-win[hidden] {
   display: none;
 }
+/* The newest level, and pages of twenty when there are more. */
+.levels-latest {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 16px;
+  font-size: 17px;
+  font-weight: 800;
+  background: #ffe7a3;
+  box-shadow: inset 0 -4px 0 #e9bd44;
+}
+.levels-latest[hidden] {
+  display: none;
+}
+.levels-pages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 14px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.levels-pages[hidden] {
+  display: none;
+}
+.levels-pages button {
+  font-size: 26px;
+  border-radius: 50%;
+  background: var(--bg);
+}
 .levels-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
