@@ -1629,6 +1629,18 @@ body[data-game="blocks"] #game-blocks {
     transform: translate(var(--drift), 105dvh) rotate(var(--spin));
   }
 }
+/* The game's picture cheers too, for children who cannot read yet. */
+.game-win-picture {
+  width: min(48vw, 220px);
+  height: auto;
+  animation: cheer 600ms ease-out;
+}
+@media (max-height: 500px) {
+  .game-win-picture {
+    width: auto;
+    height: 34dvh;
+  }
+}
 .game-win-title {
   margin: 0;
   font-size: 40px;
@@ -1913,6 +1925,7 @@ body[data-game="restaurant"] #game-restaurant {
 @media (prefers-reduced-motion: reduce) {
   .game,
   .game-win,
+  .game-win-picture,
   .game-win-title,
   .restaurant-slot.served,
   .blocks-home .arrived,
