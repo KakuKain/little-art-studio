@@ -1359,11 +1359,12 @@ body[data-game="blocks"] #game-blocks {
 .game-top button:disabled {
   opacity: 0.35;
 }
+/* The level's name has its own line under the buttons, where the first
+   levels' hint used to be; the hint follows it. Phones held sideways keep
+   it between the buttons, so the board keeps its height. */
 .game-title {
-  flex: 1;
-  min-width: 0;
-  margin: 0;
-  font-size: 20px;
+  margin: 8px 0 0;
+  font-size: 22px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -1372,9 +1373,21 @@ body[data-game="blocks"] #game-blocks {
 .game-actions {
   display: flex;
   gap: 6px;
+  margin-left: auto;
+}
+@media (max-height: 500px) {
+  .game-title {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    left: 50%;
+    max-width: 40%;
+    margin: 0;
+    line-height: 48px;
+    transform: translateX(-50%);
+  }
 }
 .game-hint {
-  margin: 10px 0 0;
+  margin: 4px 0 0;
   text-align: center;
   font-size: 15px;
   font-weight: 600;
