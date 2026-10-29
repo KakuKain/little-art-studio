@@ -658,12 +658,24 @@ h3 {
   gap: 12px;
   margin-top: 20px;
 }
+/* Each picture keeps its place while it loads, so the album does not jump;
+   a picture of another shape sits inside it whole. */
 #artworks img {
   display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: 360 / 440;
+  object-fit: contain;
+  background: #fff;
   border: 1px solid var(--border);
   border-radius: 16px;
+}
+.album-empty {
+  grid-column: 1 / -1;
+  margin: 8px 0;
+  text-align: center;
+  font-weight: 600;
+  color: var(--muted);
 }
 @media (min-width: 768px) {
   #home {

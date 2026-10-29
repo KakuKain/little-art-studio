@@ -916,6 +916,12 @@ $("gallery").onclick = () =>
         $("artworks").append(link);
       }
     }
+    if (!$("artworks").children.length) {
+      const empty = document.createElement("p");
+      empty.className = "album-empty";
+      empty.textContent = "還沒有作品，去畫一張吧！";
+      $("artworks").append(empty);
+    }
     $("album").showModal();
   });
 $("close").onclick = () => $("album").close();
