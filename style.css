@@ -214,11 +214,15 @@ select[hidden] {
 .in-category #gallery {
   display: none;
 }
+/* On category and sheet pages the title bar stays at the top, so the way
+   back never scrolls away. */
 .in-category .home-top {
   margin: 0 auto 24px;
-  position: relative;
-  padding: 8px 0;
-  background: transparent;
+  position: sticky;
+  top: calc(-1 * max(16px, env(safe-area-inset-top)));
+  padding: max(16px, env(safe-area-inset-top)) 0 8px;
+  margin-top: calc(-1 * max(16px, env(safe-area-inset-top)));
+  background: var(--bg);
   z-index: 2;
 }
 /* The corner decorations stay on the hub; category pages are plain. */
