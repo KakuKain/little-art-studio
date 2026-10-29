@@ -70,7 +70,8 @@ export function makeHand(size) {
 // Lists levels 1..unlocked, twenty to a page, starting on the current
 // level's page; the current one is highlighted and a button above jumps to
 // the newest level. Clearing a level unlocks the next, so every level
-// before `unlocked` has been cleared.
+// before `unlocked` has been cleared. Calling it again while the dialog is
+// open shows another list (方塊出門's 小朋友／大人 switch).
 const PAGE = 20;
 export function showLevelPicker(dialog, { unlocked, current, onPick }) {
   const grid = dialog.querySelector(".levels-grid");
@@ -125,5 +126,5 @@ export function showLevelPicker(dialog, { unlocked, current, onPick }) {
     render();
   };
   render();
-  dialog.showModal();
+  if (!dialog.open) dialog.showModal();
 }

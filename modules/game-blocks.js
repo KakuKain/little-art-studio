@@ -240,6 +240,10 @@ const MARKUP = `
     <h2>選關卡</h2>
     <button class="dismiss" aria-label="關閉">✕</button>
   </div>
+  <div class="blocks-modes" role="radiogroup" aria-label="關卡">
+    <button role="radio" data-mode="kids">小朋友</button
+    ><button role="radio" data-mode="adult">大人</button>
+  </div>
   <div class="levels-grid"></div>
 </dialog>
 `;
@@ -258,7 +262,15 @@ export function createBlocksGame({ onBack }) {
     home = $(".blocks-home"),
     win = $(".game-win"),
     elements = new Map(),
+    // Progress keeps the children's levels at the top and the grown-ups'
+    // (大人) in `adult`, with `mode` the ones being played.
     progress = loadProgress(KEY);
+  let mode = progress.mode === "adult" ? "adult" : "kids";
+  function track(m = mode) {
+    return m === "adult"
+      ? (progress.adult ??= { level: 1, unlocked: 1 })
+      : progress;
+  }
   let level = null,
     blocks = [],
     history = [],
@@ -413,21 +425,23 @@ export function createBlocksGame({ onBack }) {
       { duration: 2600, iterations: Infinity, easing: "ease-in-out" },
     );
   }
-  function load(n) {
+  function load(n, m = mode) {
     clearTimeout(hintTimer);
-    level = generateLevel(n);
+    mode = progress.mode = m;
+    level = generateLevel(n, m);
     blocks = cloneBlocks(level.blocks);
     history = [];
     drag = null;
     for (const el of elements.values()) el.remove();
     elements.clear();
-    progress.level = n;
-    progress.unlocked = Math.max(progress.unlocked, n);
+    track().level = n;
+    track().unlocked = Math.max(track().unlocked, n);
     saveProgress(KEY, progress);
-    $(".game-title").textContent = `第 ${n} 關`;
-    $(".game-hint").hidden = n > 3;
+    $(".game-title").textContent =
+      m === "adult" ? `大人・第 ${n} 關` : `第 ${n} 關`;
+    $(".game-hint").hidden = m === "adult" || n > 3;
     win.hidden = true;
-    guide = n <= 2;
+    guide = m === "kids" && n <= 2;
     // The level's cats in a row above the board; each lights up at home.
     home.replaceChildren(
       ...level.blocks.map((block) => {
@@ -481,7 +495,7 @@ export function createBlocksGame({ onBack }) {
     render();
     callHome();
     if (!blocks.length) {
-      progress.unlocked = Math.max(progress.unlocked, level.n + 1);
+      track().unlocked = Math.max(track().unlocked, level.n + 1);
       saveProgress(KEY, progress);
       // The cleared card shows the level's cats again, all home.
       $(".win-friends").replaceChildren(
@@ -621,17 +635,27 @@ export function createBlocksGame({ onBack }) {
   };
   $(".game-next").onclick = () => load(level.n + 1);
   $(".game-again").onclick = () => load(level.n);
+  // The level picker lists the children's or the grown-ups' levels; its
+  // 小朋友／大人 switch changes the list, and picking a level plays it.
   const dialog = $(".game-levels-dialog");
-  $(".game-levels").onclick = () =>
+  function pickLevels(m) {
+    for (const button of $(".blocks-modes").children)
+      button.setAttribute("aria-checked", String(button.dataset.mode === m));
     showLevelPicker(dialog, {
-      unlocked: progress.unlocked,
-      current: level.n,
-      onPick: load,
+      unlocked: track(m).unlocked,
+      current: m === mode ? level.n : track(m).level,
+      onPick: (n) => load(n, m),
     });
+  }
+  $(".game-levels").onclick = () => pickLevels(mode);
+  $(".blocks-modes").onclick = (e) => {
+    const button = e.target.closest("[data-mode]");
+    if (button) pickLevels(button.dataset.mode);
+  };
   new ResizeObserver(layout).observe(stage);
   return {
     open() {
-      if (!level) load(progress.level);
+      if (!level) load(track().level);
       else layout();
     },
     close() {

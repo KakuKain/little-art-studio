@@ -193,6 +193,39 @@ test("every level is solvable, well-formed and gets harder", () => {
   assert.ok(average(3, 8) < average(9, 24) && average(9, 24) < average(25, 60));
 });
 
+test("grown-ups' levels are bigger, harder and always solvable", () => {
+  for (let n = 1; n <= 40; n++) {
+    const level = generateLevel(n, "adult"),
+      spec = levelSpec(n, "adult");
+    assert.equal(level.mode, "adult");
+    assert.deepEqual([level.w, level.h], [spec.w, spec.h]);
+    assert.ok(exitOrder(level), `adult level ${n} must be solvable`);
+    assert.ok(blockedCount(level) >= 3, `adult level ${n} needs planning`);
+  }
+  assert.deepEqual(
+    [
+      generateLevel(1, "adult").w,
+      generateLevel(20, "adult").w,
+      generateLevel(40, "adult").w,
+    ],
+    [6, 7, 8],
+  );
+  // Different from the children's level with the same number, and the same
+  // every time.
+  assert.notDeepEqual(
+    generateLevel(5, "adult").blocks,
+    generateLevel(5).blocks,
+  );
+  assert.deepEqual(generateLevel(33, "adult"), generateLevel(33, "adult"));
+  const cats = (from, to, mode) => {
+    let sum = 0;
+    for (let n = from; n <= to; n++)
+      sum += generateLevel(n, mode).blocks.length;
+    return sum / (to - from + 1);
+  };
+  assert.ok(cats(1, 10, "adult") > cats(61, 80, "kids"));
+});
+
 test("a level is the same every time and callers cannot change it", () => {
   const first = generateLevel(17);
   first.blocks[0].x = 99;

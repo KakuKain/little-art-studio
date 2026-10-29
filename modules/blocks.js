@@ -214,19 +214,28 @@ const FIRST_LEVELS = [
 ];
 
 // Board size, block count, colors, chance of two-cell blocks and how many
-// blocks must start without a way out.
-export function levelSpec(n) {
-  if (n <= 4)
+// blocks must start without a way out. Children's levels grow slowly: 4×4
+// until level 14, 5×5 until 45, then 6×6. The grown-ups' levels (大人) start
+// at 6×6 and reach 8×8, with many more cats stuck at the start.
+export function levelSpec(n, mode = "kids") {
+  if (mode === "adult") {
+    if (n <= 10)
+      return { w: 6, h: 6, count: [8, 10], colors: 4, long: 0.5, blocked: 4 };
+    if (n <= 30)
+      return { w: 7, h: 7, count: [10, 13], colors: 5, long: 0.6, blocked: 5 };
+    return { w: 8, h: 8, count: [13, 16], colors: 5, long: 0.6, blocked: 6 };
+  }
+  if (n <= 6)
     return { w: 4, h: 4, count: [2, 3], colors: 2, long: 0, blocked: 1 };
-  if (n <= 8)
-    return { w: 4, h: 4, count: [3, 4], colors: 3, long: 0.3, blocked: 1 };
   if (n <= 14)
-    return { w: 5, h: 5, count: [4, 6], colors: 3, long: 0.4, blocked: 2 };
-  if (n <= 24)
-    return { w: 5, h: 5, count: [6, 8], colors: 4, long: 0.5, blocked: 3 };
-  if (n <= 40)
-    return { w: 6, h: 6, count: [7, 10], colors: 4, long: 0.5, blocked: 3 };
-  return { w: 6, h: 6, count: [9, 12], colors: 5, long: 0.6, blocked: 4 };
+    return { w: 4, h: 4, count: [3, 4], colors: 3, long: 0.3, blocked: 1 };
+  if (n <= 26)
+    return { w: 5, h: 5, count: [4, 5], colors: 3, long: 0.4, blocked: 1 };
+  if (n <= 45)
+    return { w: 5, h: 5, count: [5, 7], colors: 4, long: 0.5, blocked: 2 };
+  if (n <= 70)
+    return { w: 6, h: 6, count: [6, 8], colors: 4, long: 0.5, blocked: 2 };
+  return { w: 6, h: 6, count: [8, 10], colors: 5, long: 0.6, blocked: 3 };
 }
 
 function attempt(spec, rand) {
@@ -280,12 +289,16 @@ function attempt(spec, rand) {
   return level;
 }
 
+// Level n of the children's ("kids") or the grown-ups' ("adult") levels.
 const cache = new Map();
-export function generateLevel(n) {
-  let level = cache.get(n) || FIRST_LEVELS[n - 1];
+export function generateLevel(n, mode = "kids") {
+  const key = `${mode}:${n}`;
+  let level = cache.get(key) || (mode === "kids" && FIRST_LEVELS[n - 1]);
   if (!level) {
-    const spec = levelSpec(n),
-      rand = seeded(Math.imul(n, 2654435761) ^ 0x5bd1e995);
+    const spec = levelSpec(n, mode),
+      rand = seeded(
+        Math.imul(n, 2654435761) ^ (mode === "adult" ? 0x2c1b3c6d : 0x5bd1e995),
+      );
     for (let tries = 0; !level; tries++) {
       // Relax the "blocked at start" goal if a board refuses to cooperate.
       const goal = Math.max(1, spec.blocked - Math.floor(tries / 400));
@@ -294,7 +307,7 @@ export function generateLevel(n) {
         level = candidate;
     }
   }
-  cache.set(n, { ...level, n });
+  cache.set(key, { ...level, n, mode });
   // Callers may move blocks around; never hand out the cached ones.
-  return { ...level, n, blocks: cloneBlocks(level.blocks) };
+  return { ...level, n, mode, blocks: cloneBlocks(level.blocks) };
 }
