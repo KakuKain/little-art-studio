@@ -275,6 +275,15 @@ export function createRestaurantGame(root, { onBack }) {
     }
     progress.unlocked = Math.max(progress.unlocked, level.n + 1);
     saveProgress(KEY, progress);
+    // The cleared card shows the day's customers, all fed.
+    $(".win-friends").replaceChildren(
+      ...level.customers.map(({ animal: id }, i) => {
+        const friend = document.createElement("span");
+        friend.append(picture("animal", id));
+        friend.style.setProperty("--i", i);
+        return friend;
+      }),
+    );
     win.hidden = false;
     celebrate(win);
     $(".game-next").focus();

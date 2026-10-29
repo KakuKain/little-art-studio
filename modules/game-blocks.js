@@ -388,6 +388,15 @@ export function createBlocksGame(root, { onBack }) {
     if (!blocks.length) {
       progress.unlocked = Math.max(progress.unlocked, level.n + 1);
       saveProgress(KEY, progress);
+      // The cleared card shows the level's cats again, all home.
+      $(".win-friends").replaceChildren(
+        ...[...home.children].map((mini, i) => {
+          const friend = mini.cloneNode(true);
+          friend.removeAttribute("class");
+          friend.style.setProperty("--i", i);
+          return friend;
+        }),
+      );
       setTimeout(() => {
         win.hidden = false;
         celebrate(win);
