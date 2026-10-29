@@ -396,6 +396,11 @@ function setTool(value) {
       ),
     );
 }
+// A sheet opens with fill, so a small child colors a whole part with one
+// tap; the blank canvas opens with the pencil.
+function startTool() {
+  setTool(scene === "blank" ? "pen" : "fill");
+}
 function selectorFor(by, id) {
   const attribute = {
     region: "data-region",
@@ -801,7 +806,7 @@ async function switchWork(next) {
   }
   await renderWork(next);
   currentWork = next;
-  setTool("pen");
+  startTool();
   await save();
 }
 $("home-grid").onclick = (e) => {
@@ -834,7 +839,7 @@ $("home-grid").onclick = (e) => {
       await renderWork(currentWork);
       editorLoaded = true;
       pendingWork = null;
-      setTool("pen");
+      startTool();
       await save();
     } else {
       await ensureCurrent();
@@ -842,7 +847,7 @@ $("home-grid").onclick = (e) => {
         await switchWork(
           (await savedWork(id)) || workCache.get(id) || createWork(id),
         );
-      else setTool("pen");
+      else startTool();
     }
     if (navigation === opened) showEditor();
   });
