@@ -13,6 +13,7 @@ import {
   saveProgress,
   showLevelPicker,
   celebrate,
+  makeHand,
 } from "./game-kit.js?v=1.0.0-beta.6";
 import { sounds, say, hush } from "./sound.js?v=1.0.0-beta.6";
 
@@ -54,6 +55,8 @@ export function createRestaurantGame(root, { onBack }) {
     index = 0,
     plate = [],
     serving = false,
+    // Levels 1 and 2 show a hand until the child taps the shelf.
+    guide = false,
     // The customer walking away stays out of sight until the next arrives.
     exit = null;
 
@@ -104,6 +107,8 @@ export function createRestaurantGame(root, { onBack }) {
     );
     said.textContent = `${look.name}想吃 ${describeOrder(order)}`;
     sayOrder();
+    guide = level.n <= 2;
+    later(showHand, 1200);
     animate(
       guest,
       [
@@ -121,6 +126,38 @@ export function createRestaurantGame(root, { onBack }) {
   function sayOrder() {
     const { animal: id, order } = level.customers[index];
     speak(`${ANIMALS[id].name}想吃${describeOrder(order, { spoken: true })}`);
+  }
+  // On levels 1 and 2 a hand taps the food the customer still wants, over
+  // and over, until the child taps the shelf; it comes back for the next
+  // customer.
+  function showHand() {
+    shelf.querySelector(".game-hand")?.remove();
+    if (!guide || serving || !win.hidden) return;
+    const wanted = level.customers[index].order.find(
+        ({ food, count }) => plate.filter((f) => f === food).length < count,
+      ),
+      button = wanted && shelf.querySelector(`[data-food="${wanted.food}"]`);
+    if (!button) return;
+    const { hand, tip } = makeHand(Math.round(button.offsetWidth * 0.7)),
+      x = button.offsetLeft + button.offsetWidth / 2 - tip[0],
+      y = button.offsetTop + button.offsetHeight / 2 - tip[1],
+      at = (dy, scale = 1) => `translate(${x}px, ${y + dy}px) scale(${scale})`;
+    hand.style.transform = at(0);
+    shelf.append(hand);
+    if (reducedMotion.matches) return;
+    hand.animate(
+      [
+        { transform: at(-30), opacity: 0, offset: 0 },
+        { transform: at(0), opacity: 1, offset: 0.2 },
+        { transform: at(0, 0.85), opacity: 1, offset: 0.3 },
+        { transform: at(0), opacity: 1, offset: 0.4 },
+        { transform: at(0, 0.85), opacity: 1, offset: 0.5 },
+        { transform: at(0), opacity: 1, offset: 0.6 },
+        { transform: at(0), opacity: 0, offset: 0.8 },
+        { transform: at(0), opacity: 0, offset: 1 },
+      ],
+      { duration: 2200, iterations: Infinity, easing: "ease-in-out" },
+    );
   }
   function load(n) {
     for (const id of timers) clearTimeout(id);
@@ -246,6 +283,8 @@ export function createRestaurantGame(root, { onBack }) {
   shelf.addEventListener("click", (e) => {
     const button = e.target.closest("button");
     if (!button || serving || !win.hidden) return;
+    guide = false;
+    showHand();
     const food = button.dataset.food,
       result = serve(level.customers[index].order, plate, food);
     if (!result.taken) {

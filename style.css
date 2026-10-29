@@ -1547,8 +1547,9 @@ body[data-game="blocks"] #game-blocks {
     transform: rotate(10deg);
   }
 }
-/* The hand that shows how to play on the first levels. */
-.blocks-hand {
+/* The hand that shows how to play on the first levels (makeHand() in
+   game-kit.js). */
+.game-hand {
   position: absolute;
   left: 0;
   top: 0;
@@ -1556,7 +1557,7 @@ body[data-game="blocks"] #game-blocks {
   pointer-events: none;
   filter: drop-shadow(0 4px 4px #59413740);
 }
-.blocks-hand svg {
+.game-hand svg {
   display: block;
   width: 100%;
   height: 100%;
@@ -1956,6 +1957,7 @@ body[data-game="restaurant"] #game-restaurant {
   font-size: clamp(96px, min(46vw, calc(30dvh - 90px)), 200px);
 }
 .restaurant-shelf {
+  position: relative;
   grid-area: 2 / 1;
   z-index: 2;
   margin-top: 7%;

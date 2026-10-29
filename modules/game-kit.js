@@ -1,5 +1,6 @@
 // Parts every game screen shares: progress remembered on this device, the
-// level picker dialog and the cheer for a cleared level.
+// level picker dialog, the cheer for a cleared level and the hand that shows
+// what to do.
 import { sounds } from "./sound.js?v=1.0.0-beta.6";
 
 // Progress is a convenience: private mode or blocked storage starts from the
@@ -47,6 +48,22 @@ export function celebrate(win) {
     piece.addEventListener("animationend", () => piece.remove());
     win.append(piece);
   }
+}
+
+// A white hand `size` pixels wide that shows a small child what to do.
+// Its transform origin is the fingertip, at `tip` inside the hand.
+const HAND =
+  '<svg viewBox="-2 -2 44 52" aria-hidden="true"><path d="M11 28V7a4 4 0 0 1 8 0V20a3.2 3.2 0 0 1 6.4 0V22a3.2 3.2 0 0 1 6.4 0V24a3 3 0 0 1 6 0V33c0 8-5 13-13 13h-3c-6 0-9-3-12-8l-5-8a3 3 0 0 1 4.6-3.8L11 29Z"/><path d="M19 20v5M25.4 22v4M31.8 24v4" fill="none"/></svg>';
+export function makeHand(size) {
+  const hand = document.createElement("div"),
+    height = Math.round(size * 1.18),
+    tip = [(17 / 44) * size, (8 / 52) * height];
+  hand.className = "game-hand";
+  hand.innerHTML = HAND;
+  hand.style.width = size + "px";
+  hand.style.height = height + "px";
+  hand.style.transformOrigin = `${tip[0]}px ${tip[1]}px`;
+  return { hand, tip };
 }
 
 // Lists levels 1..unlocked; the current one is highlighted. Clearing a level

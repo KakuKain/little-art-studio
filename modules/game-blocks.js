@@ -12,6 +12,7 @@ import {
   saveProgress,
   showLevelPicker,
   celebrate,
+  makeHand,
 } from "./game-kit.js?v=1.0.0-beta.6";
 import { sounds } from "./sound.js?v=1.0.0-beta.6";
 
@@ -152,9 +153,6 @@ function house(side, span, thick, shape) {
     "</svg>"
   );
 }
-// The hand that shows how to play, its fingertip at (15, 3).
-const HAND =
-  '<svg viewBox="-2 -2 44 52" aria-hidden="true"><path d="M11 28V7a4 4 0 0 1 8 0V20a3.2 3.2 0 0 1 6.4 0V22a3.2 3.2 0 0 1 6.4 0V24a3 3 0 0 1 6 0V33c0 8-5 13-13 13h-3c-6 0-9-3-12-8l-5-8a3 3 0 0 1 4.6-3.8L11 29Z"/><path d="M19 20v5M25.4 22v4M31.8 24v4" fill="none"/></svg>';
 const OUT = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] };
 const KEY = "little-playground.blocks";
 
@@ -288,7 +286,7 @@ export function createBlocksGame(root, { onBack }) {
   // for the next cat. Those levels' cats go home in a straight line.
   function showHand() {
     clearTimeout(guideTimer);
-    board.querySelector(".blocks-hand")?.remove();
+    board.querySelector(".game-hand")?.remove();
     if (!guide || !blocks.length || !win.hidden) return;
     const block = nextHome(),
       door = block && level.doors.find((d) => d.color === block.color);
@@ -300,17 +298,10 @@ export function createBlocksGame(root, { onBack }) {
         (along ? level.h : level.w) * cell + thick / 2,
       from = [(block.x + block.w / 2) * cell, (block.y + block.h / 2) * cell],
       to = along ? [middle, edge] : [edge, middle],
-      size = Math.round(cell),
-      hand = document.createElement("div");
-    hand.className = "blocks-hand";
-    hand.innerHTML = HAND;
-    hand.style.width = size + "px";
-    hand.style.height = Math.round(size * 1.18) + "px";
-    // Keyframes place the fingertip on the point.
-    const tip = [(17 / 44) * size, (8 / 52) * size * 1.18],
+      { hand, tip } = makeHand(Math.round(cell)),
+      // Keyframes place the fingertip on the point.
       at = ([x, y], scale = 1) =>
         `translate(${x - tip[0]}px, ${y - tip[1]}px) scale(${scale})`;
-    hand.style.transformOrigin = `${tip[0]}px ${tip[1]}px`;
     hand.style.transform = at(from);
     board.append(hand);
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
