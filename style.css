@@ -1395,6 +1395,7 @@ body[data-game="blocks"] #game-blocks {
 .game-win {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1405,6 +1406,20 @@ body[data-game="blocks"] #game-blocks {
 }
 .game-win[hidden] {
   display: none;
+}
+.confetti {
+  position: absolute;
+  top: -16px;
+  width: 10px;
+  height: 14px;
+  border-radius: 3px;
+  pointer-events: none;
+  animation: confetti 1.8s ease-in both;
+}
+@keyframes confetti {
+  to {
+    transform: translate(var(--drift), 105dvh) rotate(var(--spin));
+  }
 }
 .game-win-title {
   margin: 0;
@@ -1436,11 +1451,26 @@ body[data-game="blocks"] #game-blocks {
   margin-top: 20px;
 }
 .levels-grid button {
+  position: relative;
   min-width: 0;
   aspect-ratio: 1;
   font-size: 18px;
   font-weight: 700;
   background: var(--bg);
+}
+/* A cleared level wears a gold star. */
+.levels-grid button.cleared {
+  background: #eef8f0;
+}
+.levels-grid button.cleared::after {
+  content: "★";
+  position: absolute;
+  top: 1px;
+  right: 4px;
+  font-size: 14px;
+  line-height: 1;
+  color: #f2b01e;
+  text-shadow: 0 1px 0 #b9800a;
 }
 .levels-grid button.current {
   background: #fff0bd;

@@ -12,6 +12,7 @@ import {
   loadProgress,
   saveProgress,
   showLevelPicker,
+  celebrate,
 } from "./game-kit.js?v=1.0.0-beta.3";
 
 const KEY = "little-playground.restaurant";
@@ -230,6 +231,7 @@ export function createRestaurantGame(root, { onBack }) {
     progress.unlocked = Math.max(progress.unlocked, level.n + 1);
     saveProgress(KEY, progress);
     win.hidden = false;
+    celebrate(win);
     $(".game-next").focus();
   }
 

@@ -21,15 +21,45 @@ export function saveProgress(key, progress) {
   }
 }
 
-// Lists levels 1..unlocked; the current one is highlighted.
+// Confetti falls over a cleared level, unless the device asks for less
+// motion. Each piece removes itself when it lands.
+const CONFETTI = [
+  "#ff7399",
+  "#ffd54f",
+  "#74b9ed",
+  "#7ccca0",
+  "#ac8bd8",
+  "#ffae62",
+];
+export function celebrate(win) {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  for (let i = 0; i < 32; i++) {
+    const piece = document.createElement("span");
+    piece.className = "confetti";
+    piece.style.left = Math.random() * 100 + "%";
+    piece.style.background = CONFETTI[i % CONFETTI.length];
+    piece.style.setProperty("--drift", Math.random() * 80 - 40 + "px");
+    piece.style.setProperty("--spin", Math.random() * 900 - 450 + "deg");
+    piece.style.animationDelay = Math.random() * 500 + "ms";
+    piece.addEventListener("animationend", () => piece.remove());
+    win.append(piece);
+  }
+}
+
+// Lists levels 1..unlocked; the current one is highlighted. Clearing a level
+// unlocks the next, so every level before `unlocked` has been cleared.
 export function showLevelPicker(dialog, { unlocked, current, onPick }) {
   const grid = dialog.querySelector(".levels-grid");
   grid.replaceChildren();
   for (let n = 1; n <= unlocked; n++) {
     const button = document.createElement("button");
     button.textContent = n;
-    button.setAttribute("aria-label", `第 ${n} 關`);
+    button.setAttribute(
+      "aria-label",
+      `第 ${n} 關${n < unlocked ? "，已過關" : ""}`,
+    );
     button.classList.toggle("current", n === current);
+    button.classList.toggle("cleared", n < unlocked);
     button.onclick = () => {
       dialog.close();
       onPick(n);

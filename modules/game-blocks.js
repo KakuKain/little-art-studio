@@ -10,6 +10,7 @@ import {
   loadProgress,
   saveProgress,
   showLevelPicker,
+  celebrate,
 } from "./game-kit.js?v=1.0.0-beta.3";
 
 // Each color has its own shape, drawn as the cat's eyes and on its door,
@@ -319,6 +320,7 @@ export function createBlocksGame(root, { onBack }) {
       saveProgress(KEY, progress);
       setTimeout(() => {
         win.hidden = false;
+        celebrate(win);
         $(".game-next").focus();
       }, 320);
     }
