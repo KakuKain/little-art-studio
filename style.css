@@ -100,6 +100,20 @@ button img {
   width: 26px;
   height: 26px;
 }
+/* The fill tool is a bucket pouring the color it will fill with. */
+.fill-icon {
+  display: block;
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: #263e4d;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.fill-icon .ink {
+  fill: var(--ink, #ff7399);
+}
 button[hidden],
 select[hidden] {
   display: none !important;

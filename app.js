@@ -636,6 +636,7 @@ async function keepArtwork() {
 function chooseColor(c) {
   color = c;
   $("color-preview").style.background = c;
+  $("fill").style.setProperty("--ink", c);
   document
     .querySelectorAll("#palette button")
     .forEach((b) => b.classList.toggle("active", b.dataset.color === c));

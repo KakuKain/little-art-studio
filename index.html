@@ -199,9 +199,20 @@
             /><span class="size-dot large" aria-hidden="true"></span>
           </div>
           <button id="fill" class="" aria-label="填色">
-            <img src="assets/ui/fill.svg" alt="" /><span class="tool-label"
-              >填色</span
-            ></button
+            <svg class="fill-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <g transform="rotate(45 10 12)">
+                <path d="M4.6 9.5C4 2.5 16 2.5 15.4 9.5" />
+                <path
+                  d="M4 8.5 5.6 17.2a2 2 0 0 0 2 1.6h4.8a2 2 0 0 0 2-1.6L16 8.5"
+                  fill="#fff"
+                />
+                <ellipse class="ink" cx="10" cy="8.5" rx="6" ry="2.2" />
+              </g>
+              <path
+                class="ink"
+                d="M19.5 14.5c1.5 2 2.2 3.3 2.2 4.2a2.2 2.2 0 0 1-4.4 0c0-.9.7-2.2 2.2-4.2Z"
+              /></svg
+            ><span class="tool-label">填色</span></button
           ><button id="eraser" class="" aria-label="橡皮擦">
             <img src="assets/ui/eraser.svg" alt="" /><span class="tool-label"
               >橡皮擦</span
