@@ -4,6 +4,7 @@ import {
   generateLevel,
   dragTo,
   doorAt,
+  canExit,
   cloneBlocks,
 } from "./blocks.js?v=1.0.0-beta.5";
 import {
@@ -133,7 +134,7 @@ function house(side, span, thick, shape) {
     walls = `M${o} ${thick}L${o} ${eave}L${r(span / 2)} ${o}L${r(span - o)} ${eave}L${r(span - o)} ${thick}`,
     along = side === "top" || side === "bottom",
     mx = span / 2,
-    my = thick * 0.71,
+    my = thick * 0.7,
     [x, y] = {
       top: [mx, my],
       bottom: [mx, thick - my],
@@ -146,10 +147,13 @@ function house(side, span, thick, shape) {
     `<path class="house" d="${walls}Z"/>` +
     `<path class="roof" d="M${o} ${eave}L${r(span / 2)} ${o}L${r(span - o)} ${eave}Z"/>` +
     `<path class="house-line" d="${walls}M${o} ${eave}H${r(span - o)}"/></g>` +
-    `<g class="mark" transform="translate(${r(x)} ${r(y)}) scale(${((thick * 0.46) / 20).toFixed(3)})">${SHAPES[shape]}</g>` +
+    `<g class="mark" transform="translate(${r(x)} ${r(y)}) scale(${((thick * 0.52) / 20).toFixed(3)})">${SHAPES[shape]}</g>` +
     "</svg>"
   );
 }
+// The hand that shows how to play, its fingertip at (15, 3).
+const HAND =
+  '<svg viewBox="-2 -2 44 52" aria-hidden="true"><path d="M11 28V7a4 4 0 0 1 8 0V20a3.2 3.2 0 0 1 6.4 0V22a3.2 3.2 0 0 1 6.4 0V24a3 3 0 0 1 6 0V33c0 8-5 13-13 13h-3c-6 0-9-3-12-8l-5-8a3 3 0 0 1 4.6-3.8L11 29Z"/><path d="M19 20v5M25.4 22v4M31.8 24v4" fill="none"/></svg>';
 const OUT = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] };
 const KEY = "little-playground.blocks";
 
@@ -165,7 +169,11 @@ export function createBlocksGame(root, { onBack }) {
     blocks = [],
     history = [],
     drag = null,
-    cell = 0;
+    cell = 0,
+    thick = 0,
+    guide = false,
+    guideTimer = 0,
+    hintTimer = 0;
 
   function gap() {
     return Math.max(3, Math.round(cell * 0.06));
@@ -213,7 +221,7 @@ export function createBlocksGame(root, { onBack }) {
   function layout() {
     if (!level) return;
     const rect = stage.getBoundingClientRect(),
-      gateFor = (size) => Math.round(Math.min(44, Math.max(26, size * 0.5))),
+      gateFor = (size) => Math.round(Math.min(56, Math.max(30, size * 0.7))),
       fit = (room) =>
         Math.floor(
           Math.min(
@@ -226,8 +234,8 @@ export function createBlocksGame(root, { onBack }) {
     const size = fit(gateFor(fit(24)) + 4);
     if (size <= 0) return;
     cell = size;
-    const fence = Math.round(Math.min(24, Math.max(12, cell * 0.24))),
-      thick = gateFor(cell);
+    const fence = Math.round(Math.min(24, Math.max(12, cell * 0.24)));
+    thick = gateFor(cell);
     board.style.width = level.w * cell + "px";
     board.style.height = level.h * cell + "px";
     board.style.setProperty("--cell", cell + "px");
@@ -238,6 +246,7 @@ export function createBlocksGame(root, { onBack }) {
         look = LOOK[door.color],
         along = door.side === "top" || door.side === "bottom";
       el.className = `blocks-door ${door.side}`;
+      el.dataset.color = door.color;
       el.style.setProperty("--fill", look.fill);
       el.setAttribute("aria-label", look.name + "貓咪的家");
       // The house opens onto the mat and stands out of the fence.
@@ -257,8 +266,68 @@ export function createBlocksGame(root, { onBack }) {
       board.append(el);
     }
     render();
+    callHome();
+    if (guide) showHand();
+  }
+  // While a cat is held (or shown by the hint), its own houses bounce and
+  // glow and the others step back, so the child sees where it wants to go.
+  function callHome(
+    color = drag && blocks.find((b) => b.id === drag.id)?.color,
+  ) {
+    board.classList.toggle("holding", Boolean(color));
+    for (const door of board.querySelectorAll(".blocks-door"))
+      door.classList.toggle("calling", door.dataset.color === color);
+  }
+  // A cat that can go home now without moving any other.
+  function nextHome() {
+    return blocks.find((b) => canExit(level, blocks, b.id));
+  }
+  // On levels 1 and 2 a hand drags the next cat that can go home to its
+  // house, over and over, until the child touches the board; it comes back
+  // for the next cat. Those levels' cats go home in a straight line.
+  function showHand() {
+    clearTimeout(guideTimer);
+    board.querySelector(".blocks-hand")?.remove();
+    if (!guide || !blocks.length || !win.hidden) return;
+    const block = nextHome(),
+      door = block && level.doors.find((d) => d.color === block.color);
+    if (!door) return;
+    const along = door.side === "top" || door.side === "bottom",
+      middle = (door.at + door.size / 2) * cell,
+      edge =
+        { top: -thick / 2, left: -thick / 2 }[door.side] ??
+        (along ? level.h : level.w) * cell + thick / 2,
+      from = [(block.x + block.w / 2) * cell, (block.y + block.h / 2) * cell],
+      to = along ? [middle, edge] : [edge, middle],
+      size = Math.round(cell),
+      hand = document.createElement("div");
+    hand.className = "blocks-hand";
+    hand.innerHTML = HAND;
+    hand.style.width = size + "px";
+    hand.style.height = Math.round(size * 1.18) + "px";
+    // Keyframes place the fingertip on the point.
+    const tip = [(17 / 44) * size, (8 / 52) * size * 1.18],
+      at = ([x, y], scale = 1) =>
+        `translate(${x - tip[0]}px, ${y - tip[1]}px) scale(${scale})`;
+    hand.style.transformOrigin = `${tip[0]}px ${tip[1]}px`;
+    hand.style.transform = at(from);
+    board.append(hand);
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    hand.animate(
+      [
+        { transform: at(from), opacity: 0, offset: 0 },
+        { transform: at(from), opacity: 1, offset: 0.12 },
+        { transform: at(from, 0.85), opacity: 1, offset: 0.2 },
+        { transform: at(to, 0.85), opacity: 1, offset: 0.62 },
+        { transform: at(to), opacity: 1, offset: 0.7 },
+        { transform: at(to), opacity: 0, offset: 0.82 },
+        { transform: at(to), opacity: 0, offset: 1 },
+      ],
+      { duration: 2600, iterations: Infinity, easing: "ease-in-out" },
+    );
   }
   function load(n) {
+    clearTimeout(hintTimer);
     level = generateLevel(n);
     blocks = cloneBlocks(level.blocks);
     history = [];
@@ -271,6 +340,7 @@ export function createBlocksGame(root, { onBack }) {
     $(".game-title").textContent = `第 ${n} 關`;
     $(".game-hint").hidden = n > 3;
     win.hidden = true;
+    guide = n <= 2;
     // The level's cats in a row above the board; each lights up at home.
     home.replaceChildren(
       ...level.blocks.map((block) => {
@@ -306,6 +376,12 @@ export function createBlocksGame(root, { onBack }) {
     el.classList.add("leaving");
     el.style.transform = `translate(${(block.x + dx * distance) * cell + gap()}px, ${(block.y + dy * distance) * cell + gap()}px)`;
     setTimeout(() => el.remove(), 300);
+    // On the first levels the hand then shows the next cat the way home.
+    if (level.n <= 2) {
+      guide = true;
+      clearTimeout(guideTimer);
+      guideTimer = setTimeout(showHand, 600);
+    }
   }
   function finish(moved) {
     if (!drag) return;
@@ -315,6 +391,7 @@ export function createBlocksGame(root, { onBack }) {
     el.classList.remove("dragging");
     if (el.hasPointerCapture(pointer)) el.releasePointerCapture(pointer);
     render();
+    callHome();
     if (!blocks.length) {
       progress.unlocked = Math.max(progress.unlocked, level.n + 1);
       saveProgress(KEY, progress);
@@ -332,6 +409,8 @@ export function createBlocksGame(root, { onBack }) {
     if (!block) return;
     const el = elements.get(block.id);
     el.setPointerCapture(e.pointerId);
+    guide = false;
+    showHand();
     drag = {
       el,
       id: block.id,
@@ -343,6 +422,7 @@ export function createBlocksGame(root, { onBack }) {
     };
     el.classList.add("dragging");
     render();
+    callHome();
   });
   board.addEventListener("pointermove", (e) => {
     if (!drag || e.pointerId !== drag.pointer) return;
@@ -387,6 +467,25 @@ export function createBlocksGame(root, { onBack }) {
       }
       finish(Boolean(door));
     });
+  // The hint wiggles a cat that can go home now and lights its houses. When
+  // none can, the child has jammed the board, so it wiggles undo (or
+  // restart) instead.
+  $(".blocks-help").onclick = () => {
+    if (drag || !win.hidden) return;
+    const block = nextHome(),
+      el = block
+        ? elements.get(block.id)
+        : $(history.length ? ".game-undo" : ".game-restart");
+    clearTimeout(hintTimer);
+    el.classList.remove("nudge");
+    void el.offsetWidth;
+    el.classList.add("nudge");
+    callHome(block?.color);
+    hintTimer = setTimeout(() => {
+      el.classList.remove("nudge");
+      callHome();
+    }, 1600);
+  };
   $(".game-back").onclick = () => onBack();
   $(".game-undo").onclick = () => {
     if (drag || !history.length) return;
