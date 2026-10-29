@@ -2097,6 +2097,40 @@ body[data-game="restaurant"] #game-restaurant {
     font-size: 9vmin;
   }
 }
+/* Tablets: the game's buttons, name, hint, cat row and hint button grow
+   with the screen, so they do not look lost on it. */
+@media (min-width: 700px) and (min-height: 700px) {
+  .game-top button {
+    width: 60px;
+    height: 60px;
+  }
+  .game-top button img {
+    width: 32px;
+    height: 32px;
+  }
+  .game-title {
+    font-size: 28px;
+  }
+  .game-hint {
+    font-size: 18px;
+  }
+  .blocks-home span {
+    width: 36px;
+    height: 36px;
+  }
+  .blocks-help {
+    width: 76px;
+    height: 76px;
+  }
+  .blocks-help svg {
+    width: 44px;
+    height: 44px;
+  }
+  .restaurant-queue span {
+    width: 18px;
+    height: 18px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .game,
   .game-win,
