@@ -62,6 +62,18 @@ export const sounds = {
         loud: 0.12,
       });
   },
+  // The canvas is cleared: a soft falling swish.
+  swish() {
+    const ac = audio();
+    if (ac)
+      note(ac, {
+        type: "triangle",
+        from: 900,
+        to: 180,
+        length: 0.28,
+        loud: 0.12,
+      });
+  },
   // A cat gets home: a buzzy tone whose pitch and brightness rise and fall
   // like a meow.
   meow() {

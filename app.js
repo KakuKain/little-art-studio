@@ -17,7 +17,7 @@ import {
   moveCursor,
   addCheckpoint,
 } from "./modules/history.js?v=1.0.0-beta.8";
-import { soundOn, setSoundOn } from "./modules/sound.js?v=1.0.0-beta.8";
+import { soundOn, setSoundOn, sounds } from "./modules/sound.js?v=1.0.0-beta.8";
 import { celebrate } from "./modules/game-kit.js?v=1.0.0-beta.8";
 import { openStudio } from "./modules/storage.js?v=1.0.0-beta.8";
 import { createPainter } from "./modules/painter.js?v=1.0.0-beta.8";
@@ -705,7 +705,20 @@ svg.addEventListener("pointerdown", (e) => {
   paintRegion(svg, key, color);
   syncBackground();
   commitAction({ type: "fill", region: key, color });
+  sounds.pop();
+  sparkle(e.clientX, e.clientY, color);
 });
+// A filled part pops, and a ring of its new color spreads from the finger.
+function sparkle(x, y, c) {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const ring = document.createElement("span");
+  ring.className = "fill-sparkle";
+  ring.style.left = x + "px";
+  ring.style.top = y + "px";
+  ring.style.setProperty("--ring", c);
+  ring.addEventListener("animationend", () => ring.remove());
+  document.body.append(ring);
+}
 function point(e, r = stroke?.bounds || canvas.getBoundingClientRect()) {
   return {
     x: ((e.clientX - r.left) * canvas.width) / r.width,
@@ -895,6 +908,7 @@ $("clear").onclick = () => {
     return;
   }
   disarmClear();
+  sounds.swish();
   clearCanvas();
 };
 const clearCanvas = () =>

@@ -694,3 +694,21 @@ footer {
   font-weight: 700;
   color: var(--muted);
 }
+/* A filled part: a ring of its new color spreads from the finger. */
+.fill-sparkle {
+  position: fixed;
+  z-index: 5;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 3px solid var(--ring);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: fill-sparkle 450ms ease-out forwards;
+}
+@keyframes fill-sparkle {
+  to {
+    opacity: 0;
+    transform: scale(5);
+  }
+}
