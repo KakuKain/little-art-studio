@@ -952,6 +952,13 @@ h3 {
   margin-left: 12px;
   color: #a04d55;
 }
+/* After the first tap, clear waits red and wiggling for a second one. */
+#editor-nav #clear.confirm {
+  background: #ffe3e6;
+  border-color: #e5484d;
+  box-shadow: 0 0 0 3px #e5484d40;
+  animation: nudge 400ms ease-in-out 2;
+}
 #tool-modal {
   position: fixed;
   inset: auto;
@@ -2034,7 +2041,8 @@ body[data-game="restaurant"] #game-restaurant {
   .blocks-block.nudge .blocks-cat,
   .game-top .nudge,
   #settings-open.holding,
-  #about-open.holding {
+  #about-open.holding,
+  #editor-nav #clear.confirm {
     animation: none;
   }
   .blocks-block {

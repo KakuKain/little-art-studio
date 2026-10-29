@@ -847,7 +847,27 @@ $("home-grid").onclick = (e) => {
     if (navigation === opened) showEditor();
   });
 };
-$("clear").onclick = () =>
+// Clearing takes a second tap within three seconds. The first only turns
+// the button red and wiggles it, so a stray tap never wipes a picture.
+let clearTimer = 0;
+function disarmClear() {
+  clearTimeout(clearTimer);
+  clearTimer = 0;
+  $("clear").classList.remove("confirm");
+  $("clear").setAttribute("aria-label", "清除畫布");
+}
+$("clear").onclick = () => {
+  if (!clearTimer) {
+    $("clear").classList.add("confirm");
+    $("clear").setAttribute("aria-label", "再按一次清除畫布");
+    setStatus("再按一次就會清除", { notify: true });
+    clearTimer = setTimeout(disarmClear, 3000);
+    return;
+  }
+  disarmClear();
+  clearCanvas();
+};
+const clearCanvas = () =>
   scheduler.run(async () => {
     await keepArtwork();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
