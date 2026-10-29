@@ -53,3 +53,30 @@ export function toPixel([x, y], { surface, width, height }) {
     y: ((y - surface.y) * height) / surface.h,
   };
 }
+
+// The part of a canvas `width` × `height` pixels that an album preview
+// shows: the sheet (or its `bounds`) widened to the album's 360:440 frame
+// and kept inside the canvas, so the preview fills its frame without
+// cutting into the picture. A blank canvas is shown whole.
+export function previewCrop(s, { blank = false, bounds } = {}, width, height) {
+  if (blank) return { x: 0, y: 0, w: width, h: height };
+  const ratio = SHEET.width / SHEET.height,
+    box = bounds
+      ? {
+          x: (bounds.cx ?? SHEET.width / 2) - bounds.w / 2,
+          y: (bounds.cy ?? SHEET.height / 2) - bounds.h / 2,
+          w: bounds.w,
+          h: bounds.h,
+        }
+      : { x: 0, y: 0, w: SHEET.width, h: SHEET.height };
+  let w = Math.max(box.w, box.h * ratio),
+    h = w / ratio;
+  const fit = Math.min(1, s.w / w, s.h / h);
+  w *= fit;
+  h *= fit;
+  const x = Math.min(Math.max(box.x + box.w / 2 - w / 2, s.x), s.x + s.w - w),
+    y = Math.min(Math.max(box.y + box.h / 2 - h / 2, s.y), s.y + s.h - h),
+    kx = width / s.w,
+    ky = height / s.h;
+  return { x: (x - s.x) * kx, y: (y - s.y) * ky, w: w * kx, h: h * ky };
+}

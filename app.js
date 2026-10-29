@@ -33,6 +33,7 @@ import {
   toWorld,
   toPixel,
   CANVAS_WIDTH,
+  previewCrop,
 } from "./modules/surface.js?v=1.0.0-beta.6";
 import {
   fillOperations,
@@ -629,12 +630,34 @@ async function keepArtwork() {
     await save();
     return;
   }
+  // The preview is cut to the album's frame around the sheet.
   const exported = await exportCanvas(),
-    thumb = document.createElement("canvas");
-  const scale = Math.min(1, 300 / exported.width, 300 / exported.height);
-  thumb.width = Math.round(exported.width * scale);
-  thumb.height = Math.round(exported.height * scale);
-  thumb.getContext("2d").drawImage(exported, 0, 0, thumb.width, thumb.height);
+    thumb = document.createElement("canvas"),
+    crop = previewCrop(
+      surface,
+      {
+        blank: scene === "blank",
+        bounds: ART_CATALOG.find((item) => item.id === scene)?.bounds,
+      },
+      exported.width,
+      exported.height,
+    ),
+    scale = Math.min(1, 300 / crop.w, 300 / crop.h);
+  thumb.width = Math.round(crop.w * scale);
+  thumb.height = Math.round(crop.h * scale);
+  thumb
+    .getContext("2d")
+    .drawImage(
+      exported,
+      crop.x,
+      crop.y,
+      crop.w,
+      crop.h,
+      0,
+      0,
+      thumb.width,
+      thumb.height,
+    );
   currentWork.preview = await canvasBlob(thumb);
   currentWork.previewRevision = currentWork.revision;
   await save();

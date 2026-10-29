@@ -6,6 +6,7 @@ import {
   canvasHeight,
   toWorld,
   toPixel,
+  previewCrop,
 } from "../modules/surface.js";
 
 const viewports = [
@@ -64,4 +65,48 @@ test("SVG-space points survive a change of view", () => {
   assert.ok(Math.abs(back[1] - world[1]) < 0.002);
   assert.ok(sameSurface(a.surface, { ...a.surface, x: a.surface.x + 0.001 }));
   assert.ok(!sameSurface(a.surface, b.surface));
+});
+
+test("an album preview fills the 360:440 frame without cutting the sheet", () => {
+  const ratio = 360 / 440,
+    inside = (c, width, height) =>
+      c.x >= -1e-6 &&
+      c.y >= -1e-6 &&
+      c.x + c.w <= width + 1e-6 &&
+      c.y + c.h <= height + 1e-6;
+  // A tall phone canvas: the crop is the sheet itself.
+  const phone = surfaceFor({ width: 375, height: 650 }),
+    tall = previewCrop(phone, {}, 720, 1248);
+  assert.ok(Math.abs(tall.w / tall.h - ratio) < 1e-9);
+  assert.ok(inside(tall, 720, 1248));
+  assert.ok(
+    Math.abs(tall.w - (360 / phone.w) * 720) < 1e-6,
+    "the sheet's width",
+  );
+  // A wide canvas: the frame is as tall as the sheet and centred on it.
+  const wide = surfaceFor({ width: 1000, height: 500 }),
+    crop = previewCrop(wide, {}, 720, 360);
+  assert.ok(Math.abs(crop.w / crop.h - ratio) < 1e-9);
+  assert.ok(inside(crop, 720, 360));
+  assert.ok(
+    Math.abs(crop.h - (440 / wide.h) * 360) < 1e-6,
+    "the sheet's height",
+  );
+  // Bounds wider than the frame widen it, and it still stays inside.
+  const bounds = { w: 318.5, h: 194, cx: 182.875, cy: 210.625 },
+    pair = previewCrop(
+      surfaceFor({ width: 375, height: 650 }, { bounds }),
+      { bounds },
+      720,
+      1248,
+    );
+  assert.ok(Math.abs(pair.w / pair.h - ratio) < 1e-9);
+  assert.ok(inside(pair, 720, 1248));
+  // A blank canvas is shown whole.
+  assert.deepEqual(previewCrop(phone, { blank: true }, 720, 1248), {
+    x: 0,
+    y: 0,
+    w: 720,
+    h: 1248,
+  });
 });
