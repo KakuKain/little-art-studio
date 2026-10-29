@@ -75,15 +75,15 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 - Each game has a `<section id="game-<id>" class="game">` in `index.html`, shown by `body[data-game="<id>"]`.
 - Each game has an entry in `gameScreens` in `app.js`.
 - A game screen keeps `body.at-home` and adds `at-game`, so editor refits ignore it and update reloads wait until the child leaves the game.
-- Progress is a per-device convenience in `localStorage` (`little-playground.<game>`). `game-kit.js` loads and saves it and shows the shared level picker.
+- Progress is a per-device convenience in `localStorage` (`little-playground.<game>`). `game-kit.js` loads and saves it, shows the shared level picker (cleared levels get a star) and drops confetti on a cleared level (`celebrate()`).
 - Generated levels use `random.js`: the seeded PRNG `seeded()` and the Fisher–Yates `shuffle()`. Never use `sort()` with a random comparator: sort algorithms differ between engines and would change the levels.
 - 方塊出門 (`blocks.js`):
-  - Blocks move cell by cell after the finger (`dragTo`) and leave through a same-colored door at least as wide as the block.
+  - Blocks move cell by cell after the finger (`dragTo`) and leave through a same-colored door at least as wide as the block. A step needs the finger more than half a cell ahead (strictly: at exactly half, the block would swing back and forth forever), and the other axis (before the first step: the one the finger leads less) needs more than three quarters, so sideways drift neither changes rows nor slides a block pushed against the edge out of a door beside it. The screen picks up the block whose cells contain the finger, gaps included, and letting go of a block in front of its own door (`doorAt`) sends it out.
   - `generateLevel(n)` is deterministic and accepts only boards where blocks can be exited one by one (`exitOrder`), so no level can dead-end.
 - 動物餐廳 (`restaurant.js`):
   - A level is a shelf of foods plus 3–5 animal customers. Each order is `[{food, count}]` drawn from the shelf. Levels 1–2 serve each animal its favorite food; later levels grow to 3 kinds and up to 5 of a kind.
   - `serve()` takes only foods still wanted. Anything else is handed back with no penalty, so a level can always be finished.
-  - Foods and animals are Emoji up to Unicode 11. Food names carry their measure word (`unit`) for `describeOrder()`.
+  - Animals and foods are drawn WebP pictures in `assets/games/restaurant/` (`animal-<id>.webp`, `food-<id>.webp`). The Emoji in `restaurant.js` stand in for any listed in `EMOJI_ONLY` in `game-restaurant.js`. Food names carry their measure word (`unit`) for `describeOrder()`.
   - The screen keeps the walk-away animation in `exit` and cancels it when the next customer arrives. Its timers keep running while the screen is hidden, so returning resumes with the next customer; `load()` cancels them.
 
 **App feel** (`style.css`): `body` has `touch-action: pan-x pan-y` (no pinch or double-tap zoom), `overscroll-behavior: none`, `user-select: none`, and no tap highlight. `ui.js` cancels `contextmenu`.
@@ -154,6 +154,8 @@ Home categories, their order, names, and cover PNGs live in `categories.json`. T
 - an unknown category
 - a missing cover
 - a category without a `simple` sheet
+
+`scripts/build-game-art.cjs` turns generated transparent PNGs (default source `tmp/restaurant-art/`: `animal-<id>.png`, `food-<id>.png`, `game-<id>.png`) into trimmed, centered WebP files: 動物餐廳 pictures in `assets/games/restaurant/` and hub cards in `assets/ui/`. It also cuts the 動物餐廳 room (`restaurant-background-portrait|landscape.png`) into `room-*.webp` strips at rows listed in `BACKDROP`; the page stretches the plain stripe and panel strips so the counter's edge meets the customer's chin at any screen size. Run it by hand; the PNG originals are not committed. WebP files in `assets/ui/` and `assets/games/` join the offline shell automatically.
 
 `scripts/build-app-icons.cjs` regenerates the manifest PNG icons (`assets/ui/app-icon-*.png`, including the maskable one) from `icon.svg`. Run it by hand; it is not part of `npm run build`, because cross-platform PNG output would break CI's no-diff check.
 
