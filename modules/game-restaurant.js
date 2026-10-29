@@ -7,15 +7,15 @@ import {
   generateLevel,
   serve,
   describeOrder,
-} from "./restaurant.js?v=1.0.0-beta.7";
+} from "./restaurant.js?v=1.0.0-beta.8";
 import {
   loadProgress,
   saveProgress,
   showLevelPicker,
   celebrate,
   makeHand,
-} from "./game-kit.js?v=1.0.0-beta.7";
-import { sounds, say, hush } from "./sound.js?v=1.0.0-beta.7";
+} from "./game-kit.js?v=1.0.0-beta.8";
+import { sounds, say, hush } from "./sound.js?v=1.0.0-beta.8";
 
 const KEY = "little-playground.restaurant";
 const ART = "assets/games/restaurant/";

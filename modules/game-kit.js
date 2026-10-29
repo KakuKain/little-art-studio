@@ -1,7 +1,7 @@
 // Parts every game screen shares: progress remembered on this device, the
 // level picker dialog, the cheer for a cleared level and the hand that shows
 // what to do.
-import { sounds } from "./sound.js?v=1.0.0-beta.7";
+import { sounds } from "./sound.js?v=1.0.0-beta.8";
 
 // Progress is a convenience: private mode or blocked storage starts from the
 // first level, and the game works without saving.
