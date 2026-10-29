@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="styles/home.css?v=1.0.0-beta.8" />
     <link rel="stylesheet" href="styles/editor.css?v=1.0.0-beta.8" />
     <link rel="stylesheet" href="styles/parents.css?v=1.0.0-beta.8" />
+    <link rel="stylesheet" href="styles/celebration.css?v=1.0.0-beta.8" />
     <link rel="stylesheet" href="styles/games.css?v=1.0.0-beta.8" />
     <link rel="stylesheet" href="styles/game-blocks.css?v=1.0.0-beta.8" />
     <link rel="stylesheet" href="styles/game-restaurant.css?v=1.0.0-beta.8" />
@@ -79,7 +80,13 @@
         </button>
       </div>
       <div class="nav-actions">
-        <button id="home-back" class="" aria-label="回首頁">
+        <button id="done" aria-label="畫好了">
+          <svg class="done-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"
+            />
+          </svg></button
+        ><button id="home-back" class="" aria-label="回首頁">
           <img src="assets/ui/home.svg" alt="" /><span class="tool-label"
             >回首頁</span
           >
@@ -308,6 +315,49 @@
           >夜煞補充圖：Supercoloring／使用者提供</a
         >
       </details>
+    </dialog>
+    <dialog id="done-modal" class="win-overlay" aria-label="畫好了">
+      <div class="win-card">
+        <div class="win-hero" aria-hidden="true">
+          <div class="win-burst"></div>
+          <div class="done-frame win-picture">
+            <img id="done-picture" alt="" />
+          </div>
+        </div>
+        <div class="win-body">
+          <div class="win-stars" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"
+              /></svg
+            ><svg viewBox="0 0 24 24">
+              <path
+                d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"
+              /></svg
+            ><svg viewBox="0 0 24 24">
+              <path
+                d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"
+              />
+            </svg>
+          </div>
+          <div class="win-ribbon"><p class="win-title">畫好了！</p></div>
+          <div class="win-actions">
+            <button id="done-more" class="win-primary">
+              再畫一張<svg
+                class="win-arrow"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            <button id="done-album" class="win-secondary">
+              <img src="assets/ui/gallery.svg" alt="" />看相簿
+            </button>
+            <button id="done-back" class="done-back">繼續畫</button>
+          </div>
+        </div>
+      </div>
     </dialog>
     <dialog id="album">
       <div class="dialog-head">

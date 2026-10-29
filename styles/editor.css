@@ -639,3 +639,58 @@ footer {
     animation: none;
   }
 }
+/* 「完成」: a yellow star beside the home button. */
+#editor-nav #done {
+  background: #ffd95e;
+  border-color: #e2a21a;
+}
+.done-icon {
+  width: 28px;
+  height: 28px;
+  fill: #fff;
+  stroke: #c98a10;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+/* The finished picture in a wooden frame on the celebration card. */
+#done-modal {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+}
+#done-modal:not([open]) {
+  display: none;
+}
+#done-modal::backdrop {
+  background: transparent;
+}
+#done-modal .done-frame {
+  width: auto;
+  height: 100%;
+  aspect-ratio: 360 / 440;
+  padding: 6px;
+  border: 6px solid #f3cd94;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 0 0 2px #d9a96e;
+  rotate: -3deg;
+}
+#done-picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.done-back {
+  min-height: 40px;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--muted);
+}

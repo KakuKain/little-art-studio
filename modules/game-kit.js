@@ -35,7 +35,8 @@ const CONFETTI = [
 ];
 export function celebrate(win) {
   // A level finished while its screen is hidden stays quiet.
-  if (win.offsetParent) sounds.cheer();
+  if (win.checkVisibility ? win.checkVisibility() : win.offsetParent)
+    sounds.cheer();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   for (let i = 0; i < 32; i++) {
     const piece = document.createElement("span");

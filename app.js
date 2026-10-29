@@ -18,6 +18,7 @@ import {
   addCheckpoint,
 } from "./modules/history.js?v=1.0.0-beta.8";
 import { soundOn, setSoundOn } from "./modules/sound.js?v=1.0.0-beta.8";
+import { celebrate } from "./modules/game-kit.js?v=1.0.0-beta.8";
 import { openStudio } from "./modules/storage.js?v=1.0.0-beta.8";
 import { createPainter } from "./modules/painter.js?v=1.0.0-beta.8";
 import {
@@ -609,6 +610,38 @@ async function exportCanvas() {
   if (scene !== "blank") await layer(outlines);
   return out;
 }
+// The picture cut to the album's frame around the sheet, at most `side`
+// pixels wide or tall.
+async function framedPicture(side) {
+  const exported = await exportCanvas(),
+    out = document.createElement("canvas"),
+    crop = previewCrop(
+      surface,
+      {
+        blank: scene === "blank",
+        bounds: ART_CATALOG.find((item) => item.id === scene)?.bounds,
+      },
+      exported.width,
+      exported.height,
+    ),
+    scale = Math.min(1, side / crop.w, side / crop.h);
+  out.width = Math.round(crop.w * scale);
+  out.height = Math.round(crop.h * scale);
+  out
+    .getContext("2d")
+    .drawImage(
+      exported,
+      crop.x,
+      crop.y,
+      crop.w,
+      crop.h,
+      0,
+      0,
+      out.width,
+      out.height,
+    );
+  return out;
+}
 async function keepArtwork() {
   if (!ready || !editorLoaded || !currentWork) return;
   if (
@@ -626,34 +659,7 @@ async function keepArtwork() {
     await save();
     return;
   }
-  // The preview is cut to the album's frame around the sheet.
-  const exported = await exportCanvas(),
-    thumb = document.createElement("canvas"),
-    crop = previewCrop(
-      surface,
-      {
-        blank: scene === "blank",
-        bounds: ART_CATALOG.find((item) => item.id === scene)?.bounds,
-      },
-      exported.width,
-      exported.height,
-    ),
-    scale = Math.min(1, 300 / crop.w, 300 / crop.h);
-  thumb.width = Math.round(crop.w * scale);
-  thumb.height = Math.round(crop.h * scale);
-  thumb
-    .getContext("2d")
-    .drawImage(
-      exported,
-      crop.x,
-      crop.y,
-      crop.w,
-      crop.h,
-      0,
-      0,
-      thumb.width,
-      thumb.height,
-    );
+  const thumb = await framedPicture(300);
   currentWork.preview = await canvasBlob(thumb);
   currentWork.previewRevision = currentWork.revision;
   await save();
@@ -970,6 +976,25 @@ $("gallery").onclick = () =>
     }
     $("album").showModal();
   });
+// 「完成」 shows the picture in a frame on the celebration card, with a tune
+// and confetti; the child then colors another sheet, opens the album or
+// keeps coloring.
+$("done").onclick = () =>
+  scheduler.run(async () => {
+    await keepArtwork();
+    $("done-picture").src = (await framedPicture(640)).toDataURL("image/png");
+    $("done-modal").showModal();
+    celebrate($("done-modal"));
+  });
+$("done-more").onclick = () => {
+  $("done-modal").close();
+  history.back();
+};
+$("done-album").onclick = () => {
+  $("done-modal").close();
+  $("gallery").click();
+};
+$("done-back").onclick = () => $("done-modal").close();
 $("close").onclick = () => $("album").close();
 $("album").addEventListener("close", () => {
   for (const url of albumURLs) URL.revokeObjectURL(url);

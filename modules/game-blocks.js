@@ -188,12 +188,12 @@ const MARKUP = `
     />
   </svg>
 </button>
-<div class="game-win" hidden>
+<div class="game-win win-overlay" hidden>
   <div class="win-card">
     <div class="win-hero" aria-hidden="true">
       <div class="win-burst"></div>
       <img
-        class="game-win-picture"
+        class="win-picture"
         src="assets/ui/game-blocks.webp"
         alt=""
       />
@@ -215,11 +215,11 @@ const MARKUP = `
         </svg>
       </div>
       <div class="win-ribbon">
-        <p class="game-win-title">過關了！</p>
+        <p class="win-title">過關了！</p>
       </div>
       <div class="win-friends" aria-hidden="true"></div>
       <div class="win-actions">
-        <button class="game-next">
+        <button class="game-next win-primary">
           下一關<svg
             class="win-arrow"
             viewBox="0 0 24 24"
@@ -228,7 +228,7 @@ const MARKUP = `
             <path d="M9 5l7 7-7 7" />
           </svg>
         </button>
-        <button class="game-again">
+        <button class="game-again win-secondary">
           <img src="assets/ui/restart.svg" alt="" />再玩一次
         </button>
       </div>
