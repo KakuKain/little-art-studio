@@ -198,7 +198,7 @@ function renderHome() {
   blank.dataset.scene = "blank";
   blank.className = "blank-card";
   blank.setAttribute("aria-label", "空白畫布");
-  blank.innerHTML = '<img src="assets/ui/pen.svg" alt="">';
+  blank.innerHTML = '<img src="assets/ui/game-freedraw.webp" alt="">';
   grid.append(label(blank, "自由畫畫"));
 }
 function setDifficulty(level) {

@@ -1243,9 +1243,12 @@ h3 {
   font-size: 15px;
   padding-top: 10px;
 }
+/* The blank canvas's card is a colored picture (paper, sun, rainbow and
+   crayons), shown as drawn rather than blended like the line-art covers. */
 #home-grid[data-view="categories"] .blank-card img {
-  width: 72px;
+  width: 96px;
   height: 96px;
+  mix-blend-mode: normal;
 }
 #home-grid[data-view="categories"] .blank-card {
   background: #f0f4fa;
@@ -1271,7 +1274,7 @@ h3 {
     height: 120px;
   }
   #home-grid[data-view="categories"] .blank-card img {
-    width: 86px;
+    width: 120px;
     height: 120px;
   }
   #home-grid[data-view="categories"] button span {
