@@ -17,8 +17,6 @@ import {
 
 const KEY = "little-playground.restaurant";
 const ART = "assets/games/restaurant/";
-// Pictures not drawn yet keep their Emoji.
-const EMOJI_ONLY = new Set(["animal-bear", "food-apple"]);
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 // Milliseconds for a food to fly to the order, for the customer to enjoy it
 // and to walk away. Without motion, the customer still pauses to say thanks.
@@ -31,12 +29,10 @@ function animate(el, keyframes, options) {
 }
 // The drawn picture of an animal or a food. Its container is labeled, so the
 // picture itself stays silent.
-function picture(kind, id, emoji) {
-  const name = `${kind}-${id}`;
-  if (EMOJI_ONLY.has(name)) return document.createTextNode(emoji);
+function picture(kind, id) {
   const img = new Image();
   img.className = "restaurant-picture";
-  img.src = `${ART}${name}.webp`;
+  img.src = `${ART}${kind}-${id}.webp`;
   img.alt = "";
   return img;
 }
@@ -88,7 +84,7 @@ export function createRestaurantGame(root, { onBack }) {
       look = ANIMALS[id];
     exit?.cancel();
     exit = null;
-    animal.replaceChildren(picture("animal", id, look.emoji));
+    animal.replaceChildren(picture("animal", id));
     animal.setAttribute("aria-label", look.name);
     // One row per kind, one slot per item, so the child can count them.
     bubble.replaceChildren(
@@ -99,7 +95,7 @@ export function createRestaurantGame(root, { onBack }) {
           const slot = document.createElement("span");
           slot.className = "restaurant-slot";
           slot.dataset.food = food;
-          slot.append(picture("food", food, FOODS[food].emoji));
+          slot.append(picture("food", food));
           row.append(slot);
         }
         return row;
@@ -138,7 +134,7 @@ export function createRestaurantGame(root, { onBack }) {
       ...level.shelf.map((food) => {
         const button = document.createElement("button");
         button.dataset.food = food;
-        button.append(picture("food", food, FOODS[food].emoji));
+        button.append(picture("food", food));
         button.setAttribute("aria-label", FOODS[food].name);
         return button;
       }),

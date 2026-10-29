@@ -7,52 +7,53 @@
 // nothing to lose: no timer, no wrong answers that count.
 import { seeded, shuffle } from "./random.js?v=1.0.0-beta.4";
 
-// Emoji up to Unicode 11, so Android 9 and later show them all. The unit is
-// the measure word a child would hear: 兩根香蕉, 一杯牛奶.
+// Each food and animal has a picture named after its id in
+// assets/games/restaurant/. The unit is the measure word a child would hear:
+// 兩根香蕉, 一杯牛奶.
 export const FOODS = {
-  apple: { emoji: "🍎", name: "蘋果", unit: "顆" },
-  banana: { emoji: "🍌", name: "香蕉", unit: "根" },
-  grapes: { emoji: "🍇", name: "葡萄", unit: "串" },
-  strawberry: { emoji: "🍓", name: "草莓", unit: "顆" },
-  watermelon: { emoji: "🍉", name: "西瓜", unit: "片" },
-  carrot: { emoji: "🥕", name: "紅蘿蔔", unit: "根" },
-  corn: { emoji: "🌽", name: "玉米", unit: "根" },
-  cookie: { emoji: "🍪", name: "餅乾", unit: "塊" },
-  donut: { emoji: "🍩", name: "甜甜圈", unit: "個" },
-  cake: { emoji: "🍰", name: "蛋糕", unit: "塊" },
-  pizza: { emoji: "🍕", name: "披薩", unit: "片" },
-  burger: { emoji: "🍔", name: "漢堡", unit: "個" },
-  fries: { emoji: "🍟", name: "薯條", unit: "份" },
-  icecream: { emoji: "🍦", name: "冰淇淋", unit: "支" },
-  riceball: { emoji: "🍙", name: "飯糰", unit: "個" },
-  milk: { emoji: "🥛", name: "牛奶", unit: "杯" },
-  bread: { emoji: "🍞", name: "麵包", unit: "個" },
-  cheese: { emoji: "🧀", name: "起司", unit: "塊" },
-  honey: { emoji: "🍯", name: "蜂蜜", unit: "罐" },
-  fish: { emoji: "🐟", name: "魚", unit: "條" },
+  apple: { name: "蘋果", unit: "顆" },
+  banana: { name: "香蕉", unit: "根" },
+  grapes: { name: "葡萄", unit: "串" },
+  strawberry: { name: "草莓", unit: "顆" },
+  watermelon: { name: "西瓜", unit: "片" },
+  carrot: { name: "紅蘿蔔", unit: "根" },
+  corn: { name: "玉米", unit: "根" },
+  cookie: { name: "餅乾", unit: "塊" },
+  donut: { name: "甜甜圈", unit: "個" },
+  cake: { name: "蛋糕", unit: "塊" },
+  pizza: { name: "披薩", unit: "片" },
+  burger: { name: "漢堡", unit: "個" },
+  fries: { name: "薯條", unit: "份" },
+  icecream: { name: "冰淇淋", unit: "支" },
+  riceball: { name: "飯糰", unit: "個" },
+  milk: { name: "牛奶", unit: "杯" },
+  bread: { name: "麵包", unit: "個" },
+  cheese: { name: "起司", unit: "塊" },
+  honey: { name: "蜂蜜", unit: "罐" },
+  fish: { name: "魚", unit: "條" },
 };
 
 // Some animals have a favorite food; the first days only serve those, so
 // the very first orders make sense without reading anything.
 export const ANIMALS = {
-  rabbit: { emoji: "🐰", name: "小兔子", likes: "carrot" },
-  monkey: { emoji: "🐵", name: "小猴子", likes: "banana" },
-  mouse: { emoji: "🐭", name: "小老鼠", likes: "cheese" },
-  bear: { emoji: "🐻", name: "小熊", likes: "honey" },
-  cat: { emoji: "🐱", name: "小貓", likes: "fish" },
-  chick: { emoji: "🐤", name: "小雞", likes: "corn" },
-  dog: { emoji: "🐶", name: "小狗" },
-  panda: { emoji: "🐼", name: "熊貓" },
-  koala: { emoji: "🐨", name: "無尾熊" },
-  tiger: { emoji: "🐯", name: "老虎" },
-  lion: { emoji: "🦁", name: "獅子" },
-  pig: { emoji: "🐷", name: "小豬" },
-  frog: { emoji: "🐸", name: "青蛙" },
-  penguin: { emoji: "🐧", name: "企鵝" },
-  fox: { emoji: "🦊", name: "狐狸" },
-  cow: { emoji: "🐮", name: "乳牛" },
-  hamster: { emoji: "🐹", name: "倉鼠" },
-  unicorn: { emoji: "🦄", name: "獨角獸" },
+  rabbit: { name: "小兔子", likes: "carrot" },
+  monkey: { name: "小猴子", likes: "banana" },
+  mouse: { name: "小老鼠", likes: "cheese" },
+  bear: { name: "小熊", likes: "honey" },
+  cat: { name: "小貓", likes: "fish" },
+  chick: { name: "小雞", likes: "corn" },
+  dog: { name: "小狗" },
+  panda: { name: "熊貓" },
+  koala: { name: "無尾熊" },
+  tiger: { name: "老虎" },
+  lion: { name: "獅子" },
+  pig: { name: "小豬" },
+  frog: { name: "青蛙" },
+  penguin: { name: "企鵝" },
+  fox: { name: "狐狸" },
+  cow: { name: "乳牛" },
+  hamster: { name: "倉鼠" },
+  unicorn: { name: "獨角獸" },
 };
 
 // How many of `food` the customer still wants, given what is on the plate.

@@ -1591,8 +1591,7 @@ body[data-game="blocks"] #game-blocks {
   box-shadow: inset 0 0 0 2px #e9bd44;
 }
 /* 動物餐廳: the customer and its order on top, the food shelf below (beside
-   it in landscape). Pictures are sized in em; an Emoji still used in their
-   place gets the color emoji fonts first. */
+   it in landscape). Pictures are sized in em. */
 body[data-game="restaurant"] #game-restaurant {
   display: flex;
 }
@@ -1714,8 +1713,6 @@ body[data-game="restaurant"] #game-restaurant {
 .restaurant-slot,
 .restaurant-shelf button,
 .restaurant-flying {
-  font-family:
-    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
   line-height: 1;
 }
 .restaurant-slot {
@@ -1773,7 +1770,7 @@ body[data-game="restaurant"] #game-restaurant {
   font-size: clamp(52px, 16vmin, 76px);
   box-shadow: 0 4px 0 #e2c597;
 }
-/* A drawn picture takes the size of the Emoji it replaces. */
+/* A picture is one em square, so the font sizes above size it. */
 .restaurant-picture {
   display: block;
   width: 1em;
