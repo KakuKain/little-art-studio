@@ -1,5 +1,6 @@
 // 動物餐廳 screen: shows the day's customers one at a time and serves the
-// foods the child taps. The rules live in restaurant.js.
+// foods the child taps. The rules live in restaurant.js; the pictures are
+// made by scripts/build-game-art.cjs.
 import {
   FOODS,
   ANIMALS,
@@ -14,6 +15,9 @@ import {
 } from "./game-kit.js?v=1.0.0-beta.3";
 
 const KEY = "little-playground.restaurant";
+const ART = "assets/games/restaurant/";
+// Pictures not drawn yet keep their Emoji.
+const EMOJI_ONLY = new Set(["animal-bear", "food-apple"]);
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 // Milliseconds for a food to fly to the order, for the customer to enjoy it
 // and to walk away. Without motion, the customer still pauses to say thanks.
@@ -23,6 +27,17 @@ const FLIGHT = 300,
 
 function animate(el, keyframes, options) {
   return reducedMotion.matches ? null : el.animate(keyframes, options);
+}
+// The drawn picture of an animal or a food. Its container is labeled, so the
+// picture itself stays silent.
+function picture(kind, id, emoji) {
+  const name = `${kind}-${id}`;
+  if (EMOJI_ONLY.has(name)) return document.createTextNode(emoji);
+  const img = new Image();
+  img.className = "restaurant-picture";
+  img.src = `${ART}${name}.webp`;
+  img.alt = "";
+  return img;
 }
 
 export function createRestaurantGame(root, { onBack }) {
@@ -72,7 +87,7 @@ export function createRestaurantGame(root, { onBack }) {
       look = ANIMALS[id];
     exit?.cancel();
     exit = null;
-    animal.textContent = look.emoji;
+    animal.replaceChildren(picture("animal", id, look.emoji));
     animal.setAttribute("aria-label", look.name);
     // One row per kind, one slot per item, so the child can count them.
     bubble.replaceChildren(
@@ -83,7 +98,7 @@ export function createRestaurantGame(root, { onBack }) {
           const slot = document.createElement("span");
           slot.className = "restaurant-slot";
           slot.dataset.food = food;
-          slot.textContent = FOODS[food].emoji;
+          slot.append(picture("food", food, FOODS[food].emoji));
           row.append(slot);
         }
         return row;
@@ -122,7 +137,7 @@ export function createRestaurantGame(root, { onBack }) {
       ...level.shelf.map((food) => {
         const button = document.createElement("button");
         button.dataset.food = food;
-        button.textContent = FOODS[food].emoji;
+        button.append(picture("food", food, FOODS[food].emoji));
         button.setAttribute("aria-label", FOODS[food].name);
         return button;
       }),
@@ -132,14 +147,14 @@ export function createRestaurantGame(root, { onBack }) {
   }
 
   // The tapped food flies from the shelf into its slot in the order.
-  function fly(from, to, emoji) {
+  function fly(from, to) {
     if (reducedMotion.matches) return;
     const a = from.getBoundingClientRect(),
       b = to.getBoundingClientRect(),
       size = parseFloat(getComputedStyle(from).fontSize),
       el = document.createElement("span");
     el.className = "restaurant-flying";
-    el.textContent = emoji;
+    el.append(from.firstChild.cloneNode());
     el.style.fontSize = size + "px";
     el.style.left = a.left + a.width / 2 + "px";
     el.style.top = a.top + a.height / 2 + "px";
@@ -231,7 +246,7 @@ export function createRestaurantGame(root, { onBack }) {
       plate.filter((f) => f === food).length
     ];
     plate = result.plate;
-    fly(button, slot, FOODS[food].emoji);
+    fly(button, slot);
     later(() => slot.classList.add("served"), flight());
     if (result.done) {
       serving = true;

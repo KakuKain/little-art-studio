@@ -1306,46 +1306,92 @@ body[data-game="blocks"] #game-blocks {
   box-shadow: inset 0 0 0 2px #e9bd44;
 }
 /* 動物餐廳: the customer and its order on top, the food shelf below (beside
-   it in landscape). Emoji get the color emoji fonts first. */
+   it in landscape). Pictures are sized in em; an Emoji still used in their
+   place gets the color emoji fonts first. */
 body[data-game="restaurant"] #game-restaurant {
   display: flex;
 }
+/* The room fits any screen without cropping: the wall's plain stripes
+   stretch below its decorations, and the counter's plain panels stretch
+   below its top edge, which lines up with the customer's chin. The strips
+   are cut by scripts/build-game-art.cjs. */
+#game-restaurant {
+  background:
+    url("assets/games/restaurant/room-wall-portrait.webp") top / 100% auto
+      no-repeat,
+    url("assets/games/restaurant/room-stripes-portrait.webp") 0 0 / 100% 100%
+      no-repeat;
+}
+/* The counter hides the customer's chin, as if it stood behind it; the
+   shelf sits in front of the counter. */
+.restaurant-counter {
+  grid-area: 2 / 1;
+  z-index: 1;
+  justify-self: stretch;
+  margin: 0 -14px calc(-1 * max(14px, env(safe-area-inset-bottom)));
+  background:
+    url("assets/games/restaurant/room-counter-portrait.webp") top / 100% auto
+      no-repeat,
+    url("assets/games/restaurant/room-panels-portrait.webp") 0 0 / 100% 100%
+      no-repeat;
+}
+@media (orientation: landscape) {
+  #game-restaurant {
+    background-image:
+      url("assets/games/restaurant/room-wall-landscape.webp"),
+      url("assets/games/restaurant/room-stripes-landscape.webp");
+  }
+  .restaurant-counter {
+    background-image:
+      url("assets/games/restaurant/room-counter-landscape.webp"),
+      url("assets/games/restaurant/room-panels-landscape.webp");
+  }
+}
+/* The day's customers as dots on a white pill, so they show on the wall. */
 .restaurant-queue {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-top: 10px;
+  width: fit-content;
+  margin: 10px auto 0;
+  padding: 7px 12px;
+  background: #fffffff0;
+  border-radius: 99px;
+  box-shadow: 0 2px 8px #5941371f;
 }
 .restaurant-queue span {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #dfe7ec;
+  background: #eee6dc;
+  box-shadow: inset 0 0 0 2px #cdbcaa;
   transition: background 200ms ease;
 }
 .restaurant-queue .current {
   background: #ffd54f;
-  box-shadow: 0 0 0 3px #fff0bd;
+  box-shadow:
+    inset 0 0 0 2px #d9a514,
+    0 0 0 3px #fff0bd;
 }
 .restaurant-queue .served {
   background: #ff7399;
+  box-shadow: inset 0 0 0 2px #d9466f;
 }
 .restaurant-stage {
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
   padding-top: 8px;
+  isolation: isolate;
 }
 .restaurant-guest {
-  flex: 1;
-  min-height: 0;
+  grid-area: 1 / 1;
+  align-self: end;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 18px;
 }
 .restaurant-order {
@@ -1419,9 +1465,13 @@ body[data-game="restaurant"] #game-restaurant {
   color: #d6457a;
 }
 .restaurant-animal {
+  margin-bottom: -0.1em;
   font-size: clamp(96px, 30vmin, 170px);
 }
 .restaurant-shelf {
+  grid-area: 2 / 1;
+  z-index: 2;
+  margin-top: 7%;
   display: grid;
   grid-template-columns: repeat(var(--columns, 4), minmax(0, 1fr));
   gap: 10px;
@@ -1435,8 +1485,16 @@ body[data-game="restaurant"] #game-restaurant {
   aspect-ratio: 1;
   min-width: 0;
   padding: 0;
-  font-size: clamp(40px, 12vmin, 60px);
+  font-size: clamp(52px, 16vmin, 76px);
   box-shadow: 0 4px 0 #e2c597;
+}
+/* A drawn picture takes the size of the Emoji it replaces. */
+.restaurant-picture {
+  display: block;
+  width: 1em;
+  height: 1em;
+  margin: 0 auto;
+  pointer-events: none;
 }
 .restaurant-flying {
   position: fixed;
@@ -1445,16 +1503,23 @@ body[data-game="restaurant"] #game-restaurant {
 }
 @media (orientation: landscape) and (min-width: 600px) {
   .restaurant-stage {
-    flex-direction: row;
-    justify-content: center;
-    gap: 32px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: minmax(0, 1fr) max(12px, 4vh);
+    column-gap: 32px;
     padding-top: 0;
   }
   .restaurant-guest {
-    flex: 0 1 auto;
+    justify-self: end;
+  }
+  .restaurant-counter {
+    grid-area: 2 / 1 / 3 / 3;
   }
   .restaurant-shelf {
-    width: min(48%, 460px);
+    grid-area: 1 / 2;
+    align-self: end;
+    justify-self: start;
+    width: min(100%, 460px);
+    margin-top: 0;
   }
 }
 /* Phones held sideways: a three-row order and the animal must fit. */

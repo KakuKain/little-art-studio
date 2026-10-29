@@ -70,11 +70,11 @@ let artwork, surface, regions, outlinesKey;
 // Home shows the game hub, the coloring categories, or one category's sheets.
 const GAMES = [
   { id: "coloring", name: "著色畫畫", cover: "assets/ui/game-coloring.svg" },
-  { id: "blocks", name: "方塊出門", cover: "assets/ui/game-blocks.svg" },
+  { id: "blocks", name: "方塊出門", cover: "assets/ui/game-blocks.webp" },
   {
     id: "restaurant",
     name: "動物餐廳",
-    cover: "assets/ui/game-restaurant.svg",
+    cover: "assets/ui/game-restaurant.webp",
   },
 ];
 let homeSection = "hub",
