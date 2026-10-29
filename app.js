@@ -2,6 +2,7 @@ import {
   installUI,
   syncSizes,
   setStatus,
+  holdToOpen,
 } from "./modules/ui.js?v=1.0.0-beta.5";
 import {
   categoryStatus,
@@ -261,7 +262,7 @@ $("home-back").onclick = () => {
   if (scheduler.busy || stroke) return;
   goHome();
 };
-$("settings-open").onclick = () => $("about-modal").showModal();
+holdToOpen($("settings-open"), () => $("about-modal").showModal());
 function showHome(
   { section, category } = { section: homeSection, category: homeCategory },
 ) {

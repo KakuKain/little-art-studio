@@ -677,6 +677,26 @@ h3 {
   font-weight: 600;
   color: var(--muted);
 }
+/* The parents' settings open after a two-second hold (holdToOpen() in
+   ui.js); a ring fills meanwhile. */
+@property --held {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+#settings-open.holding {
+  background: conic-gradient(#087bac59 var(--held), #fff 0);
+  animation: hold 2s linear forwards;
+}
+#about-open.holding {
+  background: linear-gradient(90deg, #087bac2e var(--held), transparent 0);
+  animation: hold 2s linear forwards;
+}
+@keyframes hold {
+  to {
+    --held: 100%;
+  }
+}
 @media (min-width: 768px) {
   #home {
     padding: 24px 32px;
@@ -1966,7 +1986,9 @@ body[data-game="restaurant"] #game-restaurant {
   .blocks-home .arrived,
   .blocks-door.calling svg,
   .blocks-block.nudge .blocks-cat,
-  .game-top .nudge {
+  .game-top .nudge,
+  #settings-open.holding,
+  #about-open.holding {
     animation: none;
   }
   .blocks-block {
