@@ -69,11 +69,22 @@ let scene = "kitty",
 let artwork, surface, regions, outlinesKey;
 // Home shows the game hub, the coloring categories, or one category's sheets.
 const GAMES = [
-  { id: "coloring", name: "著色畫畫", cover: "assets/ui/game-coloring.svg" },
-  { id: "blocks", name: "方塊出門", cover: "assets/ui/game-blocks.webp" },
+  {
+    id: "coloring",
+    name: "著色畫畫",
+    hint: "選一張圖塗上顏色",
+    cover: "assets/ui/game-coloring.svg",
+  },
+  {
+    id: "blocks",
+    name: "方塊出門",
+    hint: "幫貓咪走到同顏色的門",
+    cover: "assets/ui/game-blocks.webp",
+  },
   {
     id: "restaurant",
     name: "動物餐廳",
+    hint: "端出客人想吃的食物",
     cover: "assets/ui/game-restaurant.webp",
   },
 ];
@@ -139,7 +150,15 @@ function renderHome() {
     : ART_CATEGORIES.find((c) => c.id === homeCategory)?.name || "著色畫畫";
   if (hub) {
     for (const [index, game] of GAMES.entries()) {
-      const button = label(card(game.name, game.cover), game.name);
+      const button = card(game.name, game.cover),
+        text = document.createElement("span"),
+        name = document.createElement("strong"),
+        hint = document.createElement("small");
+      text.className = "game-text";
+      name.textContent = game.name;
+      hint.textContent = game.hint;
+      text.append(name, hint);
+      button.append(text);
       button.dataset.game = game.id;
       button.dataset.theme = index;
       grid.append(button);

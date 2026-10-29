@@ -1112,34 +1112,80 @@ h3 {
   background: var(--bg);
 }
 
-/* Home hub: one big card per game. */
+/* Home hub: on a phone, one wide card per game with its picture on the left
+   and a line saying what it is; three cards side by side from 600px. */
 #home-grid[data-view="hub"] {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  max-width: 640px;
+  grid-template-columns: 1fr;
+  max-width: 520px;
 }
 #home-grid[data-view="hub"] button {
-  height: 200px;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 16px;
+  height: 150px;
   border: 0;
-  padding: 18px 18px 14px;
+  padding: 13px 20px 13px 14px;
+  text-align: left;
 }
 #home-grid[data-view="hub"] img {
-  width: 116px;
-  height: 116px;
-  flex: 1;
-  min-height: 0;
+  width: 124px;
+  height: 124px;
+  flex: none;
 }
-#home-grid[data-view="hub"] button span {
-  font-size: 19px;
+#home-grid[data-view="hub"] .game-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 0;
+  white-space: normal;
+}
+.game-text strong {
+  font-size: 24px;
+}
+.game-text small {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--muted);
 }
 @media (min-width: 600px) {
   #home-grid[data-view="hub"] {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     max-width: 840px;
   }
+  #home-grid[data-view="hub"] button {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+    height: 230px;
+    padding: 18px 16px 16px;
+    text-align: center;
+  }
+  #home-grid[data-view="hub"] img {
+    width: 116px;
+    height: 116px;
+    flex: 1;
+    min-height: 0;
+  }
+  #home-grid[data-view="hub"] .game-text {
+    align-items: center;
+    gap: 4px;
+    padding-top: 10px;
+  }
+  .game-text strong {
+    font-size: 19px;
+  }
+  .game-text small {
+    font-size: 13px;
+  }
 }
 @media (max-height: 500px) and (orientation: landscape) {
   #home-grid[data-view="hub"] button {
     height: 150px;
+  }
+  .game-text small {
+    display: none;
   }
 }
 
