@@ -76,6 +76,39 @@ test("editable documents and undo cursor survive reopening without album duplica
   assert.equal((await studio.get(a.id)).actions[0].points.length, 2);
   studio.close();
 });
+test("an older album summary is worked out again with the current rules", async () => {
+  const indexed = new IDBFactory();
+  let studio = await openStudio(indexed);
+  const work = createWork("kitty");
+  record(work, { type: "fill", region: "sky", color: "#ff7399" });
+  work.cursor = 0;
+  await studio.save(work);
+  studio.close();
+  // An older release counted any action, even an undone one.
+  await new Promise((resolve) => {
+    const request = indexed.open("little-art-studio");
+    request.onsuccess = () => {
+      const tx = request.result.transaction("state", "readwrite");
+      tx.objectStore("state").put(
+        {
+          id: work.id,
+          scene: "kitty",
+          updatedAt: 1,
+          preview: null,
+          hasContent: true,
+        },
+        "summary:" + work.id,
+      );
+      tx.oncomplete = () => {
+        request.result.close();
+        resolve();
+      };
+    };
+  });
+  studio = await openStudio(indexed);
+  assert.equal((await studio.list())[0].hasContent, false);
+  studio.close();
+});
 test("blocked upgrades report recovery and close a late connection without losing the draft", async () => {
   const indexed = new IDBFactory();
   await legacyDB(indexed);

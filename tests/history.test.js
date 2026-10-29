@@ -8,6 +8,7 @@ import {
   canRedo,
   addCheckpoint,
   replayStart,
+  hasVisibleContent,
 } from "../modules/history.js";
 test("history stays on its own work and branches after undo", () => {
   const a = createWork("anna-simple"),
@@ -51,4 +52,41 @@ test("replacement strokes cannot resurrect a discarded checkpoint", () => {
   record(work, { type: "fill", region: "sky", color: "blue" });
   assert.equal(work.checkpoints.length, 0);
   assert.equal(replayStart(work).cursor, 0);
+});
+
+test("a picture has content only while a stroke or colored fill is applied", () => {
+  const work = createWork("kitty"),
+    stroke = {
+      type: "stroke",
+      tool: "pen",
+      region: "sky",
+      width: 6,
+      points: [[1, 2]],
+    };
+  assert.equal(hasVisibleContent(work), false);
+  record(work, {
+    type: "stroke",
+    tool: "eraser",
+    region: "sky",
+    width: 6,
+    points: [[1, 2]],
+  });
+  assert.equal(hasVisibleContent(work), false, "erasing a blank sheet");
+  record(work, { type: "fill", region: "sky", color: "white" });
+  assert.equal(hasVisibleContent(work), false, "a white fill");
+  record(work, stroke);
+  assert.equal(hasVisibleContent(work), true);
+  moveCursor(work, -1);
+  assert.equal(hasVisibleContent(work), false, "the stroke was undone");
+  moveCursor(work, 1);
+  record(work, { type: "clear" });
+  assert.equal(hasVisibleContent(work), false, "cleared");
+  record(work, { type: "fill", region: "sky", color: "#ff7399" });
+  assert.equal(hasVisibleContent(work), true);
+  const based = createWork("kitty", {
+    scene: "kitty",
+    fills: [["sky", "#74b9ed"]],
+    pixels: null,
+  });
+  assert.equal(hasVisibleContent(based), true, "colored before the history");
 });

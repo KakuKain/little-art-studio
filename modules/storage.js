@@ -1,4 +1,8 @@
-import { createWork, validWork } from "./history.js?v=1.0.0-beta.8";
+import {
+  createWork,
+  validWork,
+  hasVisibleContent,
+} from "./history.js?v=1.0.0-beta.8";
 
 function transaction(db, store, mode, action) {
   return new Promise((resolve, reject) => {
@@ -14,18 +18,16 @@ function transaction(db, store, mode, action) {
 // The album reads a small summary stored beside each work, so opening it does
 // not load every stroke and checkpoint into memory.
 const SUMMARY = "summary:";
+// Version 2: hasContent ignores strokes that were undone.
+const SUMMARY_VERSION = 2;
 function summarize(work) {
   return {
+    version: SUMMARY_VERSION,
     id: work.id,
     scene: work.scene,
     updatedAt: work.updatedAt,
     preview: work.preview || null,
-    hasContent: !!(
-      work.preview ||
-      work.actions.length ||
-      work.base.pixels ||
-      work.base.fills.some(([, color]) => color !== "white")
-    ),
+    hasContent: hasVisibleContent(work),
   };
 }
 function closedError() {
@@ -157,6 +159,16 @@ export async function openStudio(
           s.getAll(IDBKeyRange.bound(SUMMARY, SUMMARY + "\uffff")),
         )
       ).filter((summary) => ids.has(summary.id));
+      // Summaries written by older releases are worked out again once.
+      for (const [i, summary] of summaries.entries()) {
+        if (summary.version === SUMMARY_VERSION) continue;
+        const work = await get("works", summary.id);
+        if (!validWork(work)) continue;
+        summaries[i] = summarize(work);
+        await run("state", "readwrite", (s) =>
+          s.put(summaries[i], SUMMARY + summary.id),
+        );
+      }
       const known = new Set(summaries.map((summary) => summary.id));
       // Works saved before summaries existed are summarized once.
       for (const id of ids) {

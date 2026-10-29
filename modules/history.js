@@ -35,6 +35,24 @@ export function moveCursor(work, direction) {
   work.updatedAt = Date.now();
   return true;
 }
+// Whether the picture shows anything: a stroke (not the eraser's) or a
+// colored fill still applied after the last clear, or a base drawn before
+// the history began. A work whose strokes were all undone shows nothing.
+export function hasVisibleContent(work) {
+  const applied = work.actions.slice(0, work.cursor),
+    start = applied.findLastIndex((a) => a.type === "clear") + 1;
+  return (
+    applied
+      .slice(start)
+      .some(
+        (a) =>
+          (a.type === "stroke" && a.tool !== "eraser") ||
+          (a.type === "fill" && a.color !== "white"),
+      ) ||
+    (start === 0 &&
+      !!(work.base.pixels || work.base.fills.some(([, c]) => c !== "white")))
+  );
+}
 export function validWork(work) {
   return (
     work?.schemaVersion === 2 &&

@@ -16,6 +16,7 @@ import {
   canRedo,
   moveCursor,
   addCheckpoint,
+  hasVisibleContent,
 } from "./modules/history.js?v=1.0.0-beta.8";
 import {
   soundOn,
@@ -649,11 +650,7 @@ async function framedPicture(side) {
 }
 async function keepArtwork() {
   if (!ready || !editorLoaded || !currentWork) return;
-  if (
-    !currentWork.actions.length &&
-    !currentWork.base.pixels &&
-    currentWork.base.fills.every(([, c]) => c === "white")
-  ) {
+  if (!hasVisibleContent(currentWork)) {
     await save();
     return;
   }
@@ -957,10 +954,10 @@ $("gallery").onclick = () =>
       img.alt = art.editable
         ? ART_CATALOG.find((i) => i.id === art.scene)?.name || "我的畫作"
         : "以前的畫作";
+      // A work whose strokes were all undone shows nothing, so it stays out.
+      if (art.editable && !art.hasContent) continue;
       const picture =
-        art.preview ||
-        art.image ||
-        (art.editable && art.hasContent ? thumbnailURL(art.scene) : null);
+        art.preview || art.image || (art.editable && thumbnailURL(art.scene));
       if (!picture) continue;
       img.src =
         picture instanceof Blob ? URL.createObjectURL(picture) : picture;
