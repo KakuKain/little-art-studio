@@ -2,12 +2,12 @@ import {
   installUI,
   syncSizes,
   setStatus,
-} from "./modules/ui.js?v=1.0.0-beta.4";
+} from "./modules/ui.js?v=1.0.0-beta.5";
 import {
   categoryStatus,
   downloadCategory,
   pruneArtCache,
-} from "./modules/offline.js?v=1.0.0-beta.4";
+} from "./modules/offline.js?v=1.0.0-beta.5";
 import {
   createWork,
   record,
@@ -15,15 +15,15 @@ import {
   canRedo,
   moveCursor,
   addCheckpoint,
-} from "./modules/history.js?v=1.0.0-beta.4";
-import { openStudio } from "./modules/storage.js?v=1.0.0-beta.4";
-import { createPainter } from "./modules/painter.js?v=1.0.0-beta.4";
+} from "./modules/history.js?v=1.0.0-beta.5";
+import { openStudio } from "./modules/storage.js?v=1.0.0-beta.5";
+import { createPainter } from "./modules/painter.js?v=1.0.0-beta.5";
 import {
   ART_CATALOG,
   ART_CATEGORIES,
-} from "./assets/coloring/catalog.js?v=1.0.0-beta.4";
-import { loadArtwork, thumbnailURL } from "./modules/assets.js?v=1.0.0-beta.4";
-import { loadRegions } from "./modules/regions.js?v=1.0.0-beta.4";
+} from "./assets/coloring/catalog.js?v=1.0.0-beta.5";
+import { loadArtwork, thumbnailURL } from "./modules/assets.js?v=1.0.0-beta.5";
+import { loadRegions } from "./modules/regions.js?v=1.0.0-beta.5";
 import {
   surfaceFor,
   sameSurface,
@@ -31,21 +31,21 @@ import {
   toWorld,
   toPixel,
   CANVAS_WIDTH,
-} from "./modules/surface.js?v=1.0.0-beta.4";
+} from "./modules/surface.js?v=1.0.0-beta.5";
 import {
   fillOperations,
   FILL_VERSION,
-} from "./modules/migrations.js?v=1.0.0-beta.4";
+} from "./modules/migrations.js?v=1.0.0-beta.5";
 import {
   planReplay,
   strokePen,
   pixelPlacement,
-} from "./modules/renderer.js?v=1.0.0-beta.4";
-import { createScheduler } from "./modules/scheduler.js?v=1.0.0-beta.4";
-import { PALETTE } from "./modules/palette.js?v=1.0.0-beta.4";
-import { installAppSupport } from "./modules/install.js?v=1.0.0-beta.4";
-import { createBlocksGame } from "./modules/game-blocks.js?v=1.0.0-beta.4";
-import { createRestaurantGame } from "./modules/game-restaurant.js?v=1.0.0-beta.4";
+} from "./modules/renderer.js?v=1.0.0-beta.5";
+import { createScheduler } from "./modules/scheduler.js?v=1.0.0-beta.5";
+import { PALETTE } from "./modules/palette.js?v=1.0.0-beta.5";
+import { installAppSupport } from "./modules/install.js?v=1.0.0-beta.5";
+import { createBlocksGame } from "./modules/game-blocks.js?v=1.0.0-beta.5";
+import { createRestaurantGame } from "./modules/game-restaurant.js?v=1.0.0-beta.5";
 const $ = (id) => document.getElementById(id),
   canvas = $("drawing"),
   ctx = canvas.getContext("2d"),
