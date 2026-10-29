@@ -13,6 +13,7 @@ import {
   showLevelPicker,
   celebrate,
 } from "./game-kit.js?v=1.0.0-beta.6";
+import { sounds } from "./sound.js?v=1.0.0-beta.6";
 
 // Each color has its own shape, drawn as the cat's eyes and on its door,
 // so a child who cannot tell the colors apart still matches them. Shapes
@@ -372,6 +373,7 @@ export function createBlocksGame(root, { onBack }) {
       block = blocks.find((b) => b.id === el.dataset.id),
       distance = (dx ? block.w : block.h) + 1;
     elements.delete(block.id);
+    sounds.meow();
     el.classList.remove("dragging");
     el.classList.add("leaving");
     el.style.transform = `translate(${(block.x + dx * distance) * cell + gap()}px, ${(block.y + dy * distance) * cell + gap()}px)`;

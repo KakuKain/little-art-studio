@@ -47,6 +47,11 @@ test("orders are described with the right measure words", () => {
     describeOrder([...order, { food: "fish", count: 3 }]),
     "2 顆蘋果、1 根香蕉和 3 條魚",
   );
+  // Spoken aloud, numbers are words and two is 兩.
+  assert.equal(
+    describeOrder([...order, { food: "fish", count: 5 }], { spoken: true }),
+    "兩顆蘋果、一根香蕉和五條魚",
+  );
 });
 
 test("the first days serve each animal its favorite food", () => {

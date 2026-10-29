@@ -17,6 +17,7 @@ import {
   moveCursor,
   addCheckpoint,
 } from "./modules/history.js?v=1.0.0-beta.6";
+import { soundOn, setSoundOn } from "./modules/sound.js?v=1.0.0-beta.6";
 import { openStudio } from "./modules/storage.js?v=1.0.0-beta.6";
 import { createPainter } from "./modules/painter.js?v=1.0.0-beta.6";
 import {
@@ -1043,6 +1044,8 @@ $("offline-download").onclick = async () => {
 $("about-modal").addEventListener("toggle", (e) => {
   if (e.newState === "open") showOfflineStatus();
 });
+$("sound-on").checked = soundOn();
+$("sound-on").onchange = (e) => setSoundOn(e.target.checked);
 
 installUI({ toolSizes, getTool: () => tool, chooseColor, setTool });
 installAppSupport();

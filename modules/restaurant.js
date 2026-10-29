@@ -74,13 +74,17 @@ export function serve(order, plate, food) {
   return { plate: next, taken: true, done: orderDone(order, next) };
 }
 
-// 「2 顆蘋果和 1 根香蕉」, for screen readers.
-export function describeOrder(order) {
-  const parts = order.map(
-    ({ food, count }) => `${count} ${FOODS[food].unit}${FOODS[food].name}`,
+// 「2 顆蘋果和 1 根香蕉」, for screen readers, or spoken aloud as
+// 「兩顆蘋果和一根香蕉」, the way a voice should read it.
+const SPOKEN = ["零", "一", "兩", "三", "四", "五"];
+export function describeOrder(order, { spoken = false } = {}) {
+  const parts = order.map(({ food, count }) =>
+    spoken
+      ? `${SPOKEN[count]}${FOODS[food].unit}${FOODS[food].name}`
+      : `${count} ${FOODS[food].unit}${FOODS[food].name}`,
   );
   return parts.length > 1
-    ? `${parts.slice(0, -1).join("、")}和 ${parts.at(-1)}`
+    ? `${parts.slice(0, -1).join("、")}和${spoken ? "" : " "}${parts.at(-1)}`
     : parts[0];
 }
 

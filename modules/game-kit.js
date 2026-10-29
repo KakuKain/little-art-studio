@@ -1,5 +1,6 @@
-// Parts every game screen shares: progress remembered on this device and the
-// level picker dialog.
+// Parts every game screen shares: progress remembered on this device, the
+// level picker dialog and the cheer for a cleared level.
+import { sounds } from "./sound.js?v=1.0.0-beta.6";
 
 // Progress is a convenience: private mode or blocked storage starts from the
 // first level, and the game works without saving.
@@ -21,8 +22,8 @@ export function saveProgress(key, progress) {
   }
 }
 
-// Confetti falls over a cleared level, unless the device asks for less
-// motion. Each piece removes itself when it lands.
+// A cleared level plays a little tune, and confetti falls unless the device
+// asks for less motion. Each piece removes itself when it lands.
 const CONFETTI = [
   "#ff7399",
   "#ffd54f",
@@ -32,6 +33,8 @@ const CONFETTI = [
   "#ffae62",
 ];
 export function celebrate(win) {
+  // A level finished while its screen is hidden stays quiet.
+  if (win.offsetParent) sounds.cheer();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   for (let i = 0; i < 32; i++) {
     const piece = document.createElement("span");

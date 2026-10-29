@@ -1218,10 +1218,26 @@ h3 {
   font-size: 14px;
   color: var(--muted);
 }
+.sound-controls,
 .install-controls,
 .offline-controls {
   padding: 8px 0 16px;
   border-bottom: 1px solid var(--border);
+}
+.sound-controls label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.sound-controls input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--accent);
 }
 .offline-controls select {
   padding: 0 12px;

@@ -14,6 +14,7 @@ import {
   showLevelPicker,
   celebrate,
 } from "./game-kit.js?v=1.0.0-beta.6";
+import { sounds, say, hush } from "./sound.js?v=1.0.0-beta.6";
 
 const KEY = "little-playground.restaurant";
 const ART = "assets/games/restaurant/";
@@ -102,6 +103,7 @@ export function createRestaurantGame(root, { onBack }) {
       }),
     );
     said.textContent = `${look.name}想吃 ${describeOrder(order)}`;
+    sayOrder();
     animate(
       guest,
       [
@@ -110,6 +112,15 @@ export function createRestaurantGame(root, { onBack }) {
       ],
       { duration: 320, easing: "ease-out" },
     );
+  }
+  // Customers keep coming while the screen is hidden, but only speak on it.
+  function speak(text) {
+    if (root.offsetParent) say(text);
+  }
+  // The customer says what it wants; tapping it says it again.
+  function sayOrder() {
+    const { animal: id, order } = level.customers[index];
+    speak(`${ANIMALS[id].name}想吃${describeOrder(order, { spoken: true })}`);
   }
   function load(n) {
     for (const id of timers) clearTimeout(id);
@@ -191,6 +202,7 @@ export function createRestaurantGame(root, { onBack }) {
     thanks.textContent = "❤️ 謝謝！";
     bubble.replaceChildren(thanks);
     said.textContent = `${look.name}吃飽了，謝謝！`;
+    speak("謝謝！");
     animate(
       animal,
       [
@@ -237,9 +249,11 @@ export function createRestaurantGame(root, { onBack }) {
     const food = button.dataset.food,
       result = serve(level.customers[index].order, plate, food);
     if (!result.taken) {
+      sounds.bump();
       refuse(button);
       return;
     }
+    sounds.pop();
     const slot = bubble.querySelectorAll(`[data-food="${food}"]`)[
       plate.filter((f) => f === food).length
     ];
@@ -250,6 +264,9 @@ export function createRestaurantGame(root, { onBack }) {
       serving = true;
       later(thank, flight() + 150);
     }
+  });
+  animal.addEventListener("click", () => {
+    if (!serving && win.hidden) sayOrder();
   });
   $(".game-back").onclick = () => onBack();
   $(".game-next").onclick = () => load(level.n + 1);
@@ -262,6 +279,7 @@ export function createRestaurantGame(root, { onBack }) {
   return {
     open() {
       if (!level) load(progress.level);
+      else if (!serving && win.hidden) sayOrder();
     },
     close() {
       // A customer in the middle of thanking carries on while hidden; only
@@ -269,6 +287,7 @@ export function createRestaurantGame(root, { onBack }) {
       document
         .querySelectorAll(".restaurant-flying")
         .forEach((el) => el.remove());
+      hush();
       if (dialog.open) dialog.close();
     },
   };
