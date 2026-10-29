@@ -55,7 +55,8 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 
 `app.js` wires DOM events to the modules: home grid, editor, album, and offline settings. Logic that doesn't need the DOM lives in modules with unit tests:
 
-- `surface.js`: fits the catalog `bounds` into the paper (64/24/16px insets, never crops) and converts between canvas pixels and SVG space.
+- `surface.js`: fits the catalog `bounds` into the paper (64/24/16px insets, never crops) and converts between canvas pixels and SVG space. `previewCrop()` cuts album previews to the 360:440 frame around the sheet.
+- `sound.js`: game sounds synthesized with Web Audio (`sounds.pop/bump/meow/cheer`, no audio files) and `say()`, which speaks with a Chinese `speechSynthesis` voice and stays quiet on devices without one. `little-playground.sound` = `off` mutes both; the about dialog's checkbox sets it.
 - `renderer.js`: `planReplay()` (replay starts at the newest checkpoint and skips everything before the last `clear`) and `strokePen()`. Live drawing and replay share `strokePen()`.
 - `migrations.js`: maps fills saved by older artwork generations to current region IDs.
 - `scheduler.js`: serializes editor work.
@@ -76,7 +77,7 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 - Each game has a `<section id="game-<id>" class="game">` in `index.html`, shown by `body[data-game="<id>"]`.
 - Each game has an entry in `gameScreens` in `app.js`.
 - A game screen keeps `body.at-home` and adds `at-game`, so editor refits ignore it and update reloads wait until the child leaves the game.
-- Progress is a per-device convenience in `localStorage` (`little-playground.<game>`). `game-kit.js` loads and saves it, shows the shared level picker (cleared levels get a star) and drops confetti on a cleared level (`celebrate()`).
+- Progress is a per-device convenience in `localStorage` (`little-playground.<game>`). `game-kit.js` loads and saves it, shows the shared level picker (cleared levels get a star) and cheers a cleared level (`celebrate()`: a tune, plus confetti unless motion is reduced). `makeHand()` builds the demo hand both games use on levels 1–2.
 - Generated levels use `random.js`: the seeded PRNG `seeded()` and the Fisher–Yates `shuffle()`. Never use `sort()` with a random comparator: sort algorithms differ between engines and would change the levels.
 - 方塊出門 (`blocks.js`):
   - Blocks move cell by cell after the finger (`dragTo`) and leave through a same-colored door at least as wide as the block. A step needs the finger more than half a cell ahead (strictly: at exactly half, the block would swing back and forth forever), and the other axis (before the first step: the one the finger leads less) needs more than three quarters, so sideways drift neither changes rows nor slides a block pushed against the edge out of a door beside it. The screen picks up the block whose cells contain the finger, gaps included, and letting go of a block in front of its own door (`doorAt`) sends it out. While a cat is held its houses bounce (`callHome()`); levels 1–2 show a demo hand (`showHand()`, straight paths only, which holds for those fixed levels), and the bulb hint wiggles a cat that `canExit` now.
