@@ -83,7 +83,7 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 - 動物餐廳 (`restaurant.js`):
   - A level is a shelf of foods plus 3–5 animal customers. Each order is `[{food, count}]` drawn from the shelf. Levels 1–2 serve each animal its favorite food; later levels grow to 3 kinds and up to 5 of a kind.
   - `serve()` takes only foods still wanted. Anything else is handed back with no penalty, so a level can always be finished.
-  - Animals and foods are drawn WebP pictures in `assets/games/restaurant/` (`animal-<id>.webp`, `food-<id>.webp`). The Emoji in `restaurant.js` stand in for any listed in `EMOJI_ONLY` in `game-restaurant.js`. Food names carry their measure word (`unit`) for `describeOrder()`.
+  - Every animal and food is a drawn WebP picture named after its id in `assets/games/restaurant/` (`animal-<id>.webp`, `food-<id>.webp`), so a new one needs its picture. Food names carry their measure word (`unit`) for `describeOrder()`.
   - The screen keeps the walk-away animation in `exit` and cancels it when the next customer arrives. Its timers keep running while the screen is hidden, so returning resumes with the next customer; `load()` cancels them.
 
 **App feel** (`style.css`): `body` has `touch-action: pan-x pan-y` (no pinch or double-tap zoom), `overscroll-behavior: none`, `user-select: none`, and no tap highlight. `ui.js` cancels `contextmenu`.
