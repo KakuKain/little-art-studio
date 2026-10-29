@@ -64,23 +64,25 @@ export function installUI({ toolSizes, getTool, chooseColor, setTool }) {
   // A long press on a picture or button must not open the browser's menu.
   document.addEventListener("contextmenu", (e) => e.preventDefault());
   $("color-open").onclick = () => $("color-modal").showModal();
-  document
-    .querySelectorAll(".dismiss")
-    .forEach((b) => (b.onclick = () => b.closest("dialog").close()));
-  document.querySelectorAll("dialog").forEach((d) =>
-    d.addEventListener("click", (e) => {
-      if (e.target === d) {
-        const r = d.getBoundingClientRect();
-        if (
-          e.clientX < r.left ||
-          e.clientX > r.right ||
-          e.clientY < r.top ||
-          e.clientY > r.bottom
-        )
-          d.close();
-      }
-    }),
-  );
+  // Dialogs close from their ✕ button or a tap outside them. Listening on
+  // the document also covers the dialogs a game adds when it first opens.
+  document.addEventListener("click", (e) => {
+    const dismiss = e.target.closest(".dismiss");
+    if (dismiss) {
+      dismiss.closest("dialog").close();
+      return;
+    }
+    const d = e.target;
+    if (!(d instanceof HTMLDialogElement)) return;
+    const r = d.getBoundingClientRect();
+    if (
+      e.clientX < r.left ||
+      e.clientX > r.right ||
+      e.clientY < r.top ||
+      e.clientY > r.bottom
+    )
+      d.close();
+  });
   function mixedColor() {
     return `hsl(${$("hue").value} ${$("saturation").value}% ${$("lightness").value}%)`;
   }

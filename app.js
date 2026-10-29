@@ -292,12 +292,8 @@ function showEditor() {
 // A game screen covers home; the editor stays hidden underneath (at-home), so
 // editor refits and update reloads leave it alone.
 const gameScreens = {
-  blocks: () =>
-    createBlocksGame($("game-blocks"), { onBack: () => history.back() }),
-  restaurant: () =>
-    createRestaurantGame($("game-restaurant"), {
-      onBack: () => history.back(),
-    }),
+  blocks: () => createBlocksGame({ onBack: () => history.back() }),
+  restaurant: () => createRestaurantGame({ onBack: () => history.back() }),
 };
 const openedGames = new Map();
 let activeGame = null;

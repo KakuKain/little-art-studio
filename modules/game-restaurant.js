@@ -17,6 +17,86 @@ import {
 } from "./game-kit.js?v=1.0.0-beta.8";
 import { sounds, say, hush } from "./sound.js?v=1.0.0-beta.8";
 
+// The screen's markup. It is added after the home screen the first time
+// the game opens, so the page itself carries no game.
+const MARKUP = `
+<div class="game-top">
+  <button class="game-back" aria-label="返回">
+    <img src="assets/ui/back.svg" alt="" />
+  </button>
+  <div class="game-actions">
+    <button class="game-levels" aria-label="選關卡">
+      <img src="assets/ui/levels.svg" alt="" />
+    </button>
+  </div>
+</div>
+<h2 class="game-title">動物餐廳</h2>
+<p class="game-hint">點動物想吃的食物</p>
+<div class="restaurant-queue" aria-hidden="true"></div>
+<div class="restaurant-stage">
+  <div class="restaurant-counter"></div>
+  <div class="restaurant-guest">
+    <div class="restaurant-order" aria-hidden="true"></div>
+    <div class="restaurant-animal" role="img"></div>
+  </div>
+  <div class="restaurant-shelf" aria-label="食物"></div>
+</div>
+<p class="restaurant-said sr-only" role="status"></p>
+<div class="game-win" hidden>
+  <div class="win-card">
+    <div class="win-hero" aria-hidden="true">
+      <div class="win-burst"></div>
+      <img
+        class="game-win-picture"
+        src="assets/ui/game-restaurant.webp"
+        alt=""
+      />
+    </div>
+    <div class="win-body">
+      <div class="win-stars" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"
+          /></svg
+        ><svg viewBox="0 0 24 24">
+          <path
+            d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"
+          /></svg
+        ><svg viewBox="0 0 24 24">
+          <path
+            d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"
+          />
+        </svg>
+      </div>
+      <div class="win-ribbon">
+        <p class="game-win-title">客人都吃飽了！</p>
+      </div>
+      <div class="win-friends" aria-hidden="true"></div>
+      <div class="win-actions">
+        <button class="game-next">
+          下一關<svg
+            class="win-arrow"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+        <button class="game-again">
+          <img src="assets/ui/restart.svg" alt="" />再玩一次
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<dialog class="game-levels-dialog" aria-label="選關卡">
+  <div class="dialog-head">
+    <h2>選關卡</h2>
+    <button class="dismiss" aria-label="關閉">✕</button>
+  </div>
+  <div class="levels-grid"></div>
+</dialog>
+`;
 const KEY = "little-playground.restaurant";
 const ART = "assets/games/restaurant/";
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -39,7 +119,13 @@ function picture(kind, id) {
   return img;
 }
 
-export function createRestaurantGame(root, { onBack }) {
+export function createRestaurantGame({ onBack }) {
+  const root = document.createElement("section");
+  root.id = "game-restaurant";
+  root.className = "game";
+  root.setAttribute("aria-label", "動物餐廳");
+  root.innerHTML = MARKUP;
+  document.getElementById("home").after(root);
   const $ = (selector) => root.querySelector(selector),
     guest = $(".restaurant-guest"),
     animal = $(".restaurant-animal"),
