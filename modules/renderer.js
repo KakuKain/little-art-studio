@@ -1,6 +1,6 @@
 // Replays an editable work without DOM or module state, so live drawing and
 // replay share one stroke implementation and both can run against any canvas.
-import { replayStart } from "./history.js?v=1.0.0-beta.8";
+import { replayStart } from "./history.js?v=1.0.0-beta.9";
 
 // Only actions after the last clear can affect the picture the child sees.
 export function planReplay(work) {

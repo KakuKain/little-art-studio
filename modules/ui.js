@@ -1,4 +1,4 @@
-import { PALETTE, QUICK_COLORS } from "./palette.js?v=1.0.0-beta.8";
+import { PALETTE, QUICK_COLORS } from "./palette.js?v=1.0.0-beta.9";
 const $ = (id) => document.getElementById(id);
 let noticeTimer;
 export function setStatus(message, { notify = false } = {}) {
