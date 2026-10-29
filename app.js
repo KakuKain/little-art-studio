@@ -3,6 +3,7 @@ import {
   syncSizes,
   setStatus,
   holdToOpen,
+  onHold,
 } from "./modules/ui.js?v=1.0.0-beta.8";
 import {
   categoryStatus,
@@ -977,23 +978,56 @@ $("gallery").onclick = () =>
             if (navigation === opened) showEditor();
           });
         };
-        $("artworks").append(button);
+        albumItem(button, art);
       } else {
         const link = document.createElement("a");
         link.href = img.src;
         link.download = "小小遊樂園-" + art.id + ".png";
         link.append(img);
-        $("artworks").append(link);
+        albumItem(link, art);
       }
     }
-    if (!$("artworks").children.length) {
-      const empty = document.createElement("p");
-      empty.className = "album-empty";
-      empty.textContent = "還沒有作品，去畫一張吧！";
-      $("artworks").append(empty);
-    }
+    if (!$("artworks").children.length) emptyAlbum();
     $("album").showModal();
   });
+function emptyAlbum() {
+  const empty = document.createElement("p");
+  empty.className = "album-empty";
+  empty.textContent = "還沒有作品，去畫一張吧！";
+  $("artworks").append(empty);
+}
+// Holding a picture for two seconds (a parent) offers to delete it.
+function albumItem(picture, art) {
+  const item = document.createElement("div");
+  item.className = "album-item";
+  item.append(picture);
+  onHold(picture, () => {
+    if (item.querySelector(".album-confirm")) return;
+    const confirm = document.createElement("div");
+    confirm.className = "album-confirm";
+    confirm.innerHTML =
+      '<button class="album-remove">刪除</button><button class="album-keep">留著</button>';
+    confirm.querySelector(".album-keep").onclick = () => confirm.remove();
+    confirm.querySelector(".album-remove").onclick = () =>
+      scheduler.run(async () => {
+        await studio.remove(art.id);
+        await forgetWork(art.id);
+        item.remove();
+        if (!$("artworks").children.length) emptyAlbum();
+        markDrawn();
+      });
+    item.append(confirm);
+  });
+  $("artworks").append(item);
+}
+// A deleted work must not come back when the open sheet is saved again.
+async function forgetWork(id) {
+  if (pendingWork?.id === id) pendingWork = null;
+  if (currentWork?.id !== id) return;
+  workCache.delete(currentWork.scene);
+  currentWork = createWork(scene);
+  if (editorLoaded) await renderWork(currentWork);
+}
 // 「完成」 shows the picture in a frame on the celebration card, with a tune
 // and confetti; the child then colors another sheet, opens the album or
 // keeps coloring.

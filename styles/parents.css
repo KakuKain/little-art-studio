@@ -99,3 +99,33 @@
   overflow: hidden;
   background: var(--bg);
 }
+/* A parent holds a picture for two seconds to delete it: it fades while
+   held, then asks. */
+.album-item {
+  position: relative;
+}
+#artworks .holding img {
+  opacity: 0.55;
+  transition: opacity 2s linear;
+}
+.album-confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 16px;
+  background: #ffffffe6;
+}
+#artworks .album-confirm button {
+  width: 80%;
+  min-height: 44px;
+  font-weight: 700;
+  background: var(--bg);
+}
+#artworks .album-confirm .album-remove {
+  color: #fff;
+  background: #e5484d;
+}

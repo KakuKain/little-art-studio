@@ -150,6 +150,23 @@ export async function openStudio(
       );
     },
     get: (id) => get("works", id),
+    // Removes a work (or an old PNG) and its album summary for good.
+    async remove(id) {
+      if (closed) throw closedError();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(["state", "works", "art"], "readwrite"),
+          state = tx.objectStore("state");
+        tx.objectStore("works").delete(id);
+        tx.objectStore("art").delete(id);
+        state.delete(SUMMARY + id);
+        state.get("activeId").onsuccess = (e) => {
+          if (e.target.result === id) state.delete("activeId");
+        };
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    },
     async list() {
       const ids = new Set(
         await run("works", "readonly", (s) => s.getAllKeys()),

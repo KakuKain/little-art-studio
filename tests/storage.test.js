@@ -76,6 +76,29 @@ test("editable documents and undo cursor survive reopening without album duplica
   assert.equal((await studio.get(a.id)).actions[0].points.length, 2);
   studio.close();
 });
+test("a removed work leaves the album and is not opened again", async () => {
+  const indexed = new IDBFactory();
+  let studio = await openStudio(indexed);
+  const a = createWork("kitty"),
+    b = createWork("anna-simple");
+  record(a, { type: "fill", region: "sky", color: "#ff7399" });
+  await studio.save(b);
+  await studio.save(a);
+  await studio.remove(a.id);
+  assert.deepEqual(
+    (await studio.list()).map((i) => i.id),
+    [b.id],
+  );
+  assert.equal(await studio.get(a.id), undefined);
+  studio.close();
+  studio = await openStudio(indexed);
+  assert.equal(
+    await studio.active(),
+    null,
+    "the removed work was the active one",
+  );
+  studio.close();
+});
 test("an older album summary is worked out again with the current rules", async () => {
   const indexed = new IDBFactory();
   let studio = await openStudio(indexed);

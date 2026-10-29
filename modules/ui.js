@@ -12,32 +12,47 @@ export function setStatus(message, { notify = false } = {}) {
     Math.max(4500, message.length * 180),
   );
 }
-// Parents' settings open only after the button is held for two seconds, so
-// a child's tap does nothing but say so. A keyboard press (a click without
-// a pointer) opens them at once.
-export function holdToOpen(button, open) {
+// Parents' actions happen only after the element is held for two seconds,
+// while it wears the class "holding"; the click that ends the hold does
+// nothing else.
+export function onHold(el, act) {
   let timer = 0,
-    opened = false;
+    held = false;
   const stop = () => {
     clearTimeout(timer);
-    button.classList.remove("holding");
+    el.classList.remove("holding");
   };
-  button.addEventListener("pointerdown", (e) => {
+  el.addEventListener("pointerdown", (e) => {
     if (e.button !== 0) return;
-    opened = false;
-    button.classList.add("holding");
+    held = false;
+    el.classList.add("holding");
     timer = setTimeout(() => {
       stop();
-      opened = true;
-      open();
+      held = true;
+      act();
     }, 2000);
   });
   for (const type of ["pointerup", "pointerleave", "pointercancel"])
-    button.addEventListener(type, stop);
+    el.addEventListener(type, stop);
+  el.addEventListener(
+    "click",
+    (e) => {
+      if (!held) return;
+      held = false;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    },
+    true,
+  );
+}
+// Parents' settings open only after a two-second hold, so a child's tap
+// does nothing but say so. A keyboard press (a click without a pointer)
+// opens them at once.
+export function holdToOpen(button, open) {
+  onHold(button, open);
   button.addEventListener("click", (e) => {
     if (e.detail === 0) open();
-    else if (!opened) setStatus("請家長按住 2 秒", { notify: true });
-    opened = false;
+    else setStatus("請家長按住 2 秒", { notify: true });
   });
 }
 // Three sizes, 細／中／粗, instead of a slider small hands cannot hold.
