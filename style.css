@@ -204,15 +204,58 @@ select[hidden] {
   background: transparent;
   z-index: 2;
 }
+/* The corner decorations stay on the hub; category pages are plain. */
 .in-category #home {
-  background-color: var(--bg);
+  background: var(--bg);
 }
+/* The difficulty of one category's sheets: three big buttons, not a menu. */
 #difficulty {
-  background: white;
-  padding: 0 14px;
+  display: flex;
+  gap: 4px;
+  width: fit-content;
+  margin: -8px auto 16px;
+  padding: 4px;
+  background: #fff;
   border: 1px solid var(--border);
-  font-size: 14px;
-  max-width: 120px;
+  border-radius: 99px;
+}
+#difficulty[hidden] {
+  display: none;
+}
+#difficulty button {
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: 99px;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--muted);
+}
+#difficulty [aria-checked="true"] {
+  background: #fff0bd;
+  color: var(--text);
+  box-shadow: inset 0 0 0 2px #e9bd44;
+}
+/* A sheet the child has colored wears a check mark. */
+#home-grid[data-view="sheets"] button {
+  position: relative;
+}
+#home-grid .drawn::after {
+  content: "✓";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #5cc28f;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  box-shadow: 0 0 0 3px #fff;
 }
 #home-grid {
   display: grid;

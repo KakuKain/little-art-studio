@@ -35,16 +35,20 @@
               >
             </button>
           </div>
-          <select id="difficulty" aria-label="圖案難度" hidden>
-            <option value="simple">簡單</option>
-            <option value="all">全部</option>
-            <option value="detailed">細節較多</option>
-          </select>
         </div>
         <div class="home-hero">
           <img src="assets/ui/sun.png" alt="" class="sun" />
           <h1>小小遊樂園</h1>
           <p>畫畫、動動腦，一起來玩吧！</p>
+        </div>
+        <div id="difficulty" role="radiogroup" aria-label="圖案難度" hidden>
+          <button role="radio" data-level="simple" aria-checked="true">
+            簡單</button
+          ><button role="radio" data-level="all" aria-checked="false">
+            全部</button
+          ><button role="radio" data-level="detailed" aria-checked="false">
+            細節多
+          </button>
         </div>
         <div id="home-grid"></div>
       </div>

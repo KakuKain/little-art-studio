@@ -89,7 +89,8 @@ const GAMES = [
   },
 ];
 let homeSection = "hub",
-  homeCategory = null;
+  homeCategory = null,
+  difficulty = "simple";
 let editorLoaded = false,
   pendingWork,
   loadingEditor;
@@ -166,11 +167,10 @@ function renderHome() {
     return;
   }
   if (homeCategory) {
-    const level = $("difficulty").value;
     for (const item of ART_CATALOG.filter(
       (i) =>
         i.category === homeCategory &&
-        (level === "all" || i.difficulty === level),
+        (difficulty === "all" || i.difficulty === difficulty),
     )) {
       const sheet = card(item.name, thumbnailURL(item.id), true);
       sheet.dataset.scene = item.id;
@@ -182,6 +182,7 @@ function renderHome() {
       empty.textContent = "這個分類都是簡單圖案";
       grid.append(empty);
     }
+    markDrawn();
     return;
   }
   for (const [index, category] of ART_CATEGORIES.entries()) {
@@ -197,7 +198,36 @@ function renderHome() {
   blank.innerHTML = '<img src="assets/ui/pen.svg" alt="">';
   grid.append(label(blank, "自由畫畫"));
 }
-$("difficulty").onchange = renderHome;
+function setDifficulty(level) {
+  difficulty = level;
+  for (const button of $("difficulty").children)
+    button.setAttribute("aria-checked", String(button.dataset.level === level));
+}
+$("difficulty").onclick = (e) => {
+  const button = e.target.closest("[data-level]");
+  if (!button || button.dataset.level === difficulty) return;
+  setDifficulty(button.dataset.level);
+  renderHome();
+};
+// A check mark on the sheets this child has already colored.
+async function markDrawn() {
+  const grid = $("home-grid");
+  if (grid.dataset.view !== "sheets" || !studio || studio.closed) return;
+  const drawn = new Set(
+    (await studio.list().catch(() => []))
+      .filter((work) => work.editable && work.hasContent)
+      .map((work) => work.scene),
+  );
+  for (const sheet of grid.querySelectorAll("[data-scene]")) {
+    const name = ART_CATALOG.find((i) => i.id === sheet.dataset.scene)?.name;
+    sheet.classList.toggle("drawn", drawn.has(sheet.dataset.scene));
+    if (name)
+      sheet.setAttribute(
+        "aria-label",
+        drawn.has(sheet.dataset.scene) ? `${name}（畫過了）` : name,
+      );
+  }
+}
 // Screens are history entries (home → coloring → category → editor, or
 // home → game), so Android's back gesture steps back one screen at a time and
 // only leaves the app from home. The URL never changes, so every visit and
@@ -242,11 +272,12 @@ function showHome(
   if (section !== homeSection || category !== homeCategory) {
     homeSection = section;
     homeCategory = category;
-    if (category) $("difficulty").value = "simple";
+    if (category) setDifficulty("simple");
     renderHome();
   }
   document.body.classList.add("at-home");
-  save();
+  // Back from a sheet, its check mark appears once the work is saved.
+  save().then(markDrawn);
   refreshAfterUpdate();
 }
 function showEditor() {
