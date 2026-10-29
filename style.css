@@ -1832,6 +1832,21 @@ body[data-game="blocks"] #game-blocks {
   background: #ffe7a3;
   box-shadow: inset 0 -4px 0 #e9bd44;
 }
+.game-again {
+  min-width: 140px;
+  min-height: 52px;
+  margin-top: -6px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--muted);
+  background: #fff;
+  box-shadow: inset 0 0 0 2px var(--border);
+}
+@media (max-height: 500px) {
+  .game-win {
+    gap: 12px;
+  }
+}
 @keyframes cheer {
   0% {
     transform: scale(0.6);

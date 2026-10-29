@@ -490,6 +490,7 @@ export function createBlocksGame(root, { onBack }) {
     load(level.n);
   };
   $(".game-next").onclick = () => load(level.n + 1);
+  $(".game-again").onclick = () => load(level.n);
   const dialog = $(".game-levels-dialog");
   $(".game-levels").onclick = () =>
     showLevelPicker(dialog, {

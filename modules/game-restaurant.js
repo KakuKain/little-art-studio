@@ -309,6 +309,7 @@ export function createRestaurantGame(root, { onBack }) {
   });
   $(".game-back").onclick = () => onBack();
   $(".game-next").onclick = () => load(level.n + 1);
+  $(".game-again").onclick = () => load(level.n);
   $(".game-levels").onclick = () =>
     showLevelPicker(dialog, {
       unlocked: progress.unlocked,
