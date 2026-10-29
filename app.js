@@ -73,7 +73,7 @@ const GAMES = [
     id: "coloring",
     name: "著色畫畫",
     hint: "選一張圖塗上顏色",
-    cover: "assets/ui/game-coloring.svg",
+    cover: "assets/ui/game-coloring.webp",
   },
   {
     id: "blocks",
