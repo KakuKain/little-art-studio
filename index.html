@@ -186,17 +186,19 @@
               >鉛筆</span
             >
           </button>
-          <div class="size-control">
-            <span class="size-dot" aria-hidden="true"></span
-            ><input
-              id="size"
-              type="range"
-              min="5"
-              max="40"
-              step="1"
-              value="12"
-              aria-label="鉛筆粗細"
-            /><span class="size-dot large" aria-hidden="true"></span>
+          <div
+            id="size"
+            class="size-control"
+            role="radiogroup"
+            aria-label="鉛筆粗細"
+          >
+            <button role="radio" data-size="6" aria-label="細">
+              <span></span></button
+            ><button role="radio" data-size="12" aria-label="中">
+              <span></span></button
+            ><button role="radio" data-size="26" aria-label="粗">
+              <span></span>
+            </button>
           </div>
           <button id="fill" class="" aria-label="填色">
             <svg class="fill-icon" viewBox="0 0 24 24" aria-hidden="true">

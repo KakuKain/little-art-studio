@@ -375,8 +375,7 @@ function commitAction(action) {
 }
 function setTool(value) {
   tool = value;
-  $("size").value = toolSizes[value === "eraser" ? "eraser" : "pen"];
-  syncSizes(tool);
+  syncSizes(tool, toolSizes[value === "eraser" ? "eraser" : "pen"]);
   canvas.style.pointerEvents = value === "fill" ? "none" : "auto";
   ["fill", "pen", "rainbow", "eraser"].forEach((t) =>
     $(t).classList.toggle("active", t === value),
@@ -709,7 +708,9 @@ canvas.onpointerdown = (e) => {
       tool,
       color,
       region,
-      width: (+$("size").value * surface.w) / bounds.width,
+      width:
+        (toolSizes[tool === "eraser" ? "eraser" : "pen"] * surface.w) /
+        bounds.width,
       hue,
       points: [toWorld(p, view)],
     };

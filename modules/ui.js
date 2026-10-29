@@ -12,12 +12,16 @@ export function setStatus(message, { notify = false } = {}) {
     Math.max(4500, message.length * 180),
   );
 }
-export function syncSizes(tool) {
-  $("size").disabled = tool === "fill";
+// Three sizes, 細／中／粗, instead of a slider small hands cannot hold.
+export function syncSizes(tool, size) {
   $("size").setAttribute(
     "aria-label",
     tool === "eraser" ? "橡皮擦粗細" : "鉛筆粗細",
   );
+  for (const button of $("size").children) {
+    button.disabled = tool === "fill";
+    button.setAttribute("aria-checked", String(+button.dataset.size === size));
+  }
 }
 export function installUI({ toolSizes, getTool, chooseColor, setTool }) {
   for (const { color: c, name } of PALETTE) {
@@ -148,10 +152,14 @@ export function installUI({ toolSizes, getTool, chooseColor, setTool }) {
   $("fill").onclick = () => setTool("fill");
   $("eraser").onclick = () => setTool("eraser");
   $("pen").onclick = () => setTool("pen");
-  syncSizes(getTool());
-  $("size").addEventListener("input", () => {
-    toolSizes[getTool() === "eraser" ? "eraser" : "pen"] = +$("size").value;
-  });
+  const sizeKey = () => (getTool() === "eraser" ? "eraser" : "pen");
+  syncSizes(getTool(), toolSizes[sizeKey()]);
+  $("size").onclick = (e) => {
+    const button = e.target.closest("[data-size]");
+    if (!button) return;
+    toolSizes[sizeKey()] = +button.dataset.size;
+    syncSizes(getTool(), toolSizes[sizeKey()]);
+  };
   $("rainbow").onclick = () => {
     setTool("rainbow");
     $("color-modal").close();
