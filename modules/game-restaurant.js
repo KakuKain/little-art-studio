@@ -192,7 +192,7 @@ export function createRestaurantGame({ onBack }) {
       }),
     );
     said.textContent = `${look.name}想吃 ${describeOrder(order)}`;
-    sayOrder();
+    sayOrder({ queue: true });
     guide = level.n <= 2;
     later(showHand, 1200);
     animate(
@@ -205,13 +205,17 @@ export function createRestaurantGame({ onBack }) {
     );
   }
   // Customers keep coming while the screen is hidden, but only speak on it.
-  function speak(text) {
-    if (root.offsetParent) say(text);
+  function speak(text, options) {
+    if (root.offsetParent) say(text, options);
   }
-  // The customer says what it wants; tapping it says it again.
-  function sayOrder() {
+  // The customer says what it wants, after anything still being said (the
+  // hub card's name); tapping it says it again at once.
+  function sayOrder(options) {
     const { animal: id, order } = level.customers[index];
-    speak(`${ANIMALS[id].name}想吃${describeOrder(order, { spoken: true })}`);
+    speak(
+      `${ANIMALS[id].name}想吃${describeOrder(order, { spoken: true })}`,
+      options,
+    );
   }
   // On levels 1 and 2 a hand taps the food the customer still wants, over
   // and over, until the child taps the shelf; it comes back for the next

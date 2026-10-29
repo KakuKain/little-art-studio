@@ -17,7 +17,12 @@ import {
   moveCursor,
   addCheckpoint,
 } from "./modules/history.js?v=1.0.0-beta.8";
-import { soundOn, setSoundOn, sounds } from "./modules/sound.js?v=1.0.0-beta.8";
+import {
+  soundOn,
+  setSoundOn,
+  sounds,
+  say,
+} from "./modules/sound.js?v=1.0.0-beta.8";
 import { celebrate } from "./modules/game-kit.js?v=1.0.0-beta.8";
 import { openStudio } from "./modules/storage.js?v=1.0.0-beta.8";
 import { createPainter } from "./modules/painter.js?v=1.0.0-beta.8";
@@ -850,6 +855,8 @@ async function switchWork(next) {
 $("home-grid").onclick = (e) => {
   const b = e.target.closest("button");
   if (!b || scheduler.busy || !ready) return;
+  // Each hub card says its name, for children who cannot read it.
+  if (b.dataset.game) say(GAMES.find((g) => g.id === b.dataset.game).name);
   if (b.dataset.game === "coloring") {
     pushScreen({ screen: "coloring" });
     showHome({ section: "coloring", category: null });
