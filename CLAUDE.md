@@ -49,20 +49,20 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 - Every deployed change needs a bump. Without one, installed service workers keep serving the old `?v=…` files.
 - Release commits are titled `Release <version>` and tagged `v<version>`.
 - V1–V49 were plain internal numbers; their shells (`little-art-studio-shell-v49`) are still cleaned up by prefix.
-- New files in `modules/` and new `.svg`/`.png` files in `assets/ui/` join the offline shell automatically.
+- New files in `modules/` and `styles/`, and new `.svg`/`.png`/`.webp` files in `assets/ui/` and `assets/games/`, join the offline shell automatically.
 
 ## Architecture
 
 `app.js` wires DOM events to the modules: home grid, editor, album, and offline settings. Logic that doesn't need the DOM lives in modules with unit tests:
 
 - `surface.js`: fits the catalog `bounds` into the paper (64/24/16px insets, never crops) and converts between canvas pixels and SVG space. `previewCrop()` cuts album previews to the 360:440 frame around the sheet.
-- `sound.js`: game sounds synthesized with Web Audio (`sounds.pop/bump/meow/cheer`, no audio files) and `say()`, which speaks with a Chinese `speechSynthesis` voice and stays quiet on devices without one. `little-playground.sound` = `off` mutes both; the about dialog's checkbox sets it.
+- `sound.js`: sounds synthesized with Web Audio (`sounds.pop/bump/swish/meow/cheer`, no audio files) and `say()`, which speaks with a Chinese `speechSynthesis` voice and stays quiet on devices without one; `{queue: true}` waits for what is being said. Coloring has sounds but no speech; the hub cards say their names. `little-playground.sound` = `off` mutes both; the about dialog's checkbox sets it.
 - `renderer.js`: `planReplay()` (replay starts at the newest checkpoint and skips everything before the last `clear`) and `strokePen()`. Live drawing and replay share `strokePen()`.
 - `migrations.js`: maps fills saved by older artwork generations to current region IDs.
 - `scheduler.js`: serializes editor work.
 - `palette.js`: the fixed colors and their names.
 - `install.js`: the parents' "install to home screen" section. It suppresses Chrome's automatic install banner so children can't trigger it.
-- `ui.js`: `holdToOpen()` gates the parents' about dialog behind a two-second hold (a keyboard click opens it at once). Brush size is three radio buttons (`syncSizes()`), not a slider.
+- `ui.js`: `onHold()` runs a parents' action after a two-second hold (album deletion) and `holdToOpen()` gates the about dialog with it (a keyboard click opens it at once). Brush size is three radio buttons (`syncSizes()`), not a slider.
 
 **Navigation** (Android-first PWA): each screen is a `history.pushState` entry `{screen, category?, game?, depth}`, and the URL never changes. Screens: `home` (game hub) → `coloring` → `category` → `editor`, or `home` → `game`.
 - Android's back gesture goes one screen back, and exits only from home. A `popstate` handler re-shows the matching screen.
@@ -72,23 +72,25 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 - `showHome()`/`showEditor()` toggle `body.at-home` synchronously. Don't move screen state into View Transition callbacks: they run asynchronously and are aborted in some states, which once delayed the switch.
 - Screen fade-ins are plain CSS animations. The drawing surface only fades and never moves, because moving it would offset an early stroke.
 
-**Games**: the hub card list is `GAMES` in `app.js`.
-- Each game has rules in a pure module with unit tests (e.g. `blocks.js`) and a screen module (e.g. `game-blocks.js`, exporting `create…(root, {onBack})` → `{open, close}`).
-- Each game has a `<section id="game-<id>" class="game">` in `index.html`, shown by `body[data-game="<id>"]`.
+**Styles** live in `styles/`, one file per part, linked by `index.html` in this order: `base.css` (shared by every screen), `home.css`, `editor.css`, `parents.css` (album and about dialog), `celebration.css` (the card shared by a cleared level and 「完成」), `games.css` (what both games share), `game-blocks.css`, `game-restaurant.css`. A style used by one part belongs in its file; only styles that really are shared go in `base.css`, `celebration.css` or `games.css`. Image URLs in them are relative to `styles/` (`../assets/…`). Later files win ties, so a part's file may refine a shared rule.
+
+**Games**: the hub card list is `GAMES` in `app.js`. The hub shows no levels or counts: the games are for play, not for keeping score.
+- Each game has rules in a pure module with unit tests (e.g. `blocks.js`), a screen module (e.g. `game-blocks.js`, exporting `create…({onBack})` → `{open, close}`) and a stylesheet (`styles/game-blocks.css`). Nothing of a game is in `index.html` or `app.js` beyond its hub card and `gameScreens` entry.
+- The screen module holds its markup (`MARKUP`) and adds `<section id="game-<id>" class="game">` after `#home` the first time the game opens; `body[data-game="<id>"]` shows it. `ui.js` closes every dialog's ✕ and backdrop taps through one document listener, so dialogs added later work too.
 - Each game has an entry in `gameScreens` in `app.js`.
 - A game screen keeps `body.at-home` and adds `at-game`, so editor refits ignore it and update reloads wait until the child leaves the game.
-- Progress is a per-device convenience in `localStorage` (`little-playground.<game>`). `game-kit.js` loads and saves it, shows the shared level picker (cleared levels get a star) and cheers a cleared level (`celebrate()`: a tune, plus confetti unless motion is reduced). `makeHand()` builds the demo hand both games use on levels 1–2.
+- Progress is a per-device convenience in `localStorage` (`little-playground.<game>`). `game-kit.js` loads and saves it, shows the shared level picker (cleared levels get a star; twenty to a page, with a 「繼續第 N 關」 button; calling it again while open swaps the list) and cheers a cleared level (`celebrate()`: a tune, plus confetti unless motion is reduced). `makeHand()` builds the demo hand both games use on levels 1–2.
 - Generated levels use `random.js`: the seeded PRNG `seeded()` and the Fisher–Yates `shuffle()`. Never use `sort()` with a random comparator: sort algorithms differ between engines and would change the levels.
 - 方塊出門 (`blocks.js`):
   - Blocks move cell by cell after the finger (`dragTo`) and leave through a same-colored door at least as wide as the block. A step needs the finger more than half a cell ahead (strictly: at exactly half, the block would swing back and forth forever), and the other axis (before the first step: the one the finger leads less) needs more than three quarters, so sideways drift neither changes rows nor slides a block pushed against the edge out of a door beside it. The screen picks up the block whose cells contain the finger, gaps included, and letting go of a block in front of its own door (`doorAt`) sends it out. While a cat is held its houses bounce (`callHome()`); levels 1–2 show a demo hand (`showHand()`, straight paths only, which holds for those fixed levels), and the bulb hint wiggles a cat that `canExit` now.
-  - `generateLevel(n)` is deterministic and accepts only boards where blocks can be exited one by one (`exitOrder`), so no level can dead-end.
+  - `generateLevel(n, mode)` is deterministic and accepts only boards where blocks can be exited one by one (`exitOrder`), so no level can dead-end. `kids` levels grow gently (4×4 to level 14, 5×5 to 45, then 6×6); `adult` (大人) levels have their own seed and grow from 6×6 to 8×8 with many cats stuck at the start. The screen keeps the children's level at the top of its progress and the grown-ups' in `progress.adult`, with `progress.mode` the one being played; its level dialog has the 小朋友／大人 switch. A cat pushed almost a cell into something it cannot pass bumps (`bump()`) with a soft sound.
 - 動物餐廳 (`restaurant.js`):
   - A level is a shelf of foods plus 3–5 animal customers. Each order is `[{food, count}]` drawn from the shelf. Levels 1–2 serve each animal its favorite food; later levels grow to 3 kinds and up to 5 of a kind.
   - `serve()` takes only foods still wanted. Anything else is handed back with no penalty, so a level can always be finished.
-  - Every animal and food is a drawn WebP picture named after its id in `assets/games/restaurant/` (`animal-<id>.webp`, `food-<id>.webp`), so a new one needs its picture. Food names carry their measure word (`unit`) for `describeOrder()`.
+  - Every animal and food is a drawn WebP picture named after its id in `assets/games/restaurant/` (`animal-<id>.webp`, `food-<id>.webp`), so a new one needs its picture. Food names carry their measure word (`unit`) for `describeOrder()`, which also has a spoken form (`{spoken: true}`: numbers as words, 2 as 兩). Each order row shows its count, and the screen counts each served food aloud (`spokenNumber()`).
   - The screen keeps the walk-away animation in `exit` and cancels it when the next customer arrives. Its timers keep running while the screen is hidden, so returning resumes with the next customer; `load()` cancels them.
 
-**App feel** (`style.css`): `body` has `touch-action: pan-x pan-y` (no pinch or double-tap zoom), `overscroll-behavior: none`, `user-select: none`, and no tap highlight. `ui.js` cancels `contextmenu`.
+**App feel** (`styles/base.css`): `body` has `touch-action: pan-x pan-y` (no pinch or double-tap zoom), `overscroll-behavior: none`, `user-select: none`, and no tap highlight. `ui.js` cancels `contextmenu`.
 
 **Three-layer canvas** (`#paper` in `index.html`):
 - `svg#coloring` is the paint layer. Regions are filled by setting the `fill` attribute.
@@ -115,7 +117,7 @@ Each prepared bundle supplies `paint`, `lines`, and `regions` separately (see `d
 - Actions (`fill`, `stroke`, `clear`) are structured records. Stroke points and widths are stored in SVG space (360×440 viewBox), so they replay at any size.
 - The undo window is 20 actions. About every 20 actions, a PNG Blob checkpoint is taken, and at most 2 are kept. Once the cursor reaches 40 or more, actions that can no longer be undone are compacted into `base`.
 - IndexedDB `little-art-studio` is at v2, with stores `state`, `art`, and `works`.
-- `save()` also writes a `summary:<id>` record into `state`. The album reads only these summaries.
+- `save()` also writes a `summary:<id>` record into `state`. The album reads only these summaries. A summary's `hasContent` comes from `hasVisibleContent()` (strokes and colored fills still applied after the last clear), so a work whose strokes were all undone stays out of the album and unchecked; summaries without the current `version` are worked out again once. `remove(id)` deletes a work or old PNG, its summary and a matching `activeId`; the album offers it after a two-second hold.
 - `openStudio()` times out after 3 s.
 - When another tab upgrades the database, the connection closes and later calls reject with `code: "storage-closed"`. The app explains this once and reloads at home.
 
