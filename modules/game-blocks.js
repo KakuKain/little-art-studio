@@ -544,9 +544,35 @@ export function createBlocksGame({ onBack }) {
     if (was.x !== now.x || was.y !== now.y) {
       blocks = result.blocks;
       drag.moved = true;
+      drag.bumped = null;
       render();
-    }
+    } else bump(p.x - drag.grab.x - now.x, p.y - drag.grab.y - now.y);
   });
+  // A cat pulled almost a whole cell towards a wall or another cat bumps
+  // into it once, with a soft sound, so the child sees it cannot go there.
+  function bump(dx, dy) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 0.9) {
+      drag.bumped = null;
+      return;
+    }
+    const [sx, sy] =
+        Math.abs(dx) > Math.abs(dy) ? [Math.sign(dx), 0] : [0, Math.sign(dy)],
+      way = `${sx},${sy}`;
+    if (drag.bumped === way) return;
+    drag.bumped = way;
+    sounds.bump();
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    drag.el
+      .querySelector(".blocks-cat")
+      .animate(
+        [
+          { transform: "none" },
+          { transform: `translate(${sx * 6}px, ${sy * 6}px)` },
+          { transform: "none" },
+        ],
+        { duration: 180, easing: "ease-out" },
+      );
+  }
   for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
     board.addEventListener(type, (e) => {
       if (!drag || e.pointerId !== drag.pointer) return;
