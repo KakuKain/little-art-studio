@@ -35,8 +35,9 @@ data = json.loads(lock.read_text())
 data['version'] = data['packages']['']['version'] = version
 lock.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n')
 
-files = ['./', './index.html', f'./style.css?v={version}', f'./app.js?v={version}',
+files = ['./', './index.html', f'./app.js?v={version}',
          './manifest.json', './icon.svg', f'./assets/coloring/catalog.js?v={version}']
+files.extend(f'./styles/{f.name}?v={version}' for f in sorted((root / 'styles').glob('*.css')))
 files.extend(f'./modules/{f.name}?v={version}' for f in sorted((root / 'modules').glob('*.js')))
 files.extend('./' + str(f.relative_to(root)) for f in sorted((root / 'assets/ui').iterdir()) if f.suffix in ('.svg', '.png', '.webp'))
 files.extend('./' + str(f.relative_to(root)) for f in sorted((root / 'assets/games').rglob('*.webp')))

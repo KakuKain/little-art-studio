@@ -1,0 +1,101 @@
+/* The album and the parents' about dialog. */
+/* The image credits are links out of the app, so they stay folded. */
+.credits-list summary {
+  padding: 16px 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
+.credits {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  text-decoration: none;
+  margin: 18px 0;
+}
+/* Parents read this dialog: Chinese lines break at spaces and punctuation,
+   so 「安裝應用程式」 is not split; a phrase too long for a line still
+   breaks. */
+#about-modal {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+#artworks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+/* Each picture keeps its place while it loads, so the album does not jump;
+   a picture of another shape sits inside it whole. */
+#artworks img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 360 / 440;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.album-empty {
+  grid-column: 1 / -1;
+  margin: 8px 0;
+  text-align: center;
+  font-weight: 600;
+  color: var(--muted);
+}
+.app-version {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.sound-controls,
+.install-controls,
+.offline-controls {
+  padding: 8px 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sound-controls label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.sound-controls input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.offline-controls select {
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  width: 100%;
+  margin-bottom: 8px;
+}
+.install-controls button,
+.offline-controls button {
+  width: 100%;
+  background: #e8f7fc;
+}
+.install-controls[hidden],
+.install-controls button[hidden] {
+  display: none;
+}
+.install-controls p,
+.offline-controls p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+#artworks button {
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg);
+}

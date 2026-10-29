@@ -1,0 +1,641 @@
+/* The coloring canvas: the paper, its navigation, the tools, the colors
+   and the color panel. */
+body:not(.at-home) > main,
+body:not(.at-home) > footer,
+body:not(.at-home) > #editor-nav {
+  animation: fade-in 200ms ease-out;
+}
+/* The fill tool is a bucket pouring the color it will fill with. */
+.fill-icon {
+  display: block;
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: #263e4d;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.fill-icon .ink {
+  fill: var(--ink, #ff7399);
+}
+.at-home > main,
+.at-home > footer,
+.at-home > #editor-nav {
+  display: none;
+}
+#editor-nav {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  left: 12px;
+  right: 12px;
+  pointer-events: none;
+  z-index: 2;
+}
+#editor-nav button {
+  pointer-events: auto;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--border);
+}
+main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+}
+#paper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: white;
+}
+#coloring,
+#drawing {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+#drawing {
+  pointer-events: none;
+}
+svg [data-region] {
+  cursor: pointer;
+}
+footer {
+  flex: none;
+  background: #fff;
+  padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+}
+.tools {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  max-width: 560px;
+  margin: auto;
+}
+.main-tools,
+.action-tools {
+  display: contents;
+}
+.tools button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 44px;
+  min-height: 48px;
+  border-radius: 14px;
+}
+.tools button.active {
+  background: #fff0bd;
+  box-shadow: inset 0 0 0 2px #e9bd44;
+}
+.tools .wide-only {
+  display: none;
+}
+/* The color panel's button is a palette, so it reads as "more colors"; a
+   small dot on it still shows the current color. */
+.palette-icon {
+  width: 30px;
+  height: 30px;
+  fill: #fff3dc;
+  stroke: #263e4d;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.palette-icon circle {
+  stroke-width: 0.8;
+}
+#color-preview {
+  position: absolute;
+  right: 1px;
+  bottom: 3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #ff7399;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px #cad5dd;
+}
+.rainbow-swatch,
+.rainbow #color-preview {
+  background: conic-gradient(
+    #ff7594,
+    #ffcb67,
+    #b5de8b,
+    #7bc9ef,
+    #aa91e4,
+    #ff7594
+  ) !important;
+}
+#quick-colors {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding-top: 4px;
+}
+#quick-colors button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  border-radius: 50%;
+}
+#quick-colors button[data-color]:before {
+  content: "";
+  display: block;
+  width: 26px;
+  height: 26px;
+  background: var(--swatch);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #0000000a;
+}
+#quick-colors button.active {
+  box-shadow: inset 0 0 0 2px #263e4d;
+}
+#quick-colors .rainbow-swatch {
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+}
+#palette {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin: 24px 0;
+}
+#palette button {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 1px #00000010;
+}
+#palette button.active {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+#rainbow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 10px 16px;
+  background: #f4f0fc;
+  text-align: left;
+}
+.rainbow-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+.check {
+  margin-left: auto;
+  visibility: hidden;
+}
+#rainbow.active .check {
+  visibility: visible;
+}
+/* Mixing a color is for older children and parents, so it starts folded. */
+.mix {
+  margin-top: 20px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.mix summary {
+  padding: 14px 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
+.mix-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+#mix-preview {
+  width: 52px;
+  height: 70px;
+  border-radius: 16px;
+  flex: none;
+}
+.mix-row > div {
+  flex: 1;
+}
+.mix label {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 8px;
+  font-size: 14px;
+  margin: 12px 0;
+}
+.mix input {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  accent-color: var(--accent);
+}
+#hue {
+  appearance: none;
+  height: 12px;
+  background: linear-gradient(to right, red, #ff0, lime, cyan, blue, #f0f, red);
+  border-radius: 10px;
+}
+#use-color {
+  width: 100%;
+  margin-top: 16px;
+  background: var(--blue);
+  font-weight: 600;
+}
+#extras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+#extras button {
+  min-width: 0;
+  min-height: 72px;
+  background: var(--bg);
+  font-size: 15px;
+  padding: 10px;
+}
+#extras [data-action="clear"] {
+  color: #a04d55;
+}
+#about-open.holding {
+  background: linear-gradient(90deg, #087bac2e var(--held), transparent 0);
+  animation: hold 2s linear forwards;
+}
+@media (min-width: 900px) and (min-height: 560px) {
+  body:not(.at-home) {
+    background: var(--bg) url("../assets/ui/pastel-corners.png") center/100%
+      100% no-repeat;
+  }
+  main {
+    padding: 20px 108px 0;
+  }
+  #paper {
+    border-radius: 24px;
+    border: 1px solid var(--border);
+  }
+  #editor-nav {
+    top: 16px;
+    left: 24px;
+    right: 24px;
+  }
+  .tools {
+    position: absolute;
+    inset: 80px 16px 80px;
+    pointer-events: none;
+    max-width: none;
+    justify-content: space-between;
+    gap: 0;
+  }
+  .main-tools,
+  .action-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-self: center;
+    padding: 8px;
+    background: #ffffffed;
+    border-radius: 20px;
+    pointer-events: auto;
+    box-shadow: 0 4px 16px #32506406;
+  }
+  .tools button {
+    flex: none;
+    width: 64px;
+    height: 66px;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .tools .wide-only {
+    display: flex;
+  }
+  .tools .tool-label {
+    padding: 0;
+  }
+  footer {
+    background: transparent;
+    border: 0;
+    padding: 8px 108px max(12px, env(safe-area-inset-bottom));
+  }
+  #quick-colors {
+    padding-top: 0;
+  }
+  #quick-colors button {
+    width: 48px;
+    min-height: 48px;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  #editor-nav {
+    top: 6px;
+    left: 6px;
+    right: 6px;
+  }
+  #editor-nav button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  footer {
+    padding: 3px 64px max(3px, env(safe-area-inset-bottom));
+  }
+  .tools button {
+    min-height: 44px;
+  }
+  #quick-colors {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body:not(.at-home) > main,
+  body:not(.at-home) > footer,
+  body:not(.at-home) > #editor-nav {
+    animation: none;
+  }
+}
+@media (min-width: 900px) and (min-height: 560px) {
+  .tools .tool-label {
+    display: block;
+  }
+}
+@media (max-width: 360px) {
+  .tools {
+    gap: 1px;
+  }
+  footer {
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+  #quick-colors {
+    gap: 1px;
+  }
+}
+#palette button {
+  max-width: 52px;
+  max-height: 52px;
+  justify-self: center;
+}
+.nav-actions {
+  display: flex;
+  gap: 16px;
+  pointer-events: auto;
+}
+#editor-nav #clear {
+  margin-left: 12px;
+  color: #a04d55;
+}
+/* After the first tap, clear waits red and wiggling for a second one. */
+#editor-nav #clear.confirm {
+  background: #ffe3e6;
+  border-color: #e5484d;
+  box-shadow: 0 0 0 3px #e5484d40;
+  animation: nudge 400ms ease-in-out 2;
+}
+#tool-modal {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: 196px;
+  max-width: calc(100vw - 16px);
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--text);
+  box-shadow: 0 8px 32px #263e4d26;
+}
+#tool-modal::backdrop {
+  background: transparent;
+}
+#tool-modal button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  min-height: 48px;
+  text-align: left;
+  border-radius: 10px;
+  font-size: 15px;
+  background: transparent;
+}
+#tool-modal button:hover,
+#tool-modal button:focus-visible {
+  background: #eff7fb;
+}
+#tool-modal button img {
+  width: 22px;
+  height: 22px;
+}
+.history-actions {
+  display: flex;
+  gap: 4px;
+  pointer-events: auto;
+}
+#editor-nav .tool-label {
+  display: none;
+}
+@media (max-width: 899px) {
+  .tools {
+    max-width: 420px;
+  }
+}
+#quick-colors {
+  gap: 0;
+}
+#quick-colors #color-open {
+  margin-right: 8px;
+  position: relative;
+}
+#quick-colors .tool-label {
+  display: none;
+}
+/* Nine buttons (the color panel, seven colors, the rainbow) fit a phone. */
+@media (max-width: 420px) {
+  #quick-colors button {
+    width: 40px;
+    min-width: 40px;
+  }
+}
+@media (max-width: 390px) {
+  #quick-colors button {
+    width: 38px;
+    min-width: 38px;
+  }
+  #quick-colors #color-open {
+    margin-right: 4px;
+  }
+}
+@media (max-width: 360px) {
+  #quick-colors button {
+    width: 38px;
+    min-width: 38px;
+  }
+  #quick-colors #color-open {
+    margin-right: 2px;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  #quick-colors {
+    display: flex;
+    padding-top: 0;
+  }
+  footer {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+/* Phones held sideways: the tools stand in a column on the left and the
+   colors in two columns on the right, so the picture keeps the screen's
+   full height instead of losing a quarter of it to two rows of buttons. */
+@media (max-height: 500px) and (orientation: landscape) {
+  main {
+    padding: 0 max(96px, env(safe-area-inset-right)) 0
+      max(62px, env(safe-area-inset-left));
+  }
+  footer {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    pointer-events: none;
+  }
+  .tools {
+    position: absolute;
+    top: 56px;
+    bottom: 6px;
+    left: max(6px, env(safe-area-inset-left));
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    max-width: none;
+    margin: 0;
+    pointer-events: auto;
+  }
+  .tools button {
+    flex: none;
+    width: 50px;
+    min-width: 50px;
+    min-height: 42px;
+  }
+  #quick-colors {
+    position: absolute;
+    top: 56px;
+    bottom: 6px;
+    right: max(6px, env(safe-area-inset-right));
+    display: grid;
+    grid-template-columns: repeat(2, 42px);
+    align-content: center;
+    gap: 2px;
+    padding: 0;
+    pointer-events: auto;
+  }
+  #quick-colors button,
+  #quick-colors #color-open {
+    width: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    margin: 0;
+  }
+}
+/* Brush size: three dots (細、中、粗) a small finger can hit, instead of a
+   slider. */
+.size-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.tools .size-control button {
+  flex: none;
+  width: 36px;
+  min-width: 36px;
+  min-height: 48px;
+  padding: 0;
+  border-radius: 12px;
+  background: transparent;
+}
+.size-control span {
+  display: block;
+  margin: auto;
+  border-radius: 50%;
+  background: var(--text);
+}
+.size-control [data-size="6"] span {
+  width: 6px;
+  height: 6px;
+}
+.size-control [data-size="12"] span {
+  width: 11px;
+  height: 11px;
+}
+.size-control [data-size="26"] span {
+  width: 18px;
+  height: 18px;
+}
+.tools .size-control [aria-checked="true"] {
+  background: #eef6fb;
+  box-shadow: inset 0 0 0 2px #9cc9e2;
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .size-control {
+    flex-direction: column;
+    gap: 0;
+  }
+  .tools .size-control button {
+    width: 50px;
+    min-width: 50px;
+    height: 30px;
+    min-height: 0;
+  }
+}
+@media (min-width: 900px) and (min-height: 560px) {
+  .size-control {
+    flex-direction: column;
+  }
+  .tools .size-control button {
+    width: 64px;
+    height: 34px;
+    min-height: 0;
+  }
+}
+/* The top ink layer protects outlines; paint and brush share semantic regions. */
+#outlines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  #about-open.holding,
+  #editor-nav #clear.confirm {
+    animation: none;
+  }
+}

@@ -1,0 +1,220 @@
+/* Shared by every screen: colors, the page, buttons, dialogs and the
+   status line. A style used by only one screen belongs in that screen's file. */
+/* The parents' settings open after a two-second hold (holdToOpen() in
+   ui.js); a ring fills meanwhile. */
+@property --held {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+:root {
+  --bg: #f7fafc;
+  --text: #263238;
+  --muted: #607d8b;
+  --blue: #bfe7f5;
+  --yellow: #ffe7a3;
+  --pink: #f8c9d8;
+  --green: #c9e8d0;
+  --border: #e8eef2;
+  --accent: #087bac;
+  --radius: 24px;
+}
+* {
+  box-sizing: border-box;
+}
+/* App feel: no page bounce or pull-to-refresh, no pinch or double-tap zoom,
+   no text selection, tap flash or image drag on long press. */
+html,
+body {
+  overscroll-behavior: none;
+}
+body {
+  touch-action: pan-x pan-y;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  margin: 0;
+  color: var(--text);
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  /* Every text wraps without leaving a word or one character alone on its
+     last line; browsers without it wrap as usual. */
+  text-wrap: pretty;
+  background: var(--bg);
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+button,
+select {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 0;
+  background: #fff;
+  border-radius: 16px;
+  min-width: 48px;
+  min-height: 48px;
+  touch-action: manipulation;
+}
+button {
+  transition:
+    transform 120ms ease,
+    background 120ms ease;
+}
+button:active {
+  transform: scale(0.95);
+}
+img {
+  -webkit-user-drag: none;
+}
+#home,
+dialog {
+  overscroll-behavior: contain;
+}
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+button img {
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+button[hidden],
+select[hidden] {
+  display: none !important;
+}
+.tool-label {
+  display: none;
+}
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0 !important;
+}
+.home-top button,
+#editor-nav button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 3px 12px #32506408;
+}
+dialog {
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 24px;
+  max-width: 440px;
+  width: calc(100% - 24px);
+  max-height: 85dvh;
+  overflow: auto;
+  background: #fff;
+  color: var(--text);
+  box-shadow: 0 12px 40px #263e4d18;
+}
+dialog::backdrop {
+  background: #263e4d55;
+  backdrop-filter: blur(3px);
+}
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dialog-head h2 {
+  font-size: 22px;
+  margin: 0;
+}
+.dismiss {
+  border-radius: 50%;
+  background: var(--bg);
+  font-size: 20px;
+}
+h3 {
+  font-size: 15px;
+  margin: 16px 0;
+}
+@media (min-width: 900px) and (min-height: 560px) {
+  .tool-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+}
+@media (min-width: 900px) and (min-height: 560px) {
+  .tool-label {
+    display: none;
+  }
+}
+#notice {
+  position: fixed;
+  bottom: 124px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  max-width: calc(100% - 32px);
+  width: max-content;
+  border-radius: 16px;
+  padding: 12px 18px;
+  background: #263e4d;
+  color: white;
+  font-size: 14px;
+  box-shadow: 0 4px 16px #32506412;
+}
+#notice[hidden] {
+  display: none;
+}
+/* Screens fade in like an app. Showing an element restarts its animation.
+   The drawing surface only fades: moving it would offset an early stroke. */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes hold {
+  to {
+    --held: 100%;
+  }
+}
+@keyframes nudge {
+  25% {
+    transform: rotate(-10deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+}
+@keyframes served {
+  0% {
+    transform: scale(0.6);
+  }
+  70% {
+    transform: scale(1.2);
+  }
+}
