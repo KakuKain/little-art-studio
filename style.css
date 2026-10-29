@@ -27,6 +27,9 @@ body {
   margin: 0;
   color: var(--text);
   font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  /* Every text wraps without leaving a word or one character alone on its
+     last line; browsers without it wrap as usual. */
+  text-wrap: pretty;
   background: var(--bg);
   height: 100dvh;
   overflow: hidden;
