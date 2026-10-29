@@ -1204,46 +1204,187 @@ body[data-game="blocks"] #game-blocks {
   justify-content: center;
   touch-action: none;
 }
+/* 方塊出門: a cream play mat in a wooden fence, out in the garden. The board
+   sets --cell and --fence to match its size. */
+#game-blocks {
+  background:
+    radial-gradient(closest-side, #fff 95%, #fff0) 9% 13% / 96px 34px no-repeat,
+    radial-gradient(closest-side, #fff 95%, #fff0) 15% 11% / 56px 40px no-repeat,
+    radial-gradient(closest-side, #fff 95%, #fff0) 90% 19% / 110px 36px
+      no-repeat,
+    radial-gradient(closest-side, #fff 95%, #fff0) 84% 17% / 60px 42px no-repeat,
+    radial-gradient(70% 16% at 20% 100%, #a8dc90 98%, #a8dc9000),
+    radial-gradient(75% 13% at 85% 100%, #bde6a6 98%, #bde6a600),
+    linear-gradient(#cdeefc, #ecf8ff 60%, #f4fbf2);
+}
 .blocks-board {
   position: relative;
-  background-color: #fff;
-  border-radius: 16px;
+  border-radius: calc(var(--cell) * 0.18);
+  background: conic-gradient(
+      #fdeed6 25%,
+      #fff9ef 0 50%,
+      #fdeed6 0 75%,
+      #fff9ef 0
+    )
+    0 0 / calc(var(--cell) * 2) calc(var(--cell) * 2);
   box-shadow:
-    0 0 0 3px #d9e3e9,
-    0 10px 30px #32506414;
+    0 0 0 2px #d9a96e,
+    0 0 0 var(--fence) #f3cd94,
+    0 0 0 calc(var(--fence) + 3px) #594137,
+    0 calc(var(--fence) * 0.45) 0 calc(var(--fence) + 3px) #59413730;
 }
+/* Each door is a little house in the fence (drawn by house() in
+   game-blocks.js), with its color's shape on it. */
 .blocks-door {
   position: absolute;
+}
+.blocks-door svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.blocks-door .house {
+  fill: var(--fill);
+}
+.blocks-door .roof {
+  fill: #59413730;
+}
+.blocks-door .house-line {
+  fill: none;
+  stroke: #594137;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.blocks-door .mark {
+  fill: #594137;
+  stroke: #594137;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+/* The level's cats above the board: grey until they get home. */
+.blocks-home {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: center;
-  border-radius: 8px;
-  color: #fff;
-  font-weight: 800;
-  line-height: 1;
+  gap: 4px 6px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 12px auto 0;
+  padding: 6px 12px;
+  background: #ffffffe6;
+  border-radius: 22px;
+  box-shadow: 0 2px 8px #5941371f;
+}
+.blocks-home span {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  opacity: 0.35;
+  filter: grayscale(1);
+  transition:
+    opacity 200ms ease,
+    filter 200ms ease;
+}
+.blocks-home .arrived {
+  opacity: 1;
+  filter: none;
+  animation: served 260ms ease-out;
+}
+/* Phones held sideways keep the height for the board. */
+@media (max-height: 500px) {
+  .blocks-home {
+    display: none;
+  }
 }
 .blocks-block {
   position: absolute;
   left: 0;
   top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  color: #ffffffe6;
-  font-weight: 800;
-  line-height: 1;
-  box-shadow:
-    inset 0 -5px 0 #00000024,
-    0 2px 0 #263e4d33;
   transition: transform 90ms ease-out;
   touch-action: none;
   cursor: grab;
+}
+.blocks-cat {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: #594137;
+}
+.blocks-cat .ear,
+.blocks-cat .body,
+.blocks-cat .paw {
+  stroke: currentColor;
+  stroke-linejoin: round;
+}
+.blocks-cat .ear,
+.blocks-cat .body {
+  fill: var(--fill);
+}
+.blocks-cat .paw {
+  fill: #fff8ee;
+}
+.blocks-cat .ear-in {
+  fill: #ffb6c9;
+}
+.blocks-cat .stripes {
+  fill: none;
+  stroke: #59413738;
+  stroke-linecap: round;
+}
+.blocks-cat .tail-line,
+.blocks-cat .tail {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+}
+.blocks-cat .tail {
+  stroke: var(--fill);
+}
+.blocks-cat .eyes {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-linejoin: round;
+}
+.blocks-cat .cheek {
+  fill: #ff6f91;
+  opacity: 0.35;
+}
+.blocks-cat .whiskers {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+.blocks-cat .nose {
+  fill: #ff8fab;
+  stroke: currentColor;
+  stroke-linejoin: round;
+}
+.blocks-cat .smile {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.blocks-cat .gasp {
+  display: none;
+  fill: currentColor;
 }
 .blocks-block.dragging {
   z-index: 2;
   transition-duration: 40ms;
   cursor: grabbing;
+  filter: drop-shadow(0 6px 5px #5941373d);
+}
+.blocks-block.dragging .smile {
+  display: none;
+}
+.blocks-block.dragging .gasp {
+  display: inline;
 }
 .blocks-block.leaving {
   transition:
@@ -1538,7 +1679,8 @@ body[data-game="restaurant"] #game-restaurant {
   .game,
   .game-win,
   .game-win-title,
-  .restaurant-slot.served {
+  .restaurant-slot.served,
+  .blocks-home .arrived {
     animation: none;
   }
   .blocks-block {

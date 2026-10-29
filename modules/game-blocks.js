@@ -12,15 +12,143 @@ import {
   showLevelPicker,
 } from "./game-kit.js?v=1.0.0-beta.3";
 
-// Each color also carries a symbol, so colors are told apart without color.
-const LOOK = {
-  pink: { fill: "#ff7399", ink: "#ffffff", symbol: "♥", name: "粉紅" },
-  yellow: { fill: "#ffd54f", ink: "#8a5a00", symbol: "★", name: "黃色" },
-  blue: { fill: "#5aa9e6", ink: "#ffffff", symbol: "●", name: "藍色" },
-  green: { fill: "#5cc28f", ink: "#ffffff", symbol: "▲", name: "綠色" },
-  purple: { fill: "#a07ad6", ink: "#ffffff", symbol: "◆", name: "紫色" },
+// Each color has its own shape, drawn as the cat's eyes and on its door,
+// so a child who cannot tell the colors apart still matches them. Shapes
+// are drawn in a 20 × 20 box around the origin.
+const SHAPES = {
+  heart:
+    '<path d="M0 8C-9 2-10-4-5.5-6.5-2.5-8 0-5.5 0-4 0-5.5 2.5-8 5.5-6.5 10-4 9 2 0 8Z"/>',
+  star: '<path d="M0-9 2.2-3.1 8.6-2.8 3.6 1.2 5.3 7.3 0 3.8-5.3 7.3-3.6 1.2-8.6-2.8-2.2-3.1Z"/>',
+  circle: '<circle r="7"/>',
+  triangle: '<path d="M0-7 7.5 6H-7.5Z"/>',
+  diamond: '<path d="M0-9 7 0 0 9-7 0Z"/>',
 };
-const ARROWS = { top: "▲", bottom: "▼", left: "◀", right: "▶" };
+const LOOK = {
+  pink: { fill: "#ff8fb0", shape: "heart", name: "粉紅" },
+  yellow: { fill: "#ffd866", shape: "star", name: "黃色" },
+  blue: { fill: "#7cc3f0", shape: "circle", name: "藍色" },
+  green: { fill: "#7fd6a2", shape: "triangle", name: "綠色" },
+  purple: { fill: "#b79cf0", shape: "diamond", name: "紫色" },
+};
+// A cat filling a block of `width` × `height` pixels on cells of `c`
+// pixels. Ears and tail stay inside the block, so a cat never covers its
+// neighbour: a 1 × 1 cat is a round head, a lying cat (2 × 1) and a sitting
+// cat (1 × 2) show their front paws and curl their tail at the back. Its
+// eyes are its color's shape, and its mouth opens while it is held.
+function cat(block, c, width, height, shape) {
+  const r = (v) => Math.round(v * 10) / 10,
+    pt = ([x, y]) => `${r(x)} ${r(y)}`,
+    line = Math.max(2, c * 0.05),
+    top = c * 0.17,
+    head = Math.min(width, height),
+    wide = width > height + 1,
+    tall = height > width + 1,
+    hx = wide ? head / 2 : width / 2,
+    hy = top + ((tall ? head : height) - top) / 2 + c * 0.02,
+    k = (c * 0.78) / 52;
+  const ear = (s) => {
+    const corners = [
+        [hx + s * c * 0.38, top + c * 0.16],
+        [hx + s * c * 0.32, line / 2 + 0.5],
+        [hx + s * c * 0.07, top + c * 0.04],
+      ],
+      mx = corners.reduce((sum, [x]) => sum + x, 0) / 3,
+      my = corners.reduce((sum, [, y]) => sum + y, 0) / 3,
+      inner = corners.map(([x, y]) => [
+        mx + (x - mx) * 0.5,
+        my + (y - my) * 0.5 + c * 0.02,
+      ]);
+    return (
+      `<path class="ear" d="M${corners.map(pt).join("L")}Z"/>` +
+      `<path class="ear-in" d="M${inner.map(pt).join("L")}Z"/>`
+    );
+  };
+  const tail = (d) =>
+    d &&
+    `<path class="tail-line" d="${d}" stroke-width="${r(c * 0.12 + line * 2)}"/>` +
+      `<path class="tail" d="${d}" stroke-width="${r(c * 0.12)}"/>`;
+  const paws = (x) =>
+    [-1, 1]
+      .map(
+        (s) =>
+          `<ellipse class="paw" cx="${r(x + s * c * 0.15)}" cy="${r(height - line / 2 - c * 0.05)}" rx="${r(c * 0.11)}" ry="${r(c * 0.075)}"/>`,
+      )
+      .join("");
+  const stripes = [-1, 0, 1]
+    .map(
+      (s) =>
+        `M${pt([hx + s * c * 0.075, top + c * 0.05])}L${pt([hx + s * c * 0.075, top + c * 0.13])}`,
+    )
+    .join("");
+  const eye = (x) =>
+    `<g transform="translate(${x} -6) scale(.8)">${SHAPES[shape]}</g>`;
+  const face =
+    `<g transform="translate(${r(hx)} ${r(hy)}) scale(${k.toFixed(4)})">` +
+    '<ellipse class="cheek" cx="-17" cy="4" rx="4" ry="2.6"/>' +
+    '<ellipse class="cheek" cx="17" cy="4" rx="4" ry="2.6"/>' +
+    '<path class="whiskers" stroke-width="1.5" d="M-15 2-25 0M-15 5.5-25 6.5M15 2 25 0M15 5.5 25 6.5"/>' +
+    `<g class="eyes" stroke-width="2">${eye(-11)}${eye(11)}</g>` +
+    '<path class="nose" stroke-width="1" d="M-2.6 1.4H2.6L0 4Z"/>' +
+    '<path class="smile" stroke-width="2.2" d="M-5.5 5Q-2.75 8.5 0 4.8 2.75 8.5 5.5 5"/>' +
+    '<ellipse class="gasp" cx="0" cy="7.4" rx="2.6" ry="3"/></g>';
+  // Lying cats look either way.
+  const flip =
+    wide && block.id.charCodeAt(0) % 2
+      ? ` transform="matrix(-1 0 0 1 ${r(width)} 0)"`
+      : "";
+  return (
+    `<svg class="blocks-cat" viewBox="0 0 ${r(width)} ${r(height)}" aria-hidden="true">` +
+    `<g${flip} stroke-width="${r(line)}">` +
+    ear(-1) +
+    ear(1) +
+    `<rect class="body" x="${r(line / 2)}" y="${r(top)}" width="${r(width - line)}" height="${r(height - top - line / 2)}" rx="${r(c * 0.26)}"/>` +
+    `<path class="stripes" stroke-width="${r(c * 0.035)}" d="${stripes}"/>` +
+    tail(
+      wide
+        ? `M${pt([width - c * 0.45, height - line - c * 0.07])}C${pt([width - line - c * 0.02, height - c * 0.04])} ${pt([width - line - c * 0.02, top + c * 0.12])} ${pt([width - c * 0.24, top + c * 0.2])}`
+        : tall
+          ? `M${pt([width / 2 + c * 0.12, height - line - c * 0.07])}C${pt([width - line - c * 0.02, height - c * 0.06])} ${pt([width - line - c * 0.02, height - c * 0.36])} ${pt([width - c * 0.22, height - c * 0.5])}`
+          : "",
+    ) +
+    (wide ? paws(hx) : tall ? paws(width / 2) : "") +
+    face +
+    "</g></svg>"
+  );
+}
+// A little house in the fence for the cats of one color: its roof points
+// away from the mat and its open side faces the mat. It is drawn as if on
+// the top edge (span × thick, outside at y = 0), then turned to its side;
+// the shape on it stays upright.
+const FACING = {
+  top: () => "matrix(1 0 0 1 0 0)",
+  bottom: (thick) => `matrix(1 0 0 -1 0 ${thick})`,
+  left: () => "matrix(0 1 1 0 0 0)",
+  right: (thick) => `matrix(0 1 -1 0 ${thick} 0)`,
+};
+function house(side, span, thick, shape) {
+  const r = (v) => Math.round(v * 10) / 10,
+    o = 1.5,
+    eave = r(thick * 0.4),
+    walls = `M${o} ${thick}L${o} ${eave}L${r(span / 2)} ${o}L${r(span - o)} ${eave}L${r(span - o)} ${thick}`,
+    along = side === "top" || side === "bottom",
+    mx = span / 2,
+    my = thick * 0.71,
+    [x, y] = {
+      top: [mx, my],
+      bottom: [mx, thick - my],
+      left: [my, mx],
+      right: [thick - my, mx],
+    }[side];
+  return (
+    `<svg viewBox="0 0 ${along ? span : thick} ${along ? thick : span}" aria-hidden="true">` +
+    `<g transform="${FACING[side](thick)}">` +
+    `<path class="house" d="${walls}Z"/>` +
+    `<path class="roof" d="M${o} ${eave}L${r(span / 2)} ${o}L${r(span - o)} ${eave}Z"/>` +
+    `<path class="house-line" d="${walls}M${o} ${eave}H${r(span - o)}"/></g>` +
+    `<g class="mark" transform="translate(${r(x)} ${r(y)}) scale(${((thick * 0.46) / 20).toFixed(3)})">${SHAPES[shape]}</g>` +
+    "</svg>"
+  );
+}
 const OUT = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] };
 const KEY = "little-playground.blocks";
 
@@ -28,6 +156,7 @@ export function createBlocksGame(root, { onBack }) {
   const $ = (selector) => root.querySelector(selector),
     board = $(".blocks-board"),
     stage = $(".game-stage"),
+    home = $(".blocks-home"),
     win = $(".game-win"),
     elements = new Map(),
     progress = loadProgress(KEY);
@@ -48,75 +177,81 @@ export function createBlocksGame(root, { onBack }) {
         el = document.createElement("div");
         el.className = "blocks-block";
         el.dataset.id = block.id;
-        el.style.background = look.fill;
-        el.style.color = look.ink;
-        el.textContent = look.symbol;
+        el.style.setProperty("--fill", look.fill);
         el.setAttribute("role", "img");
-        el.setAttribute("aria-label", look.name + "方塊");
+        el.setAttribute("aria-label", look.name + "貓咪");
         board.append(el);
         elements.set(block.id, el);
       }
-      el.style.width = block.w * cell - gap() * 2 + "px";
-      el.style.height = block.h * cell - gap() * 2 + "px";
-      el.style.fontSize = Math.round(cell * 0.36) + "px";
-      el.style.transform = `translate(${block.x * cell + gap()}px, ${block.y * cell + gap()}px)`;
+      const width = block.w * cell - gap() * 2,
+        height = block.h * cell - gap() * 2;
+      el.style.width = width + "px";
+      el.style.height = height + "px";
+      // The cat is redrawn only when the board changes size.
+      if (el.dataset.size !== `${width}x${height}`) {
+        el.dataset.size = `${width}x${height}`;
+        el.innerHTML = cat(block, cell, width, height, LOOK[block.color].shape);
+      }
+      // The block in the child's hand is lifted a little.
+      el.style.transform = `translate(${block.x * cell + gap()}px, ${block.y * cell + gap()}px)${drag?.id === block.id ? " scale(1.06)" : ""}`;
     }
     for (const [id, el] of elements)
       if (!blocks.some((b) => b.id === id)) {
         el.remove();
         elements.delete(id);
       }
+    for (const mini of home.children)
+      mini.classList.toggle(
+        "arrived",
+        !blocks.some((b) => b.id === mini.dataset.id),
+      );
     $(".game-undo").disabled = !history.length;
   }
-  // Sizes the board to the space left on screen, with room for the doors.
+  // Sizes the board to the space left on screen, with room for the fence and
+  // the gates that stand out of it.
   function layout() {
     if (!level) return;
     const rect = stage.getBoundingClientRect(),
-      room = 26;
-    const size = Math.floor(
-      Math.min(
-        (rect.width - room * 2) / level.w,
-        (rect.height - room * 2) / level.h,
-        96,
-      ),
-    );
+      gateFor = (size) => Math.round(Math.min(44, Math.max(26, size * 0.5))),
+      fit = (room) =>
+        Math.floor(
+          Math.min(
+            (rect.width - room * 2) / level.w,
+            (rect.height - room * 2) / level.h,
+            96,
+          ),
+        );
+    // Gates grow with the cells, so fit once more with the room they need.
+    const size = fit(gateFor(fit(24)) + 4);
     if (size <= 0) return;
     cell = size;
+    const fence = Math.round(Math.min(24, Math.max(12, cell * 0.24))),
+      thick = gateFor(cell);
     board.style.width = level.w * cell + "px";
     board.style.height = level.h * cell + "px";
-    board.style.backgroundImage =
-      "linear-gradient(#eef3f6 2px, transparent 2px), linear-gradient(90deg, #eef3f6 2px, transparent 2px)";
-    board.style.backgroundSize = `${cell}px ${cell}px`;
-    board.style.backgroundPosition = "-1px -1px";
+    board.style.setProperty("--cell", cell + "px");
+    board.style.setProperty("--fence", fence + "px");
     board.querySelectorAll(".blocks-door").forEach((door) => door.remove());
-    const thick = Math.max(12, Math.round(cell * 0.24)),
-      offset = thick + 6;
     for (const door of level.doors) {
       const el = document.createElement("div"),
+        look = LOOK[door.color],
         along = door.side === "top" || door.side === "bottom";
-      el.className = "blocks-door";
-      el.style.background = LOOK[door.color].fill;
-      el.style.color = LOOK[door.color].ink;
-      el.style.fontSize = Math.round(thick * 0.75) + "px";
-      el.textContent = ARROWS[door.side];
-      el.setAttribute("aria-label", LOOK[door.color].name + "的門");
+      el.className = `blocks-door ${door.side}`;
+      el.style.setProperty("--fill", look.fill);
+      el.setAttribute("aria-label", look.name + "貓咪的家");
+      // The house opens onto the mat and stands out of the fence.
       const span = door.size * cell - 8,
         start = door.at * cell + 4;
+      el.innerHTML = house(door.side, span, thick, look.shape);
       Object.assign(el.style, {
         width: (along ? span : thick) + "px",
         height: (along ? thick : span) + "px",
         left:
-          (along
-            ? start
-            : door.side === "left"
-              ? -offset
-              : level.w * cell + 6) + "px",
+          (along ? start : door.side === "left" ? -thick : level.w * cell) +
+          "px",
         top:
-          (along
-            ? door.side === "top"
-              ? -offset
-              : level.h * cell + 6
-            : start) + "px",
+          (along ? (door.side === "top" ? -thick : level.h * cell) : start) +
+          "px",
       });
       board.append(el);
     }
@@ -135,6 +270,16 @@ export function createBlocksGame(root, { onBack }) {
     $(".game-title").textContent = `第 ${n} 關`;
     $(".game-hint").hidden = n > 3;
     win.hidden = true;
+    // The level's cats in a row above the board; each lights up at home.
+    home.replaceChildren(
+      ...level.blocks.map((block) => {
+        const mini = document.createElement("span");
+        mini.dataset.id = block.id;
+        mini.style.setProperty("--fill", LOOK[block.color].fill);
+        mini.innerHTML = cat(block, 30, 26, 26, LOOK[block.color].shape);
+        return mini;
+      }),
+    );
     layout();
   }
   function point(e) {
@@ -195,6 +340,7 @@ export function createBlocksGame(root, { onBack }) {
       moved: false,
     };
     el.classList.add("dragging");
+    render();
   });
   board.addEventListener("pointermove", (e) => {
     if (!drag || e.pointerId !== drag.pointer) return;
