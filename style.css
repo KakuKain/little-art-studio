@@ -477,14 +477,14 @@ dialog::backdrop {
 }
 #palette {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
   margin: 24px 0;
 }
 #palette button {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
+  min-height: 0;
   aspect-ratio: 1;
   border-radius: 50%;
   border: 3px solid white;
@@ -515,10 +515,18 @@ dialog::backdrop {
 #rainbow.active .check {
   visibility: visible;
 }
+/* Mixing a color is for older children and parents, so it starts folded. */
 .mix {
   margin-top: 20px;
   padding-top: 4px;
   border-top: 1px solid var(--border);
+}
+.mix summary {
+  padding: 14px 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
 }
 h3 {
   font-size: 15px;
@@ -830,6 +838,7 @@ h3 {
   pointer-events: auto;
 }
 #editor-nav #clear {
+  margin-left: 12px;
   color: #a04d55;
 }
 #tool-modal {
@@ -903,6 +912,22 @@ h3 {
 }
 #quick-colors .tool-label {
   display: none;
+}
+/* Nine buttons (the color panel, seven colors, the rainbow) fit a phone. */
+@media (max-width: 420px) {
+  #quick-colors button {
+    width: 40px;
+    min-width: 40px;
+  }
+}
+@media (max-width: 390px) {
+  #quick-colors button {
+    width: 38px;
+    min-width: 38px;
+  }
+  #quick-colors #color-open {
+    margin-right: 4px;
+  }
 }
 @media (max-width: 360px) {
   #quick-colors button {

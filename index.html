@@ -131,13 +131,13 @@
         ><button id="redo" class="" aria-label="下一步">
           <img src="assets/ui/redo.svg" alt="" /><span class="tool-label"
             >下一步</span
-          >
+          ></button
+        ><button id="clear" aria-label="清除畫布">
+          <img src="assets/ui/clear.svg" alt="" />
         </button>
       </div>
       <div class="nav-actions">
-        <button id="clear" aria-label="清除畫布">
-          <img src="assets/ui/clear.svg" alt="" /></button
-        ><button id="home-back" class="" aria-label="回首頁">
+        <button id="home-back" class="" aria-label="回首頁">
           <img src="assets/ui/home.svg" alt="" /><span class="tool-label"
             >回首頁</span
           >
@@ -227,8 +227,8 @@
         <span class="rainbow-swatch"></span><span>彩虹筆</span
         ><span class="check">✓</span>
       </button>
-      <div class="mix">
-        <h3>調出自己的顏色</h3>
+      <details class="mix">
+        <summary>調出自己的顏色</summary>
         <div class="mix-row">
           <span id="mix-preview"></span>
           <div>
@@ -257,7 +257,7 @@
           </div>
         </div>
         <button id="use-color">用這個顏色</button>
-      </div>
+      </details>
     </dialog>
     <div id="tool-modal" popover="auto" role="menu" aria-label="更多工具">
       <button data-action="download" role="menuitem">
