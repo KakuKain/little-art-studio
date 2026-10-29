@@ -6,13 +6,13 @@ import {
   doorAt,
   canExit,
   cloneBlocks,
-} from "./blocks.js?v=1.0.0-beta.5";
+} from "./blocks.js?v=1.0.0-beta.6";
 import {
   loadProgress,
   saveProgress,
   showLevelPicker,
   celebrate,
-} from "./game-kit.js?v=1.0.0-beta.5";
+} from "./game-kit.js?v=1.0.0-beta.6";
 
 // Each color has its own shape, drawn as the cat's eyes and on its door,
 // so a child who cannot tell the colors apart still matches them. Shapes
