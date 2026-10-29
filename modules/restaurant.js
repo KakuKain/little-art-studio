@@ -5,7 +5,7 @@
 // up to five of a kind, and the child taps foods to serve them. A food the
 // customer didn't order, or one too many, is simply not taken, so there is
 // nothing to lose: no timer, no wrong answers that count.
-import { seeded, shuffle } from "./random.js?v=1.0.0-beta.3";
+import { seeded, shuffle } from "./random.js?v=1.0.0-beta.4";
 
 // Emoji up to Unicode 11, so Android 9 and later show them all. The unit is
 // the measure word a child would hear: 兩根香蕉, 一杯牛奶.

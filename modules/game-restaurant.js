@@ -7,13 +7,13 @@ import {
   generateLevel,
   serve,
   describeOrder,
-} from "./restaurant.js?v=1.0.0-beta.3";
+} from "./restaurant.js?v=1.0.0-beta.4";
 import {
   loadProgress,
   saveProgress,
   showLevelPicker,
   celebrate,
-} from "./game-kit.js?v=1.0.0-beta.3";
+} from "./game-kit.js?v=1.0.0-beta.4";
 
 const KEY = "little-playground.restaurant";
 const ART = "assets/games/restaurant/";
