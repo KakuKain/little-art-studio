@@ -61,6 +61,7 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 - `scheduler.js`: serializes editor work.
 - `palette.js`: the fixed colors and their names.
 - `install.js`: the parents' "install to home screen" section. It suppresses Chrome's automatic install banner so children can't trigger it.
+- `ui.js`: `holdToOpen()` gates the parents' about dialog behind a two-second hold (a keyboard click opens it at once). Brush size is three radio buttons (`syncSizes()`), not a slider.
 
 **Navigation** (Android-first PWA): each screen is a `history.pushState` entry `{screen, category?, game?, depth}`, and the URL never changes. Screens: `home` (game hub) → `coloring` → `category` → `editor`, or `home` → `game`.
 - Android's back gesture goes one screen back, and exits only from home. A `popstate` handler re-shows the matching screen.
@@ -78,7 +79,7 @@ Nothing is bundled. The committed files are what ship, so generated output must 
 - Progress is a per-device convenience in `localStorage` (`little-playground.<game>`). `game-kit.js` loads and saves it, shows the shared level picker (cleared levels get a star) and drops confetti on a cleared level (`celebrate()`).
 - Generated levels use `random.js`: the seeded PRNG `seeded()` and the Fisher–Yates `shuffle()`. Never use `sort()` with a random comparator: sort algorithms differ between engines and would change the levels.
 - 方塊出門 (`blocks.js`):
-  - Blocks move cell by cell after the finger (`dragTo`) and leave through a same-colored door at least as wide as the block. A step needs the finger more than half a cell ahead (strictly: at exactly half, the block would swing back and forth forever), and the other axis (before the first step: the one the finger leads less) needs more than three quarters, so sideways drift neither changes rows nor slides a block pushed against the edge out of a door beside it. The screen picks up the block whose cells contain the finger, gaps included, and letting go of a block in front of its own door (`doorAt`) sends it out.
+  - Blocks move cell by cell after the finger (`dragTo`) and leave through a same-colored door at least as wide as the block. A step needs the finger more than half a cell ahead (strictly: at exactly half, the block would swing back and forth forever), and the other axis (before the first step: the one the finger leads less) needs more than three quarters, so sideways drift neither changes rows nor slides a block pushed against the edge out of a door beside it. The screen picks up the block whose cells contain the finger, gaps included, and letting go of a block in front of its own door (`doorAt`) sends it out. While a cat is held its houses bounce (`callHome()`); levels 1–2 show a demo hand (`showHand()`, straight paths only, which holds for those fixed levels), and the bulb hint wiggles a cat that `canExit` now.
   - `generateLevel(n)` is deterministic and accepts only boards where blocks can be exited one by one (`exitOrder`), so no level can dead-end.
 - 動物餐廳 (`restaurant.js`):
   - A level is a shelf of foods plus 3–5 animal customers. Each order is `[{food, count}]` drawn from the shelf. Levels 1–2 serve each animal its favorite food; later levels grow to 3 kinds and up to 5 of a kind.
