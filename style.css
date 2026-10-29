@@ -531,6 +531,14 @@ dialog::backdrop {
   background: var(--bg);
   font-size: 20px;
 }
+/* The image credits are links out of the app, so they stay folded. */
+.credits-list summary {
+  padding: 16px 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
 .credits {
   display: block;
   color: var(--muted);
@@ -538,6 +546,13 @@ dialog::backdrop {
   line-height: 1.6;
   text-decoration: none;
   margin: 18px 0;
+}
+/* Parents read this dialog: Chinese lines break at spaces and punctuation,
+   so 「安裝應用程式」 is not split; a phrase too long for a line still
+   breaks. */
+#about-modal {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 #palette {
   display: grid;
