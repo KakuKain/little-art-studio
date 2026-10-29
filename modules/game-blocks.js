@@ -1,6 +1,11 @@
 // 方塊出門 screen: draws a level, turns finger drags into block moves and
 // remembers the child's progress on this device. The rules live in blocks.js.
-import { generateLevel, dragTo, cloneBlocks } from "./blocks.js?v=1.0.0-beta.3";
+import {
+  generateLevel,
+  dragTo,
+  doorAt,
+  cloneBlocks,
+} from "./blocks.js?v=1.0.0-beta.3";
 import {
   loadProgress,
   saveProgress,
@@ -139,6 +144,13 @@ export function createBlocksGame(root, { onBack }) {
       y: (e.clientY - rect.top) / cell,
     };
   }
+  // The block under the finger, counting the gaps and rounded corners around
+  // it, so a finger that lands between blocks still picks one up.
+  function blockAt({ x, y }) {
+    return blocks.find(
+      (b) => x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h,
+    );
+  }
   function leave(el, door) {
     const [dx, dy] = OUT[door.side],
       block = blocks.find((b) => b.id === el.dataset.id),
@@ -167,17 +179,18 @@ export function createBlocksGame(root, { onBack }) {
     }
   }
   board.addEventListener("pointerdown", (e) => {
-    const el = e.target.closest(".blocks-block");
-    if (!el || drag || !win.hidden || e.button !== 0) return;
-    const block = blocks.find((b) => b.id === el.dataset.id);
+    if (drag || !win.hidden || e.button !== 0) return;
+    const p = point(e),
+      block = blockAt(p);
     if (!block) return;
+    const el = elements.get(block.id);
     el.setPointerCapture(e.pointerId);
-    const p = point(e);
     drag = {
       el,
       id: block.id,
       pointer: e.pointerId,
       grab: { x: p.x - block.x, y: p.y - block.y },
+      axis: null,
       before: cloneBlocks(blocks),
       moved: false,
     };
@@ -192,6 +205,7 @@ export function createBlocksGame(root, { onBack }) {
         drag.id,
         p.x - drag.grab.x,
         p.y - drag.grab.y,
+        drag.axis,
       );
     if (result.exit) {
       leave(drag.el, result.exit);
@@ -201,6 +215,7 @@ export function createBlocksGame(root, { onBack }) {
     }
     const was = blocks.find((b) => b.id === drag.id),
       now = result.blocks.find((b) => b.id === drag.id);
+    drag.axis = result.axis;
     if (was.x !== now.x || was.y !== now.y) {
       blocks = result.blocks;
       drag.moved = true;
@@ -209,7 +224,20 @@ export function createBlocksGame(root, { onBack }) {
   });
   for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
     board.addEventListener(type, (e) => {
-      if (drag && e.pointerId === drag.pointer) finish(false);
+      if (!drag || e.pointerId !== drag.pointer) return;
+      // Letting go of a block in front of its own door sends it out, so a
+      // child need not push it past the edge.
+      const door =
+        type === "pointerup" &&
+        doorAt(
+          level,
+          blocks.find((b) => b.id === drag.id),
+        );
+      if (door) {
+        leave(drag.el, door);
+        blocks = blocks.filter((b) => b.id !== drag.id);
+      }
+      finish(Boolean(door));
     });
   $(".game-back").onclick = () => onBack();
   $(".game-undo").onclick = () => {

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  doorAt,
   moveStep,
   dragTo,
   reachable,
@@ -65,6 +66,21 @@ test("a block leaves only through a door of its color that it fits", () => {
   );
 });
 
+test("a block in front of its own door can be let go through it", () => {
+  const level = board(
+    [at("a", 3, 1), at("b", 2, 1), at("c", 3, 3, "blue", 1, 1)],
+    [
+      { side: "right", at: 0, size: 2, color: "pink" },
+      { side: "bottom", at: 3, size: 1, color: "green" },
+    ],
+  );
+  const [a, b, c] = level.blocks;
+  assert.equal(doorAt(level, a).color, "pink", "touching the 2-wide door");
+  assert.equal(doorAt(level, a, 3, 2), null, "below the door's span");
+  assert.equal(doorAt(level, b), null, "one cell away from the edge");
+  assert.equal(doorAt(level, c), null, "a door of another color");
+});
+
 test("dragging follows the finger, goes around corners and exits", () => {
   const level = board(
     [at("a", 0, 3), at("wall", 1, 2, "blue", 3, 1)],
@@ -81,6 +97,45 @@ test("dragging follows the finger, goes around corners and exits", () => {
   assert.deepEqual([blocks[0].x, blocks[0].y], [3, 3]);
   ({ blocks } = dragTo(level, level.blocks, "a", 0, 1.2));
   assert.deepEqual([blocks[0].x, blocks[0].y], [0, 1]);
+});
+
+test("a finger exactly half a cell away does not swing the block forever", () => {
+  const level = board([at("a", 1, 1)], [], 3, 3);
+  // A mouse or a 2× screen can land exactly on half a cell.
+  let { blocks } = dragTo(level, level.blocks, "a", 1.5, 1);
+  assert.deepEqual([blocks[0].x, blocks[0].y], [1, 1]);
+  ({ blocks } = dragTo(level, level.blocks, "a", 1.51, 1));
+  assert.deepEqual([blocks[0].x, blocks[0].y], [2, 1]);
+});
+
+test("sideways drift keeps the block in its row; a clear turn moves it", () => {
+  const level = board([at("a", 0, 1)], [], 6, 6);
+  // Dragging right with the finger 0.6 of a cell low stays in row 1 ...
+  let out = dragTo(level, level.blocks, "a", 4, 1.6);
+  assert.deepEqual([out.blocks[0].x, out.blocks[0].y, out.axis], [4, 1, "x"]);
+  // ... and the next move keeps it there, until the finger is clearly lower.
+  out = dragTo(level, out.blocks, "a", 4, 1.7, out.axis);
+  assert.deepEqual([out.blocks[0].x, out.blocks[0].y], [4, 1]);
+  out = dragTo(level, out.blocks, "a", 4, 1.8, out.axis);
+  assert.deepEqual([out.blocks[0].x, out.blocks[0].y, out.axis], [4, 2, "y"]);
+  // Blocked straight ahead, the same drift does not slip it round the wall.
+  const walled = board([at("a", 0, 1), at("wall", 2, 1, "blue")], [], 6, 6);
+  out = dragTo(walled, walled.blocks, "a", 4, 1.6);
+  assert.deepEqual([out.blocks[0].x, out.blocks[0].y], [1, 1]);
+});
+
+test("pushing a block out beside its door does not slide it through", () => {
+  const level = board(
+    [at("a", 2, 3)],
+    [{ side: "bottom", at: 3, size: 1, color: "pink" }],
+  );
+  // Pushed down with the finger drifting 0.7 of a cell towards the door ...
+  let out = dragTo(level, level.blocks, "a", 2.7, 4.2);
+  assert.equal(out.exit, null);
+  assert.deepEqual([out.blocks[0].x, out.blocks[0].y], [2, 3]);
+  // ... it stays; with the finger over the door's cell it goes out.
+  out = dragTo(level, level.blocks, "a", 2.9, 4.2);
+  assert.equal(out.exit.side, "bottom");
 });
 
 test("reachability and exit order respect blocking blocks", () => {

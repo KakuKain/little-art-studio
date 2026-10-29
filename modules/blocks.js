@@ -61,6 +61,16 @@ export function doorFor(level, block, x, y, side) {
   );
 }
 
+// The door a block standing at (x, y) can leave through, on any side, or
+// null. Letting go of a block here sends it out.
+export function doorAt(level, block, x = block.x, y = block.y) {
+  for (const side of Object.keys(SIDES)) {
+    const door = doorFor(level, block, x, y, side);
+    if (door) return door;
+  }
+  return null;
+}
+
 // One drag step by (dx, dy) ∈ {-1, 0, 1}². Returns the new position, an
 // exit through a matching door, or null when the move is blocked.
 export function moveStep(level, blocks, id, dx, dy) {
@@ -82,36 +92,54 @@ export function moveStep(level, blocks, id, dx, dy) {
     : null;
 }
 
+// How far (in cells) the finger must lead the block before it steps: more
+// than half a cell along the way the block is going (before it has moved:
+// the way the finger leads it most), more than three quarters to turn. So a
+// finger that drifts sideways neither knocks the block into the next row nor
+// slides a block pushed against the edge along it and out of a door beside
+// it. Each step then shortens the distance to the finger, so dragTo()
+// always ends (at exactly half a cell, stepping would only swing the block
+// back and forth).
+const STEP = 0.5,
+  TURN = 0.75;
+
 // Follows the child's finger: moves the block one cell at a time towards a
 // target position (in cells, may be fractional or off the board), along the
 // axis with the larger distance first and the other axis when that is
-// blocked. Each step shortens the distance, so this always ends. Pushing a
-// block past the edge through its door makes it leave.
-export function dragTo(level, blocks, id, tx, ty) {
+// blocked. `axis` ("x" or "y") is the way the block last moved, and comes
+// back updated. Pushing a block past the edge through its door makes it
+// leave.
+export function dragTo(level, blocks, id, tx, ty, axis = null) {
   const moved = cloneBlocks(blocks),
     block = moved.find((b) => b.id === id);
   for (;;) {
     const dx = tx - block.x,
-      dy = ty - block.y;
+      dy = ty - block.y,
+      way = axis ?? (Math.abs(dx) >= Math.abs(dy) ? "x" : "y");
     const steps = [
-      [Math.sign(dx), 0, Math.abs(dx)],
-      [0, Math.sign(dy), Math.abs(dy)],
+      ["x", Math.sign(dx), 0, Math.abs(dx)],
+      ["y", 0, Math.sign(dy), Math.abs(dy)],
     ]
-      .filter(([, , distance]) => distance >= 0.5)
-      .sort((a, b) => b[2] - a[2]);
+      .filter(([to, , , distance]) => distance > (to === way ? STEP : TURN))
+      .sort((a, b) => b[3] - a[3]);
     let stepped = false;
-    for (const [sx, sy] of steps) {
+    for (const [way, sx, sy] of steps) {
       const result = moveStep(level, moved, id, sx, sy);
       if (result?.exit)
-        return { blocks: moved.filter((b) => b.id !== id), exit: result.door };
+        return {
+          blocks: moved.filter((b) => b.id !== id),
+          exit: result.door,
+          axis: way,
+        };
       if (result) {
         block.x = result.x;
         block.y = result.y;
+        axis = way;
         stepped = true;
         break;
       }
     }
-    if (!stepped) return { blocks: moved, exit: null };
+    if (!stepped) return { blocks: moved, exit: null, axis };
   }
 }
 
@@ -139,7 +167,7 @@ export function reachable(level, blocks, id) {
 export function canExit(level, blocks, id) {
   const block = blocks.find((b) => b.id === id);
   return reachable(level, blocks, id).some(([x, y]) =>
-    Object.keys(SIDES).some((side) => doorFor(level, block, x, y, side)),
+    doorAt(level, block, x, y),
   );
 }
 
