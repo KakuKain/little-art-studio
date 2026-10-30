@@ -7,14 +7,19 @@
 // - game-<id>.png: a game's card on the home hub, written to assets/ui/.
 // - restaurant-background-portrait.png, restaurant-background-landscape.png:
 //   the 動物餐廳 room, cut into strips (see BACKDROP).
+// - cat-<color>-<pose>.png (pose: head, lying, sitting), blocks-frame.png and
+//   blocks-background-portrait|landscape.png: 方塊出門's cats, the fence
+//   round its board and its room, written to assets/games/blocks/.
 //
 // Run it by hand after adding or redrawing a picture:
 //
 //   node scripts/build-game-art.cjs [source folder, default tmp/restaurant-art]
 //
-// Each picture is trimmed to its drawing and centered on a transparent square
-// with a little room around the outline, so every animal (and every food)
-// shows at the same size whatever margin the generator left.
+// Each animal, food and card picture is trimmed to its drawing and centered
+// on a transparent square with a little room around the outline, so every
+// animal (and every food) shows at the same size whatever margin the
+// generator left. A cat is trimmed too but keeps its own shape, since it
+// fills its block on the board.
 const fs = require("node:fs");
 const path = require("node:path");
 const sharp = require("sharp");
@@ -31,6 +36,18 @@ const OUTPUT = {
 // on 3× phone screens.
 const SIZES = { animal: 384, food: 192, game: 384 };
 const PADDING = 0.04;
+// 方塊出門: a cell is at most 96 CSS px, so a cell's side is 192 pixels of a
+// cat (two cells for a lying or sitting one). The fence is scaled to the
+// board as a whole (see layout() in game-blocks.js), and the room covers the
+// screen.
+const BLOCKS = "assets/games/blocks";
+const CAT_BOX = { head: [192, 192], lying: [384, 192], sitting: [192, 384] };
+// The generated fence is scaled to 1024 pixels, where its wood is 88 pixels
+// wide and each corner fits in 128. The fence written is 1600 pixels square,
+// so its wood is 88/1600 of its side: thin enough beside 8 × 8 cells.
+const FRAME_SOURCE = 1024,
+  FRAME_CORNER = 128,
+  FRAME = 1600;
 // The room is cut into four strips so it fits any screen without cropping:
 // the wall with its decorations, a few rows of plain stripes, the counter's
 // top edge and a few rows of plain panels. The plain rows are all alike, so
@@ -68,6 +85,32 @@ async function drawingBox(file) {
       }
   if (right < 0) throw new Error(`${file} is empty`);
   return { left, top, width: right - left + 1, height: bottom - top + 1 };
+}
+
+// A generated frame's corners differ a little and its sides are not quite
+// alike along their length. The fence is rebuilt from the top left corner:
+// mirrored into the other three, with each side carrying on the corner's
+// last row or column of pixels, so all four sides look the same.
+async function seamlessFrame(file) {
+  const half = FRAME / 2,
+    last = FRAME_CORNER - 1,
+    data = await sharp(file)
+      .extract(await drawingBox(file))
+      .resize(FRAME_SOURCE, FRAME_SOURCE, { fit: "fill" })
+      .ensureAlpha()
+      .raw()
+      .toBuffer(),
+    out = Buffer.alloc(FRAME * FRAME * 4);
+  for (let y = 0; y < FRAME; y++)
+    for (let x = 0; x < FRAME; x++) {
+      const sx = Math.min(x < half ? x : FRAME - 1 - x, last),
+        sy = Math.min(y < half ? y : FRAME - 1 - y, last),
+        from = (sy * FRAME_SOURCE + sx) * 4;
+      // Inside the fence stays empty.
+      if (sx < last || sy < last)
+        data.copy(out, (y * FRAME + x) * 4, from, from + 4);
+    }
+  return sharp(out, { raw: { width: FRAME, height: FRAME, channels: 4 } });
 }
 
 (async () => {
@@ -125,6 +168,31 @@ async function drawingBox(file) {
       );
       files.push(target);
     }
+  }
+  for (const name of fs.readdirSync(source).sort()) {
+    const file = path.join(source, name);
+    let picture, target;
+    const cat = /^cat-[a-z]+-(head|lying|sitting)\.png$/.exec(name);
+    if (cat) {
+      const [width, height] = CAT_BOX[cat[1]];
+      picture = sharp(file)
+        .extract(await drawingBox(file))
+        .resize(width, height, { fit: "inside" });
+      target = name.replace(/\.png$/, ".webp");
+    } else if (name === "blocks-frame.png") {
+      picture = await seamlessFrame(file);
+      target = "frame.webp";
+    } else if (/^blocks-background-(portrait|landscape)\.png$/.test(name)) {
+      picture = sharp(file);
+      target = name.replace(/^blocks-background-(\w+)\.png$/, "room-$1.webp");
+    } else continue;
+    target = path.join(root, BLOCKS, target);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    await picture
+      .webp({ quality: 84, alphaQuality: 90, smartSubsample: true, effort: 6 })
+      .toFile(target);
+    console.log(`${path.relative(root, target)} ${fs.statSync(target).size} B`);
+    files.push(target);
   }
   console.log(`${files.length} pictures written`);
 })().catch((error) => {
