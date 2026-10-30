@@ -2,85 +2,73 @@
 body[data-game="blocks"] #game-blocks {
   display: flex;
 }
-/* 方塊出門: a cream play mat in a wooden fence, out in the garden. The board
-   sets --cell and --fence to match its size. */
+/* 方塊出門: a play mat in a wooden fence, in a children's room. The pictures
+   come from scripts/build-game-art.cjs; the board sets --cell and --fence to
+   match its size. */
 #game-blocks {
-  background:
-    radial-gradient(closest-side, #fff 95%, #fff0) 9% 13% / 96px 34px no-repeat,
-    radial-gradient(closest-side, #fff 95%, #fff0) 15% 11% / 56px 40px no-repeat,
-    radial-gradient(closest-side, #fff 95%, #fff0) 90% 19% / 110px 36px
-      no-repeat,
-    radial-gradient(closest-side, #fff 95%, #fff0) 84% 17% / 60px 42px no-repeat,
-    radial-gradient(70% 16% at 20% 100%, #a8dc90 98%, #a8dc9000),
-    radial-gradient(75% 13% at 85% 100%, #bde6a6 98%, #bde6a600),
-    linear-gradient(#cdeefc, #ecf8ff 60%, #f4fbf2);
+  background: #fbf0de url("../assets/games/blocks/room-portrait.webp") center /
+    cover;
+}
+@media (orientation: landscape) {
+  #game-blocks {
+    background-image: url("../assets/games/blocks/room-landscape.webp");
+  }
 }
 .blocks-board {
   position: relative;
-  border-radius: calc(var(--cell) * 0.18);
+  border-radius: calc(var(--fence) * 0.25);
   background: conic-gradient(
-      #fdeed6 25%,
-      #fff9ef 0 50%,
-      #fdeed6 0 75%,
-      #fff9ef 0
+      #edd8ba 25%,
+      #f8e9d3 0 50%,
+      #edd8ba 0 75%,
+      #f8e9d3 0
     )
     0 0 / calc(var(--cell) * 2) calc(var(--cell) * 2);
-  box-shadow:
-    0 0 0 2px #d9a96e,
-    0 0 0 var(--fence) #f3cd94,
-    0 0 0 calc(var(--fence) + 3px) #594137,
-    0 calc(var(--fence) * 0.45) 0 calc(var(--fence) + 3px) #59413730;
 }
-/* Each door is a little house in the fence (drawn by house() in
-   game-blocks.js), with its color's shape on it. While a cat is held its
-   own houses bounce and glow, and the others step back. */
+/* The fence: frame.webp scaled as a whole round the board, --fence (its
+   wood) wide on each side, so the wood ends where the mat begins. */
+.blocks-board::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--fence) * -1);
+  background: url("../assets/games/blocks/frame.webp") 0 0 / 100% 100% no-repeat;
+  filter: drop-shadow(0 4px 6px #5941372e);
+  pointer-events: none;
+}
+/* Each door is a pill in its cats' color, lying on the fence. While a cat is
+   held its own doors bounce and glow, and the others step back. */
 .blocks-door {
   position: absolute;
+  background: var(--fill);
+  border: 2px solid #594137;
+  border-radius: 99px;
+  box-shadow: inset 0 -3px 0 #59413724;
   transition: opacity 150ms ease;
 }
 .blocks-board.holding .blocks-door:not(.calling) {
   opacity: 0.4;
 }
-.blocks-door.calling svg {
-  filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 6px var(--fill));
+.blocks-door.calling {
+  box-shadow:
+    inset 0 -3px 0 #59413724,
+    0 0 0 3px #fff,
+    0 0 10px 4px var(--fill);
   animation: calling 600ms ease-in-out infinite alternate;
 }
-.blocks-door.top svg {
-  transform-origin: 50% 100%;
+/* The game's buttons and name are cream like the fence's room. */
+#game-blocks .game-top button {
+  background: #fff4e2;
+  box-shadow:
+    inset 0 0 0 2px #e5c595,
+    0 3px 0 #e5c59580;
 }
-.blocks-door.bottom svg {
-  transform-origin: 50% 0;
-}
-.blocks-door.left svg {
-  transform-origin: 100% 50%;
-}
-.blocks-door.right svg {
-  transform-origin: 0 50%;
-}
-.blocks-door svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.blocks-door .house {
-  fill: var(--fill);
-}
-.blocks-door .roof {
-  fill: #59413730;
-}
-.blocks-door .house-line {
-  fill: none;
-  stroke: #594137;
-  stroke-width: 3;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-.blocks-door .mark {
-  fill: #594137;
-  stroke: #594137;
-  stroke-width: 2;
-  stroke-linejoin: round;
+#game-blocks .game-title {
+  width: fit-content;
+  margin-inline: auto;
+  padding: 2px 28px;
+  background: #fff4e2;
+  border-radius: 99px;
+  box-shadow: inset 0 0 0 2px #e5c595;
 }
 /* The hint button under the board, in the corner on phones held sideways. */
 .blocks-help {
@@ -88,11 +76,14 @@ body[data-game="blocks"] #game-blocks {
   flex: none;
   display: grid;
   place-items: center;
-  width: 60px;
-  height: 60px;
+  width: 104px;
+  height: 56px;
   margin-top: 6px;
-  border-radius: 50%;
-  box-shadow: 0 3px 12px #5941371f;
+  border-radius: 99px;
+  background: #fdd68c;
+  box-shadow:
+    inset 0 -4px 0 #efb767,
+    0 3px 10px #5941371f;
 }
 .blocks-help svg {
   width: 34px;
@@ -104,7 +95,7 @@ body[data-game="blocks"] #game-blocks {
   stroke-linejoin: round;
 }
 .blocks-help .glass {
-  fill: #ffe16b;
+  fill: #fff6d8;
 }
 @media (max-height: 500px) {
   .blocks-help {
@@ -129,9 +120,9 @@ body[data-game="blocks"] #game-blocks {
   max-width: 100%;
   margin: 12px auto 0;
   padding: 6px 12px;
-  background: #ffffffe6;
+  background: #fff4e2e6;
   border-radius: 22px;
-  box-shadow: 0 2px 8px #5941371f;
+  box-shadow: inset 0 0 0 2px #e5c595;
 }
 .blocks-home span {
   position: relative;
@@ -162,85 +153,25 @@ body[data-game="blocks"] #game-blocks {
   touch-action: none;
   cursor: grab;
 }
+/* A cat is its block's picture (catPicture() in game-blocks.js). Lying cats
+   look either way. */
 .blocks-cat {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  overflow: visible;
-  color: #594137;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
 }
-.blocks-cat .ear,
-.blocks-cat .body,
-.blocks-cat .paw {
-  stroke: currentColor;
-  stroke-linejoin: round;
-}
-.blocks-cat .ear,
-.blocks-cat .body {
-  fill: var(--fill);
-}
-.blocks-cat .paw {
-  fill: #fff8ee;
-}
-.blocks-cat .ear-in {
-  fill: #ffb6c9;
-}
-.blocks-cat .stripes {
-  fill: none;
-  stroke: #59413738;
-  stroke-linecap: round;
-}
-.blocks-cat .tail-line,
-.blocks-cat .tail {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-}
-.blocks-cat .tail {
-  stroke: var(--fill);
-}
-.blocks-cat .eyes {
-  fill: currentColor;
-  stroke: currentColor;
-  stroke-linejoin: round;
-}
-.blocks-cat .cheek {
-  fill: #ff6f91;
-  opacity: 0.35;
-}
-.blocks-cat .whiskers {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  opacity: 0.8;
-}
-.blocks-cat .nose {
-  fill: #ff8fab;
-  stroke: currentColor;
-  stroke-linejoin: round;
-}
-.blocks-cat .smile {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.blocks-cat .gasp {
-  display: none;
-  fill: currentColor;
+.blocks-cat.flip {
+  scale: -1 1;
 }
 .blocks-block.dragging {
   z-index: 2;
   transition-duration: 40ms;
   cursor: grabbing;
   filter: drop-shadow(0 6px 5px #5941373d);
-}
-.blocks-block.dragging .smile {
-  display: none;
-}
-.blocks-block.dragging .gasp {
-  display: inline;
 }
 .blocks-block.leaving {
   transition:
@@ -254,8 +185,8 @@ body[data-game="blocks"] #game-blocks {
     height: 36px;
   }
   .blocks-help {
-    width: 76px;
-    height: 76px;
+    width: 128px;
+    height: 70px;
   }
   .blocks-help svg {
     width: 44px;
@@ -264,7 +195,7 @@ body[data-game="blocks"] #game-blocks {
 }
 @media (prefers-reduced-motion: reduce) {
   .blocks-home .arrived,
-  .blocks-door.calling svg,
+  .blocks-door.calling,
   .blocks-block.nudge .blocks-cat,
   .game-top .nudge {
     animation: none;
@@ -275,7 +206,7 @@ body[data-game="blocks"] #game-blocks {
 }
 @keyframes calling {
   to {
-    transform: scale(1.14);
+    transform: scale(1.18);
   }
 }
 /* The level picker's switch between the children's and the grown-ups'
