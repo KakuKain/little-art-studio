@@ -2,7 +2,7 @@ import {
   createWork,
   validWork,
   hasVisibleContent,
-} from "./history.js?v=1.0.0-beta.11";
+} from "./history.js?v=1.0.0-beta.12";
 
 function transaction(db, store, mode, action) {
   return new Promise((resolve, reject) => {

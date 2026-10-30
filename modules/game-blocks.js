@@ -6,15 +6,15 @@ import {
   doorAt,
   canExit,
   cloneBlocks,
-} from "./blocks.js?v=1.0.0-beta.11";
+} from "./blocks.js?v=1.0.0-beta.12";
 import {
   loadProgress,
   saveProgress,
   showLevelPicker,
   celebrate,
   makeHand,
-} from "./game-kit.js?v=1.0.0-beta.11";
-import { sounds } from "./sound.js?v=1.0.0-beta.11";
+} from "./game-kit.js?v=1.0.0-beta.12";
+import { sounds } from "./sound.js?v=1.0.0-beta.12";
 
 // Cats and their doors are told apart by color alone. The fills match the
 // cats in the pictures.
