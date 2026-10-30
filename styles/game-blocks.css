@@ -76,10 +76,10 @@ body[data-game="blocks"] #game-blocks {
   flex: none;
   display: grid;
   place-items: center;
-  width: 104px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   margin-top: 6px;
-  border-radius: 99px;
+  border-radius: 50%;
   background: #fdd68c;
   box-shadow:
     inset 0 -4px 0 #efb767,
@@ -109,41 +109,6 @@ body[data-game="blocks"] #game-blocks {
 .blocks-block.nudge .blocks-cat,
 .game-top .nudge {
   animation: nudge 400ms ease-in-out 3;
-}
-/* The level's cats above the board: grey until they get home. */
-.blocks-home {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px 6px;
-  width: fit-content;
-  max-width: 100%;
-  margin: 12px auto 0;
-  padding: 6px 12px;
-  background: #fff4e2e6;
-  border-radius: 22px;
-  box-shadow: inset 0 0 0 2px #e5c595;
-}
-.blocks-home span {
-  position: relative;
-  width: 26px;
-  height: 26px;
-  opacity: 0.35;
-  filter: grayscale(1);
-  transition:
-    opacity 200ms ease,
-    filter 200ms ease;
-}
-.blocks-home .arrived {
-  opacity: 1;
-  filter: none;
-  animation: served 260ms ease-out;
-}
-/* Phones held sideways keep the height for the board. */
-@media (max-height: 500px) {
-  .blocks-home {
-    display: none;
-  }
 }
 .blocks-block {
   position: absolute;
@@ -180,13 +145,9 @@ body[data-game="blocks"] #game-blocks {
   opacity: 0;
 }
 @media (min-width: 700px) and (min-height: 700px) {
-  .blocks-home span {
-    width: 36px;
-    height: 36px;
-  }
   .blocks-help {
-    width: 128px;
-    height: 70px;
+    width: 76px;
+    height: 76px;
   }
   .blocks-help svg {
     width: 44px;
@@ -194,7 +155,6 @@ body[data-game="blocks"] #game-blocks {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .blocks-home .arrived,
   .blocks-door.calling,
   .blocks-block.nudge .blocks-cat,
   .game-top .nudge {

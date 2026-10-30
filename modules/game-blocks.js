@@ -53,8 +53,6 @@ const MARKUP = `
   </div>
 </div>
 <h2 class="game-title">方塊出門</h2>
-<p class="game-hint">把貓咪拖到同顏色的門</p>
-<div class="blocks-home" aria-hidden="true"></div>
 <div class="game-stage">
   <div class="blocks-board" aria-label="遊戲盤面"></div>
 </div>
@@ -140,7 +138,6 @@ export function createBlocksGame({ onBack }) {
   const $ = (selector) => root.querySelector(selector),
     board = $(".blocks-board"),
     stage = $(".game-stage"),
-    home = $(".blocks-home"),
     win = $(".game-win"),
     elements = new Map(),
     // Progress keeps the children's levels at the top and the grown-ups'
@@ -192,11 +189,6 @@ export function createBlocksGame({ onBack }) {
         el.remove();
         elements.delete(id);
       }
-    for (const mini of home.children)
-      mini.classList.toggle(
-        "arrived",
-        !blocks.some((b) => b.id === mini.dataset.id),
-      );
     $(".game-undo").disabled = !history.length;
   }
   // Sizes the board to the space left on screen, with room for the fence
@@ -315,21 +307,9 @@ export function createBlocksGame({ onBack }) {
     track().level = n;
     track().unlocked = Math.max(track().unlocked, n);
     saveProgress(KEY, progress);
-    $(".game-title").textContent =
-      m === "adult" ? `大人・第 ${n} 關` : `第 ${n} 關`;
-    $(".game-hint").hidden = m === "adult" || n > 3;
+    $(".game-title").textContent = `第 ${n} 關`;
     win.hidden = true;
     guide = m === "kids" && n <= 2;
-    // The level's cats in a row above the board; each lights up at home.
-    home.replaceChildren(
-      ...level.blocks.map((block) => {
-        const mini = document.createElement("span");
-        mini.dataset.id = block.id;
-        mini.style.setProperty("--fill", LOOK[block.color].fill);
-        mini.innerHTML = catPicture({ ...block, w: 1, h: 1 });
-        return mini;
-      }),
-    );
     layout();
   }
   function point(e) {
@@ -382,12 +362,12 @@ export function createBlocksGame({ onBack }) {
     if (!blocks.length) {
       track().unlocked = Math.max(track().unlocked, level.n + 1);
       saveProgress(KEY, progress);
-      // The cleared card shows the level's cats again, all home.
+      // The cleared card shows the level's cats, all out.
       $(".win-friends").replaceChildren(
-        ...[...home.children].map((mini, i) => {
-          const friend = mini.cloneNode(true);
-          friend.removeAttribute("class");
+        ...level.blocks.map((block, i) => {
+          const friend = document.createElement("span");
           friend.style.setProperty("--i", i);
+          friend.innerHTML = catPicture({ ...block, w: 1, h: 1 });
           return friend;
         }),
       );
