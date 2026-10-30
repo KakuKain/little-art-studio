@@ -108,7 +108,8 @@ const STEP = 0.5,
 // axis with the larger distance first and the other axis when that is
 // blocked. `axis` ("x" or "y") is the way the block last moved, and comes
 // back updated. Pushing a block past the edge through its door makes it
-// leave.
+// leave; `from` is where it stood at the door, which may be a few steps
+// past where it started (a block slid along the wall into its door).
 export function dragTo(level, blocks, id, tx, ty, axis = null) {
   const moved = cloneBlocks(blocks),
     block = moved.find((b) => b.id === id);
@@ -129,6 +130,7 @@ export function dragTo(level, blocks, id, tx, ty, axis = null) {
         return {
           blocks: moved.filter((b) => b.id !== id),
           exit: result.door,
+          from: { x: block.x, y: block.y },
           axis: way,
         };
       if (result) {

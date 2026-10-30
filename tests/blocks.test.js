@@ -136,6 +136,20 @@ test("pushing a block out beside its door does not slide it through", () => {
   // ... it stays; with the finger over the door's cell it goes out.
   out = dragTo(level, level.blocks, "a", 2.9, 4.2);
   assert.equal(out.exit.side, "bottom");
+  assert.deepEqual(out.from, { x: 3, y: 3 });
+});
+
+test("a block slid along the wall into its door leaves from the door", () => {
+  const level = board(
+    [at("a", 3, 1)],
+    [{ side: "right", at: 2, size: 2, color: "pink" }],
+  );
+  // Pushed against the right wall in row 1, the finger slides down outside
+  // the board; in one move the block steps down to row 2 and goes out there,
+  // not in row 1 where it started.
+  const out = dragTo(level, level.blocks, "a", 5, 2.8, "x");
+  assert.equal(out.exit.side, "right");
+  assert.deepEqual(out.from, { x: 3, y: 2 });
 });
 
 test("reachability and exit order respect blocking blocks", () => {

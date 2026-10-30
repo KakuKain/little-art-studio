@@ -468,13 +468,20 @@ export function createBlocksGame({ onBack }) {
       (b) => x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h,
     );
   }
-  function leave(el, door) {
+  // The cat goes out through its door from `from`, where it stood at the
+  // door; a drag can carry it there and out at once, before it was drawn
+  // there, so it is put there first.
+  function leave(el, door, from) {
     const [dx, dy] = OUT[door.side],
-      block = blocks.find((b) => b.id === el.dataset.id),
+      block = { ...blocks.find((b) => b.id === el.dataset.id), ...from },
       distance = (dx ? block.w : block.h) + 1;
     elements.delete(block.id);
     sounds.meow();
     el.classList.remove("dragging");
+    el.style.transition = "none";
+    el.style.transform = `translate(${block.x * cell + gap()}px, ${block.y * cell + gap()}px)`;
+    void el.offsetWidth;
+    el.style.transition = "";
     el.classList.add("leaving");
     el.style.transform = `translate(${(block.x + dx * distance) * cell + gap()}px, ${(block.y + dy * distance) * cell + gap()}px)`;
     setTimeout(() => el.remove(), 300);
@@ -547,7 +554,7 @@ export function createBlocksGame({ onBack }) {
         drag.axis,
       );
     if (result.exit) {
-      leave(drag.el, result.exit);
+      leave(drag.el, result.exit, result.from);
       blocks = result.blocks;
       finish(true);
       return;
