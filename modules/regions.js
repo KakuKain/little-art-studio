@@ -26,7 +26,10 @@ export async function loadRegions(svg, artwork, width, height, surface) {
   }
   const copy = svg.cloneNode(true),
     colors = new Map(),
-    ids = new Map();
+    ids = new Map(),
+    // A region that later joined a fill group: strokes saved with its own
+    // ID clip to the group.
+    joined = new Map();
   copy.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   // Legacy drafts retain their original renderer, including protective ink.
   if (artwork.legacy)
@@ -40,6 +43,7 @@ export async function loadRegions(svg, artwork, width, height, surface) {
     const id = el.dataset.fillGroup
       ? "group:" + el.dataset.fillGroup
       : el.dataset.region;
+    if (el.dataset.fillGroup) joined.set(el.dataset.region, id);
     if (!colors.has(id)) {
       const value = ++index * 8191;
       colors.set(id, value);
@@ -88,7 +92,7 @@ export async function loadRegions(svg, artwork, width, height, surface) {
   const masks = new Map();
   const result = {
     bytes: labels.byteLength,
-    has: (id) => colors.has(id),
+    has: (id) => colors.has(joined.get(id) ?? id),
     hit(x, y) {
       x = Math.floor(x);
       y = Math.floor(y);
@@ -111,6 +115,7 @@ export async function loadRegions(svg, artwork, width, height, surface) {
       return keys[index - 1] || null;
     },
     mask(id) {
+      id = colors.has(id) ? id : (joined.get(id) ?? id);
       if (masks.has(id)) return masks.get(id);
       const index = indices.get(id);
       if (!index) return null;

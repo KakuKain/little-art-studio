@@ -167,7 +167,7 @@ Home categories, their order, names, and cover PNGs live in `categories.json`. T
 
 `scripts/build-app-icons.cjs` regenerates the manifest PNG icons (`assets/ui/app-icon-*.png`, including the maskable one) from `icon.svg`. Run it by hand; it is not part of `npm run build`, because cross-platform PNG output would break CI's no-diff check.
 
-The other `scripts/*.py|cjs` files are one-off tracing and simplification tools for regenerating art. `tmp/` and raster originals are gitignored scratch.
+`scripts/close-fill-gaps.cjs` (one-off, run on the sheets as they are in git before it) makes every area of the clean line-art sheets and the four `-simple` ones fill with one tap up to its lines: cells grow over the backing and slivers beside them, and cells the tracing cut in two get a `joined-<id>` fill group. Region IDs stay; `regions.js` clips a stroke saved with a member's ID to its group. Re-run it from git after changing a clean sheet. The other `scripts/*.py|cjs` files are one-off tracing and simplification tools for regenerating art. `tmp/` and raster originals are gitignored scratch.
 
 ## Verification
 
