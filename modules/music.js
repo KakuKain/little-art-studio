@@ -3,7 +3,7 @@
 // round. Browsers play nothing before the child's first touch, so it starts
 // then, and it rests while the app is hidden. Parents set its volume in the
 // about dialog, where 0 turns it off; the volume is kept on this device.
-import { audioContext } from "./sound.js?v=1.0.0-beta.13";
+import { audioContext } from "./sound.js?v=1.0.0-beta.14";
 
 const KEY = "little-playground.music";
 export const DEFAULT_VOLUME = 50;

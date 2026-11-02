@@ -14,15 +14,15 @@ import {
   destination,
   describeOrder,
   partName,
-} from "./restaurant.js?v=1.0.0-beta.13";
+} from "./restaurant.js?v=1.0.0-beta.14";
 import {
   loadProgress,
   saveProgress,
   showLevelPicker,
   celebrate,
   makeHand,
-} from "./game-kit.js?v=1.0.0-beta.13";
-import { sounds } from "./sound.js?v=1.0.0-beta.13";
+} from "./game-kit.js?v=1.0.0-beta.14";
+import { sounds } from "./sound.js?v=1.0.0-beta.14";
 
 // The screen's markup. It is added after the home screen the first time
 // the game opens, so the page itself carries no game.
