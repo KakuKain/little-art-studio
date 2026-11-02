@@ -1052,7 +1052,6 @@ $("done-album").onclick = () => {
   $("gallery").click();
 };
 $("done-back").onclick = () => $("done-modal").close();
-$("close").onclick = () => $("album").close();
 $("album").addEventListener("close", () => {
   for (const url of albumURLs) URL.revokeObjectURL(url);
   albumURLs = [];

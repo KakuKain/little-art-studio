@@ -55,21 +55,6 @@ body[data-game="blocks"] #game-blocks {
     0 0 10px 4px var(--fill);
   animation: calling 600ms ease-in-out infinite alternate;
 }
-/* The game's buttons and name are cream like the fence's room. */
-#game-blocks .game-top button {
-  background: #fff4e2;
-  box-shadow:
-    inset 0 0 0 2px #e5c595,
-    0 3px 0 #e5c59580;
-}
-#game-blocks .game-title {
-  width: fit-content;
-  margin-inline: auto;
-  padding: 2px 28px;
-  background: #fff4e2;
-  border-radius: 99px;
-  box-shadow: inset 0 0 0 2px #e5c595;
-}
 /* The hint button under the board, in the corner on phones held sideways. */
 .blocks-help {
   align-self: center;

@@ -8,10 +8,21 @@
   display: none;
   height: 100dvh;
   overflow: auto;
-  background: #fff url("../assets/ui/pastel-corners.png") center/100% 100% fixed
-    no-repeat;
+  /* The hub sits in 方塊出門's room, veiled in cream at the top so the
+     title and cards stand out. */
+  background:
+    linear-gradient(#fff7eacc, #fff7ea99 45%, #fff7ea00 75%),
+    #fbf0de url("../assets/games/blocks/room-portrait.webp") center bottom /
+      cover;
   padding: max(16px, env(safe-area-inset-top)) 20px
     max(24px, env(safe-area-inset-bottom));
+}
+@media (orientation: landscape) {
+  #home {
+    background-image:
+      linear-gradient(#fff7eacc, #fff7ea99 45%, #fff7ea00 75%),
+      url("../assets/games/blocks/room-landscape.webp");
+  }
 }
 .at-home #home {
   display: block;
@@ -38,18 +49,25 @@
   max-width: 720px;
   margin: 0 auto;
 }
+/* The name is painted on a wooden sign. */
 .home-hero h1 {
-  color: #087bac;
+  width: fit-content;
+  padding: 4px 18px 6px;
+  color: #fff;
   font-size: 32px;
-  letter-spacing: 2px;
+  letter-spacing: 4px;
   margin: 0 0 6px;
-  font-weight: 800;
+  background: #e0a35a;
+  border-radius: 16px;
+  box-shadow:
+    inset 0 -5px 0 #c4823b,
+    0 4px 0 #8a5a2b2e;
+  text-shadow: 0 2px 0 #b06f2e;
 }
 .home-hero p {
   font-size: 14px;
-  font-weight: 600;
   margin: 0;
-  color: #263e4d;
+  color: var(--muted);
 }
 .sun {
   position: absolute;
@@ -94,9 +112,9 @@
   width: fit-content;
   margin: -8px auto 16px;
   padding: 4px;
-  background: #fff;
-  border: 1px solid var(--border);
+  background: var(--cream);
   border-radius: 99px;
+  box-shadow: inset 0 0 0 2px var(--wood);
 }
 #difficulty[hidden] {
   display: none;
@@ -112,9 +130,9 @@
   color: var(--muted);
 }
 #difficulty [aria-checked="true"] {
-  background: #fff0bd;
+  background: var(--honey);
   color: var(--text);
-  box-shadow: inset 0 0 0 2px #e9bd44;
+  box-shadow: inset 0 -3px 0 var(--honey-edge);
 }
 /* A sheet the child has colored wears a check mark. */
 #home-grid[data-view="sheets"] button {
@@ -143,6 +161,7 @@
   max-width: 900px;
   margin: 0 auto;
 }
+/* Cards are like toy blocks: a colored ring and a thick lower edge. */
 #home-grid button {
   display: flex;
   flex-direction: column;
@@ -152,8 +171,10 @@
   border-radius: 22px;
   padding: 16px;
   min-width: 0;
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 16px #32506406;
+  background: var(--tint, #fff);
+  box-shadow:
+    inset 0 0 0 3px var(--edge, var(--border)),
+    0 5px 0 var(--edge, var(--wood));
 }
 #home-grid img {
   width: 100%;
@@ -180,30 +201,34 @@
   white-space: nowrap;
 }
 #home-grid [data-theme="0"] {
-  background: #fff0f5;
+  --tint: #ffe9e1;
+  --edge: #f1bba6;
 }
 #home-grid [data-theme="1"] {
-  background: #fff7df;
+  --tint: #fff1d2;
+  --edge: #eac781;
 }
 #home-grid [data-theme="2"] {
-  background: #eff9f1;
+  --tint: #eef3df;
+  --edge: #c6d59c;
 }
 #home-grid [data-theme="3"] {
-  background: #f4f0fc;
+  --tint: #f2ebf7;
+  --edge: #d5c0e4;
 }
 #home-grid [data-theme="4"] {
-  background: #e8f7fc;
+  --tint: #e6f2f4;
+  --edge: #b5d5da;
 }
 #home-grid [data-theme="5"] {
-  background: #fff2e7;
+  --tint: #ffeedd;
+  --edge: #efc59a;
 }
 #home-grid .blank-card {
   grid-column: 1/-1;
   flex-direction: row;
   gap: 16px;
-  background: #e8f7fc;
   min-height: 80px;
-  border: 0;
 }
 #home-grid .blank-card svg {
   width: 64px;
@@ -214,9 +239,7 @@
 }
 #home-grid[data-view="sheets"] button {
   aspect-ratio: 4/5;
-  background: #fff;
   padding: 12px;
-  border: 1px solid var(--border);
 }
 #home-grid[data-view="sheets"] {
   max-width: 1200px;
@@ -228,7 +251,7 @@
   padding: 40px 0;
 }
 #settings-open.holding {
-  background: conic-gradient(#087bac59 var(--held), #fff 0);
+  background: conic-gradient(#e0a35a99 var(--held), var(--cream) 0);
   animation: hold 2s linear forwards;
 }
 @media (min-width: 768px) {
@@ -363,9 +386,7 @@
   flex-direction: column;
   gap: 0;
   padding: 16px 12px 12px;
-  border-radius: 24px;
-  box-shadow: none;
-  border: 1px solid #263e4d06;
+  border-radius: 26px;
 }
 #home-grid[data-view="categories"] img {
   width: 96px;
@@ -385,7 +406,8 @@
   mix-blend-mode: normal;
 }
 #home-grid[data-view="categories"] .blank-card {
-  background: #f0f4fa;
+  --tint: #fff4e2;
+  --edge: var(--wood);
 }
 @media (min-width: 768px) {
   #home-grid[data-view="categories"] {
@@ -416,27 +438,40 @@
   }
 }
 #home-grid [data-theme="6"] {
-  background: #f4f7e9;
+  --tint: #f3f2dc;
+  --edge: #d3cf98;
 }
 /* Home hub: on a phone, one wide card per game with its picture on the left
    and a line saying what it is; three cards side by side from 600px. */
 #home-grid[data-view="hub"] {
   grid-template-columns: 1fr;
   max-width: 520px;
+  gap: 18px;
 }
 #home-grid[data-view="hub"] button {
   flex-direction: row;
   justify-content: flex-start;
   gap: 16px;
   height: 150px;
-  border: 0;
   padding: 13px 20px 13px 14px;
   text-align: left;
+  border-radius: 30px;
+  box-shadow:
+    inset 0 0 0 3px var(--edge),
+    0 7px 0 var(--edge),
+    0 12px 20px #8a5a2b24;
 }
+/* Each game's picture sits on a round plate. */
 #home-grid[data-view="hub"] img {
   width: 124px;
   height: 124px;
   flex: none;
+  padding: 8px;
+  background: #fffaf2;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 3px #fff,
+    0 3px 0 var(--edge);
 }
 #home-grid[data-view="hub"] .game-text {
   display: flex;
@@ -447,11 +482,10 @@
   white-space: normal;
 }
 .game-text strong {
-  font-size: 24px;
+  font-size: 27px;
 }
 .game-text small {
   font-size: 14px;
-  font-weight: 600;
   line-height: 1.4;
   color: var(--muted);
 }
@@ -468,9 +502,11 @@
     padding: 18px 16px 16px;
     text-align: center;
   }
+  /* The plate stays round however tall the card leaves it. */
   #home-grid[data-view="hub"] img {
-    width: 116px;
+    width: auto;
     height: 116px;
+    aspect-ratio: 1;
     flex: 1;
     min-height: 0;
   }
@@ -502,4 +538,47 @@
 /* The album belongs to coloring, so it also shows in the coloring section. */
 .in-coloring #gallery {
   display: flex;
+}
+/* Tablets: the hub's cards grow and sit in the middle of the screen with
+   the title. */
+@media (min-width: 600px) and (min-height: 700px) {
+  body:not(.in-category) .home-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+  body:not(.in-category) .home-hero {
+    margin-top: auto;
+  }
+  body:not(.in-category) #home-grid {
+    width: 100%;
+    margin-bottom: auto;
+    padding-bottom: 6vh;
+  }
+  #home-grid[data-view="hub"] {
+    max-width: 980px;
+    gap: 28px;
+  }
+  #home-grid[data-view="hub"] button {
+    height: 360px;
+    padding: 28px 20px 24px;
+  }
+  #home-grid[data-view="hub"] img {
+    width: 210px;
+    height: 210px;
+    flex: none;
+  }
+  .game-text strong {
+    font-size: 28px;
+  }
+  .game-text small {
+    font-size: 15px;
+  }
+  .home-hero h1 {
+    font-size: 42px;
+  }
+  .home-hero .sun {
+    width: 64px;
+    height: 64px;
+  }
 }

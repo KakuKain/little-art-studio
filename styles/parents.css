@@ -82,7 +82,8 @@
 .install-controls button,
 .offline-controls button {
   width: 100%;
-  background: #e8f7fc;
+  background: var(--honey);
+  box-shadow: inset 0 -3px 0 var(--honey-edge);
 }
 .install-controls[hidden],
 .install-controls button[hidden] {

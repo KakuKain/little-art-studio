@@ -11,7 +11,7 @@ body:not(.at-home) > #editor-nav {
   width: 26px;
   height: 26px;
   fill: none;
-  stroke: #263e4d;
+  stroke: var(--text);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -38,7 +38,6 @@ body:not(.at-home) > #editor-nav {
   pointer-events: auto;
   width: 48px;
   height: 48px;
-  border: 1px solid var(--border);
 }
 main {
   display: flex;
@@ -70,11 +69,13 @@ main {
 svg [data-region] {
   cursor: pointer;
 }
+/* The tools lie on a cream tray with a wooden edge. */
 footer {
   flex: none;
-  background: #fff;
+  background: var(--cream);
   padding: 8px 12px max(8px, env(safe-area-inset-bottom));
-  border-top: 1px solid var(--border);
+  border-radius: 26px 26px 0 0;
+  box-shadow: 0 -3px 0 var(--wood);
 }
 .tools {
   display: flex;
@@ -95,10 +96,11 @@ footer {
   min-width: 44px;
   min-height: 48px;
   border-radius: 14px;
+  background: transparent;
 }
 .tools button.active {
-  background: #fff0bd;
-  box-shadow: inset 0 0 0 2px #e9bd44;
+  background: var(--honey);
+  box-shadow: inset 0 -3px 0 var(--honey-edge);
 }
 .tools .wide-only {
   display: none;
@@ -109,7 +111,7 @@ footer {
   width: 30px;
   height: 30px;
   fill: #fff3dc;
-  stroke: #263e4d;
+  stroke: var(--text);
   stroke-width: 1.6;
   stroke-linejoin: round;
 }
@@ -164,7 +166,7 @@ footer {
   box-shadow: 0 0 0 1px #0000000a;
 }
 #quick-colors button.active {
-  box-shadow: inset 0 0 0 2px #263e4d;
+  box-shadow: inset 0 0 0 2px var(--text);
 }
 #quick-colors .rainbow-swatch {
   width: 27px;
@@ -261,7 +263,8 @@ footer {
 #use-color {
   width: 100%;
   margin-top: 16px;
-  background: var(--blue);
+  background: var(--honey);
+  box-shadow: inset 0 -3px 0 var(--honey-edge);
   font-weight: 600;
 }
 #extras {
@@ -281,13 +284,12 @@ footer {
   color: #a04d55;
 }
 #about-open.holding {
-  background: linear-gradient(90deg, #087bac2e var(--held), transparent 0);
+  background: linear-gradient(90deg, #e0a35a4d var(--held), transparent 0);
   animation: hold 2s linear forwards;
 }
 @media (min-width: 900px) and (min-height: 560px) {
   body:not(.at-home) {
-    background: var(--bg) url("../assets/ui/pastel-corners.png") center/100%
-      100% no-repeat;
+    background: var(--bg);
   }
   main {
     padding: 20px 108px 0;
@@ -316,10 +318,12 @@ footer {
     gap: 6px;
     align-self: center;
     padding: 8px;
-    background: #ffffffed;
+    background: #fff4e2f2;
     border-radius: 20px;
     pointer-events: auto;
-    box-shadow: 0 4px 16px #32506406;
+    box-shadow:
+      inset 0 0 0 2px var(--wood),
+      0 4px 0 #e5c59580;
   }
   .tools button {
     flex: none;
@@ -336,7 +340,7 @@ footer {
   }
   footer {
     background: transparent;
-    border: 0;
+    box-shadow: none;
     padding: 8px 108px max(12px, env(safe-area-inset-bottom));
   }
   #quick-colors {
@@ -421,11 +425,13 @@ footer {
   width: 196px;
   max-width: calc(100vw - 16px);
   padding: 6px;
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: 16px;
-  background: #fff;
+  background: #fffaf2;
   color: var(--text);
-  box-shadow: 0 8px 32px #263e4d26;
+  box-shadow:
+    inset 0 0 0 2px var(--border),
+    0 8px 32px #5b463626;
 }
 #tool-modal::backdrop {
   background: transparent;
@@ -599,8 +605,8 @@ footer {
   height: 18px;
 }
 .tools .size-control [aria-checked="true"] {
-  background: #eef6fb;
-  box-shadow: inset 0 0 0 2px #9cc9e2;
+  background: #fff;
+  box-shadow: inset 0 0 0 2px var(--wood);
 }
 @media (max-height: 500px) and (orientation: landscape) {
   .size-control {

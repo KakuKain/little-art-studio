@@ -19,12 +19,17 @@
   align-items: center;
   gap: 8px;
 }
+/* The buttons and the level's name are cream with a wooden ring, like the
+   rest of the app. */
 .game-top button {
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  box-shadow: 0 3px 12px #32506408;
+  background: var(--cream);
+  box-shadow:
+    inset 0 0 0 2px var(--wood),
+    0 3px 0 #e5c59580;
 }
 .game-top button:disabled {
   opacity: 0.35;
@@ -33,8 +38,13 @@
    levels' hint used to be; the hint follows it. Phones held sideways keep
    it between the buttons, so the board keeps its height. */
 .game-title {
-  margin: 8px 0 0;
+  width: fit-content;
+  margin: 8px auto 0;
+  padding: 2px 28px;
   font-size: 22px;
+  background: var(--cream);
+  border-radius: 99px;
+  box-shadow: inset 0 0 0 2px var(--wood);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
