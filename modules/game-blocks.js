@@ -119,7 +119,7 @@ const MARKUP = `
     <h2>選關卡</h2>
     <button class="dismiss" aria-label="關閉">✕</button>
   </div>
-  <div class="blocks-modes" role="radiogroup" aria-label="關卡">
+  <div class="game-modes" role="radiogroup" aria-label="關卡">
     <button role="radio" data-mode="kids">小朋友</button
     ><button role="radio" data-mode="adult">大人</button>
   </div>
@@ -504,7 +504,7 @@ export function createBlocksGame({ onBack }) {
   // 小朋友／大人 switch changes the list, and picking a level plays it.
   const dialog = $(".game-levels-dialog");
   function pickLevels(m) {
-    for (const button of $(".blocks-modes").children)
+    for (const button of $(".game-modes").children)
       button.setAttribute("aria-checked", String(button.dataset.mode === m));
     showLevelPicker(dialog, {
       unlocked: track(m).unlocked,
@@ -513,7 +513,7 @@ export function createBlocksGame({ onBack }) {
     });
   }
   $(".game-levels").onclick = () => pickLevels(mode);
-  $(".blocks-modes").onclick = (e) => {
+  $(".game-modes").onclick = (e) => {
     const button = e.target.closest("[data-mode]");
     if (button) pickLevels(button.dataset.mode);
   };
