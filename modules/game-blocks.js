@@ -243,7 +243,8 @@ export function createBlocksGame({ onBack }) {
     }
     render();
     callHome();
-    if (guide) showHand();
+    // Shows the hand, or takes away one left from a guided level.
+    showHand();
   }
   // While a cat is held (or shown by the hint), its own doors bounce and
   // glow and the others step back, so the child sees where it wants to go.
@@ -344,7 +345,7 @@ export function createBlocksGame({ onBack }) {
     el.style.transform = `translate(${(block.x + dx * distance) * cell + gap()}px, ${(block.y + dy * distance) * cell + gap()}px)`;
     setTimeout(() => el.remove(), 300);
     // On the first levels the hand then shows the next cat the way home.
-    if (level.n <= 2) {
+    if (mode === "kids" && level.n <= 2) {
       guide = true;
       clearTimeout(guideTimer);
       guideTimer = setTimeout(showHand, 600);
