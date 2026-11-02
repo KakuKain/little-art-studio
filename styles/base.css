@@ -1,5 +1,13 @@
 /* Shared by every screen: colors, the page, buttons, dialogs and the
    status line. A style used by only one screen belongs in that screen's file. */
+/* 遊樂園圓體 (Playground Round): jf open 粉圓 cut down to the app's own
+   characters by scripts/build-font.py; any other character falls back to
+   the system font. It has one weight, so bold text uses it as it is. */
+@font-face {
+  font-family: "Playground Round";
+  src: url("../assets/fonts/playground-round.woff2") format("woff2");
+  font-display: swap;
+}
 /* The parents' settings open after a two-second hold (holdToOpen() in
    ui.js); a ring fills meanwhile. */
 @property --held {
@@ -35,7 +43,10 @@ body {
   user-select: none;
   margin: 0;
   color: var(--text);
-  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-family:
+    "Playground Round", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+    sans-serif;
+  font-synthesis-weight: none;
   /* Every text wraps without leaving a word or one character alone on its
      last line; browsers without it wrap as usual. */
   text-wrap: pretty;

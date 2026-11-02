@@ -83,6 +83,8 @@ npm run format
 
 每筆操作保存結構資料，不在下筆時複製整張 Canvas。復原、旋轉與切圖都先在畫面外重畫，完成後一次換上。每 20 筆可建立非同步 Blob 檢查點；超出復原窗口的紀錄可整理進基底圖。切換圖片後從持久資料載入，避免每張圖片各保留 20 張完整畫布。區域遮罩只分配必要範圍，整體快取預算 24 MiB。
 
+字型是遊樂園圓體：用 `scripts/build-font.py` 從 jf open 粉圓只取 App 用到的字（授權 SIL OFL 1.1，見 `assets/fonts/OFL.txt`）；新增文字有新字時要手動重跑，`npm test` 會提醒。
+
 素材原稿及重製腳本保留在 `assets/coloring/` 與 `scripts/`。執行建置會產生每張圖獨立的填色層、線稿層、穩定區域 ID、縮圖與內容版本；內容版本由輸出內容計算，只修改腳本不會改變圖片網址。新增／修改素材須通過 57 張全目錄的結構與圖片回歸流程。
 
 詳細文件：[UI 規格](docs/UI-SPEC.md)、[素材契約](docs/ASSET-CONTRACT.md)、[驗收紀錄](docs/VERIFICATION.md)、[改善清單](docs/STRUCTURE-ROADMAP.md)。
