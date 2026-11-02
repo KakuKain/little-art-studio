@@ -1,4 +1,4 @@
-/* Parts every game screen shares: the top bar, level name and hint, the
+/* Parts every game screen shares: the top bar, the level's name, the
    stage, the cleared-level overlay, the level picker and the demo hand. */
 /* Game screens replace the home screen; the editor stays hidden. */
 .game {
@@ -34,9 +34,8 @@
 .game-top button:disabled {
   opacity: 0.35;
 }
-/* The level's name has its own line under the buttons, where the first
-   levels' hint used to be; the hint follows it. Phones held sideways keep
-   it between the buttons, so the board keeps its height. */
+/* The level's name has its own line under the buttons. Phones held
+   sideways keep it between the buttons, so the board keeps its height. */
 .game-title {
   width: fit-content;
   margin: 8px auto 0;
@@ -65,13 +64,6 @@
     line-height: 48px;
     transform: translateX(-50%);
   }
-}
-.game-hint {
-  margin: 4px 0 0;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--muted);
 }
 .game-stage {
   flex: 1;
@@ -175,8 +167,8 @@
   background: #fff0bd;
   box-shadow: inset 0 0 0 2px #e9bd44;
 }
-/* Tablets: the game's buttons, name, hint, cat row and hint button grow
-   with the screen, so they do not look lost on it. */
+/* Tablets: the game's buttons and name grow with the screen, so they do
+   not look lost on it. */
 @media (min-width: 700px) and (min-height: 700px) {
   .game-top button {
     width: 60px;
@@ -188,9 +180,6 @@
   }
   .game-title {
     font-size: 28px;
-  }
-  .game-hint {
-    font-size: 18px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

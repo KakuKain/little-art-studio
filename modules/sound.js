@@ -123,24 +123,21 @@ export const sounds = {
 // Speaks Mandarin with a Chinese voice. A device without one stays quiet
 // rather than read Chinese with another language's voice; while the voice
 // list is still loading, the browser picks a voice for zh-TW itself. Words
-// interrupt what is being said, unless `queue` waits for it to finish.
-export function say(text, { queue = false } = {}) {
+// interrupt what is being said.
+export function say(text) {
   if (!soundOn() || !("speechSynthesis" in window)) return;
   const voices = speechSynthesis.getVoices(),
     voice =
       voices.find((v) => /^zh[-_]TW/i.test(v.lang)) ||
       voices.find((v) => /^(zh|cmn)/i.test(v.lang) && !/HK|yue/i.test(v.lang));
   if (voices.length && !voice) return;
-  if (!queue) speechSynthesis.cancel();
+  speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = voice?.lang || "zh-TW";
   if (voice) utterance.voice = voice;
   utterance.rate = 0.9;
   utterance.pitch = 1.2;
   speechSynthesis.speak(utterance);
-}
-export function hush() {
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
 }
 // Chrome fills the voice list only after it is first asked for.
 if (typeof speechSynthesis !== "undefined") speechSynthesis.getVoices();
