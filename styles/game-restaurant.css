@@ -383,3 +383,13 @@ body[data-game="restaurant"] #game-restaurant {
     opacity: 0;
   }
 }
+/* The grown-ups' days have no levels: their picker shows only the switch
+   and a line about it. */
+.restaurant-endless {
+  margin: 16px 0 4px;
+  text-align: center;
+  color: var(--muted);
+}
+#game-restaurant .levels-grid[hidden] {
+  display: none;
+}

@@ -105,6 +105,7 @@ const MARKUP = `
     <button role="radio" data-mode="kids">小朋友</button
     ><button role="radio" data-mode="adult">大人</button>
   </div>
+  <p class="restaurant-endless" hidden>客人一直來，越做越難；下次回來接著做。</p>
   <div class="levels-grid"></div>
 </dialog>
 `;
@@ -162,7 +163,9 @@ export function createRestaurantGame({ onBack }) {
     win = $(".game-win"),
     dialog = $(".game-levels-dialog"),
     // Progress keeps the children's days at the top and the grown-ups'
-    // (大人) in `adult`, with `mode` the ones being played.
+    // (大人) in `adult`, with `mode` the ones being played. The grown-ups
+    // play one day after another without levels: `adult.level` is the day
+    // they are on, and each day is a little harder.
     progress = loadProgress(KEY);
   let mode = progress.mode === "adult" ? "adult" : "kids";
   function track(m = mode) {
@@ -379,6 +382,7 @@ export function createRestaurantGame({ onBack }) {
     track().unlocked = Math.max(track().unlocked, n);
     saveProgress(KEY, progress);
     $(".game-title").textContent = `第 ${n} 關`;
+    $(".game-title").hidden = m === "adult";
     win.hidden = true;
     build();
     render();
@@ -544,6 +548,13 @@ export function createRestaurantGame({ onBack }) {
     } else if (event.type === "done") {
       track().unlocked = Math.max(track().unlocked, level.n + 1);
       saveProgress(KEY, progress);
+      // The grown-ups go straight on to the next, harder day.
+      if (mode === "adult") {
+        sounds.cheer();
+        await wait(pause(THANKS));
+        load(level.n + 1);
+        return;
+      }
       // The cleared card shows the day's customers, all fed.
       $(".win-friends").replaceChildren(
         ...level.customers.map(({ animal }, i) => {
@@ -616,11 +627,22 @@ export function createRestaurantGame({ onBack }) {
   $(".game-restart").onclick = () => load(level.n);
   $(".game-next").onclick = () => load(level.n + 1);
   $(".game-again").onclick = () => load(level.n);
-  // The level picker lists the children's or the grown-ups' days; its
-  // 小朋友／大人 switch changes the list, and picking a level plays it.
+  // The level picker lists the children's days, and picking one plays it.
+  // The grown-ups' days have no levels, so with 大人 chosen it holds only
+  // the 小朋友／大人 switch and a line saying how it goes.
   function pickLevels(m) {
     for (const button of $(".game-modes").children)
       button.setAttribute("aria-checked", String(button.dataset.mode === m));
+    const endless = m === "adult";
+    $(".restaurant-endless").hidden = !endless;
+    for (const part of dialog.querySelectorAll(
+      ".levels-grid, .levels-latest, .levels-pages",
+    ))
+      part.hidden = endless;
+    if (endless) {
+      if (!dialog.open) dialog.showModal();
+      return;
+    }
     showLevelPicker(dialog, {
       unlocked: track(m).unlocked,
       current: m === mode ? level.n : track(m).level,
@@ -630,7 +652,11 @@ export function createRestaurantGame({ onBack }) {
   $(".game-levels").onclick = () => pickLevels(mode);
   $(".game-modes").onclick = (e) => {
     const button = e.target.closest("[data-mode]");
-    if (button) pickLevels(button.dataset.mode);
+    if (!button) return;
+    if (button.dataset.mode === "kids") return pickLevels("kids");
+    // 大人 goes back to the day the grown-ups were on.
+    dialog.close();
+    if (mode !== "adult") load(track("adult").level, "adult");
   };
   return {
     open() {
