@@ -86,8 +86,7 @@
   margin: 0;
 }
 .in-category .home-hero,
-.in-category #settings-open,
-.in-category #gallery {
+.in-category #settings-open {
   display: none;
 }
 /* On category and sheet pages the title bar stays at the top, so the way
@@ -535,7 +534,11 @@
     animation: none;
   }
 }
-/* The album belongs to coloring, so it also shows in the coloring section. */
+/* The album belongs to coloring: it shows on the coloring page only, never
+   on the hub. */
+#gallery {
+  display: none;
+}
 .in-coloring #gallery {
   display: flex;
 }
