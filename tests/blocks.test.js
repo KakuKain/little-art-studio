@@ -8,6 +8,7 @@ import {
   canExit,
   exitOrder,
   blockedCount,
+  depthOf,
   generateLevel,
   levelSpec,
 } from "../modules/blocks.js";
@@ -220,7 +221,7 @@ test("grown-ups' levels are bigger, harder and always solvable", () => {
     [
       generateLevel(1, "adult").w,
       generateLevel(20, "adult").w,
-      generateLevel(40, "adult").w,
+      generateLevel(70, "adult").w,
     ],
     [6, 7, 8],
   );
@@ -238,6 +239,25 @@ test("grown-ups' levels are bigger, harder and always solvable", () => {
     return sum / (to - from + 1);
   };
   assert.ok(cats(1, 10, "adult") > cats(61, 80, "kids"));
+});
+
+// The chain of cats that must leave first grows with the levels, so later
+// levels take more thought, not just more cats.
+test("later levels have longer chains", () => {
+  const depth = (from, to, mode) => {
+    let sum = 0;
+    for (let n = from; n <= to; n++) sum += depthOf(generateLevel(n, mode));
+    return sum / (to - from + 1);
+  };
+  assert.ok(depth(3, 14, "kids") < depth(27, 45, "kids"));
+  assert.ok(depth(27, 45, "kids") < depth(71, 90, "kids"));
+  assert.ok(depth(1, 10, "adult") < depth(11, 30, "adult"));
+  assert.ok(depth(1, 10, "adult") > depth(27, 45, "kids"));
+  for (let n = 1; n <= 30; n++)
+    assert.ok(
+      depthOf(generateLevel(n, "adult")) >= levelSpec(n, "adult").depth[0] - 1,
+      `adult level ${n} is too shallow`,
+    );
 });
 
 test("a level is the same every time and callers cannot change it", () => {

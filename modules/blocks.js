@@ -215,78 +215,142 @@ const FIRST_LEVELS = [
   },
 ];
 
-// Board size, block count, colors, chance of two-cell blocks and how many
-// blocks must start without a way out. Children's levels grow slowly: 4×4
-// until level 14, 5×5 until 45, then 6×6. The grown-ups' levels (大人) start
-// at 6×6 and reach 8×8, with many more cats stuck at the start.
+// Board size, block count, colors, chance of two-cell blocks and how deep
+// the chain of "this cat must leave first" should run (fewest, most). Children's levels
+// grow slowly: 4×4 until level 14, 5×5 until 45, then 6×6. The grown-ups'
+// levels (大人) start at 6×6 and reach 8×8 with long chains.
 export function levelSpec(n, mode = "kids") {
   if (mode === "adult") {
     if (n <= 10)
-      return { w: 6, h: 6, count: [8, 10], colors: 4, long: 0.5, blocked: 4 };
+      return {
+        w: 6,
+        h: 6,
+        count: [8, 10],
+        colors: 4,
+        long: 0.5,
+        depth: [5, 99],
+      };
     if (n <= 30)
-      return { w: 7, h: 7, count: [10, 13], colors: 5, long: 0.6, blocked: 5 };
-    return { w: 8, h: 8, count: [13, 16], colors: 5, long: 0.6, blocked: 6 };
+      return {
+        w: 7,
+        h: 7,
+        count: [10, 13],
+        colors: 5,
+        long: 0.6,
+        depth: [6, 99],
+      };
+    if (n <= 60)
+      return {
+        w: 7,
+        h: 7,
+        count: [12, 14],
+        colors: 5,
+        long: 0.6,
+        depth: [7, 99],
+      };
+    return {
+      w: 8,
+      h: 8,
+      count: [14, 16],
+      colors: 5,
+      long: 0.6,
+      depth: [8, 99],
+    };
   }
   if (n <= 6)
-    return { w: 4, h: 4, count: [2, 3], colors: 2, long: 0, blocked: 1 };
+    return { w: 4, h: 4, count: [2, 3], colors: 2, long: 0, depth: [2, 2] };
   if (n <= 14)
-    return { w: 4, h: 4, count: [3, 4], colors: 3, long: 0.3, blocked: 1 };
+    return { w: 4, h: 4, count: [3, 4], colors: 3, long: 0.3, depth: [2, 3] };
   if (n <= 26)
-    return { w: 5, h: 5, count: [4, 5], colors: 3, long: 0.4, blocked: 1 };
+    return { w: 5, h: 5, count: [4, 5], colors: 3, long: 0.4, depth: [3, 3] };
   if (n <= 45)
-    return { w: 5, h: 5, count: [5, 7], colors: 4, long: 0.5, blocked: 2 };
+    return { w: 5, h: 5, count: [5, 7], colors: 4, long: 0.5, depth: [3, 4] };
   if (n <= 70)
-    return { w: 6, h: 6, count: [6, 8], colors: 4, long: 0.5, blocked: 2 };
-  return { w: 6, h: 6, count: [8, 10], colors: 5, long: 0.6, blocked: 3 };
+    return { w: 6, h: 6, count: [6, 8], colors: 4, long: 0.5, depth: [4, 5] };
+  return { w: 6, h: 6, count: [8, 10], colors: 5, long: 0.6, depth: [5, 6] };
 }
 
-function attempt(spec, rand) {
+// How many rounds it takes if every cat that can leave does so at once:
+// the length of the longest "must leave first" chain.
+export function depthOf(level) {
+  let left = cloneBlocks(level.blocks),
+    rounds = 0;
+  while (left.length) {
+    const free = left.filter((b) => canExit(level, left, b.id));
+    if (!free.length) return Infinity;
+    left = left.filter((b) => !free.includes(b));
+    rounds++;
+  }
+  return rounds;
+}
+
+// How many cats on average could leave at each step, letting the first one
+// that can go each time.
+function choices(level) {
+  let left = cloneBlocks(level.blocks),
+    sum = 0;
+  while (left.length) {
+    const free = left.filter((b) => canExit(level, left, b.id));
+    sum += free.length;
+    left = left.filter((b) => b !== free[0]);
+  }
+  return sum / level.blocks.length;
+}
+
+// A board is built backwards: its doors first, then the cats in the reverse
+// of the order they can leave. Each new cat must be able to leave past the
+// cats already there, which keeps the board solvable, and is put where it
+// blocks as many of them as it can, which makes the chains long.
+function build(spec, rand) {
   const pick = (list) => list[Math.floor(rand() * list.length)];
   const count =
     spec.count[0] + Math.floor(rand() * (spec.count[1] - spec.count[0] + 1));
   const palette = shuffle(COLORS, rand).slice(0, Math.min(spec.colors, count));
   const level = { w: spec.w, h: spec.h, blocks: [], doors: [] };
-  for (let i = 0; i < count; i++) {
-    const long = rand() < spec.long,
-      wide = long && rand() < 0.5;
-    const block = {
-      id: String.fromCharCode(97 + i),
-      w: wide ? 2 : 1,
-      h: long && !wide ? 2 : 1,
-      // Every chosen color is used at least once.
-      color: i < palette.length ? palette[i] : pick(palette),
-    };
-    const cells = occupied(level, level.blocks);
-    const spots = [];
-    for (let y = 0; y < spec.h; y++)
-      for (let x = 0; x < spec.w; x++)
-        if (fits(level, cells, block, x, y)) spots.push([x, y]);
-    if (!spots.length) return null;
-    [block.x, block.y] = pick(spots);
-    level.blocks.push(block);
-  }
   for (const color of palette) {
-    const own = level.blocks.filter((b) => b.color === color);
-    const sides = shuffle(Object.keys(SIDES), rand);
-    let placed = false;
-    for (const side of sides) {
-      const along = side === "top" || side === "bottom",
-        length = along ? spec.w : spec.h,
-        size = Math.max(...own.map((b) => (along ? b.w : b.h)));
-      const free = [];
+    const size = spec.long && rand() < 0.6 ? 2 : 1;
+    const spots = [];
+    for (const side of Object.keys(SIDES)) {
+      const length = side === "top" || side === "bottom" ? spec.w : spec.h;
       for (let at = 0; at + size <= length; at++)
         if (
           !level.doors.some(
             (d) => d.side === side && at < d.at + d.size && d.at < at + size,
           )
         )
-          free.push(at);
-      if (!free.length) continue;
-      level.doors.push({ side, at: pick(free), size, color });
-      placed = true;
-      break;
+          spots.push([side, at]);
     }
-    if (!placed) return null;
+    const [side, at] = pick(spots);
+    level.doors.push({ side, at, size, color });
+  }
+  for (let i = 0; i < count; i++) {
+    const free = level.blocks.filter((b) => canExit(level, level.blocks, b.id));
+    let best = null,
+      most = -1;
+    for (let tries = 0; tries < 30 && most < 2; tries++) {
+      const long = rand() < spec.long,
+        wide = long && rand() < 0.5;
+      const block = {
+        id: String.fromCharCode(97 + i),
+        w: wide ? 2 : 1,
+        h: long && !wide ? 2 : 1,
+        // Every chosen color is used at least once.
+        color: i < palette.length ? palette[i] : pick(palette),
+      };
+      const cells = occupied(level, level.blocks),
+        spots = [];
+      for (let y = 0; y < spec.h; y++)
+        for (let x = 0; x < spec.w; x++)
+          if (fits(level, cells, block, x, y)) spots.push([x, y]);
+      if (!spots.length) continue;
+      [block.x, block.y] = pick(spots);
+      const blocks = [...level.blocks, block];
+      if (!canExit(level, blocks, block.id)) continue;
+      const blocked = free.filter((b) => !canExit(level, blocks, b.id)).length;
+      if (blocked > most) [best, most] = [block, blocked];
+    }
+    if (!best) return null;
+    level.blocks.push(best);
   }
   return level;
 }
@@ -301,13 +365,22 @@ export function generateLevel(n, mode = "kids") {
       rand = seeded(
         Math.imul(n, 2654435761) ^ (mode === "adult" ? 0x2c1b3c6d : 0x5bd1e995),
       );
-    for (let tries = 0; !level; tries++) {
-      // Relax the "blocked at start" goal if a board refuses to cooperate.
-      const goal = Math.max(1, spec.blocked - Math.floor(tries / 400));
-      const candidate = attempt(spec, rand);
-      if (candidate && exitOrder(candidate) && blockedCount(candidate) >= goal)
-        level = candidate;
+    // Of a few boards, one whose chain is as deep as asked and that leaves
+    // few cats to choose from along the way.
+    let best = null,
+      score = -Infinity;
+    for (let tries = 0; tries < 12 && score < 997.5; tries++) {
+      const candidate = build(spec, rand);
+      if (!candidate) continue;
+      const depth = depthOf(candidate),
+        [fewest, most] = spec.depth,
+        off = depth < fewest ? fewest - depth : Math.max(0, depth - most),
+        value = (off ? -10 * off : 1000) - choices(candidate);
+      if (value > score) [best, score] = [candidate, value];
     }
+    // A crowded board can refuse a few times; keep going until one fits.
+    while (!best) best = build(spec, rand);
+    level = best;
   }
   cache.set(key, { ...level, n, mode });
   // Callers may move blocks around; never hand out the cached ones.
