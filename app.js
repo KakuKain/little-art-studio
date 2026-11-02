@@ -23,12 +23,12 @@ import {
   soundOn,
   setSoundOn,
   sounds,
-  say,
 } from "./modules/sound.js?v=1.0.0-beta.14";
 import {
   installMusic,
   musicVolume,
   setMusicVolume,
+  updateMusic,
 } from "./modules/music.js?v=1.0.0-beta.14";
 import { celebrate } from "./modules/game-kit.js?v=1.0.0-beta.14";
 import { openStudio } from "./modules/storage.js?v=1.0.0-beta.14";
@@ -858,8 +858,6 @@ async function switchWork(next) {
 $("home-grid").onclick = (e) => {
   const b = e.target.closest("button");
   if (!b || scheduler.busy || !ready) return;
-  // Each hub card says its name, for children who cannot read it.
-  if (b.dataset.game) say(GAMES.find((g) => g.id === b.dataset.game).name);
   if (b.dataset.game === "coloring") {
     pushScreen({ screen: "coloring" });
     showHome({ section: "coloring", category: null });
@@ -1169,8 +1167,15 @@ $("offline-download").onclick = async () => {
 $("about-modal").addEventListener("toggle", (e) => {
   if (e.newState === "open") showOfflineStatus();
 });
+// The sound switch turns off everything, music included; the music's
+// volume can be set only while there is sound.
 $("sound-on").checked = soundOn();
-$("sound-on").onchange = (e) => setSoundOn(e.target.checked);
+$("music-volume").disabled = !soundOn();
+$("sound-on").onchange = (e) => {
+  setSoundOn(e.target.checked);
+  $("music-volume").disabled = !e.target.checked;
+  updateMusic();
+};
 // The music plays at once while the slider moves, so parents hear the
 // volume they choose.
 const showMusicVolume = (volume) =>

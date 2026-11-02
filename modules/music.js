@@ -2,8 +2,9 @@
 // plays a little waltz over a quiet broken-chord accompaniment, round and
 // round. Browsers play nothing before the child's first touch, so it starts
 // then, and it rests while the app is hidden. Parents set its volume in the
-// about dialog, where 0 turns it off; the volume is kept on this device.
-import { audioContext } from "./sound.js?v=1.0.0-beta.14";
+// about dialog, where 0 turns it off, as does turning the sound off; the
+// volume is kept on this device.
+import { audioContext, soundOn } from "./sound.js?v=1.0.0-beta.14";
 
 const KEY = "little-playground.music";
 export const DEFAULT_VOLUME = 50;
@@ -172,7 +173,7 @@ function tick() {
 }
 
 function start() {
-  if (timer || document.hidden || !musicVolume()) return;
+  if (timer || document.hidden || !soundOn() || !musicVolume()) return;
   if (!master && !connect()) return;
   if (ac.state === "suspended") ac.resume();
   master.gain.cancelScheduledValues(ac.currentTime);
@@ -200,6 +201,11 @@ export function setMusicVolume(volume) {
   if (!timer) return start();
   master.gain.cancelScheduledValues(ac.currentTime);
   master.gain.setTargetAtTime(gainFor(volume), ac.currentTime, 0.05);
+}
+// The sound switch was turned on or off.
+export function updateMusic() {
+  if (soundOn()) start();
+  else stop();
 }
 
 // Every touch or key may start the music, or wake it after the system
