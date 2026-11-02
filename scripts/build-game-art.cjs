@@ -2,7 +2,8 @@
 // sources are transparent PNGs (about 1024px) and stay out of git, like the
 // other raster originals:
 //
-// - animal-<id>.png, food-<id>.png: 動物餐廳 customers and foods, written to
+// - animal-<id>.png, food-<id>.png, tool-<id>.png: 動物餐廳 customers, its
+//   ingredients and dishes, and its kitchen tools (the 電鍋), written to
 //   assets/games/restaurant/.
 // - game-<id>.png: a game's card on the home hub, written to assets/ui/.
 // - restaurant-background-portrait.png, restaurant-background-landscape.png:
@@ -15,10 +16,10 @@
 //
 //   node scripts/build-game-art.cjs [source folder, default tmp/restaurant-art]
 //
-// Each animal, food and card picture is trimmed to its drawing and centered
-// on a transparent square with a little room around the outline, so every
-// animal (and every food) shows at the same size whatever margin the
-// generator left. A cat is trimmed too but keeps its own shape, since it
+// Each animal, food, tool and card picture is trimmed to its drawing and
+// centered on a transparent square with a little room around the outline,
+// so every animal (and every food) shows at the same size whatever margin
+// the generator left. A cat is trimmed too but keeps its own shape, since it
 // fills its block on the board.
 const fs = require("node:fs");
 const path = require("node:path");
@@ -29,12 +30,13 @@ const source = path.resolve(root, process.argv[2] ?? "tmp/restaurant-art");
 const OUTPUT = {
   animal: "assets/games/restaurant",
   food: "assets/games/restaurant",
+  tool: "assets/games/restaurant",
   game: "assets/ui",
 };
-// An animal shows at about 120 CSS px on a phone (170px on a tablet), a food
-// at about 50px (60px) and a hub card at about 120px; these sizes stay sharp
-// on 3× phone screens.
-const SIZES = { animal: 384, food: 192, game: 384 };
+// An animal shows at up to 170 CSS px, an ingredient at about 30–60px and a
+// finished dish on its plate at up to 90px, the 電鍋 at about 100px and a hub
+// card at about 120px; these sizes stay sharp on 3× phone screens.
+const SIZES = { animal: 384, food: 256, tool: 384, game: 384 };
 const PADDING = 0.04;
 // 方塊出門: a cell is at most 96 CSS px, so a cell's side is 192 pixels of a
 // cat (two cells for a lying or sitting one). The fence is scaled to the
@@ -117,7 +119,7 @@ async function seamlessFrame(file) {
   const clear = { r: 0, g: 0, b: 0, alpha: 0 };
   const files = fs
     .readdirSync(source)
-    .filter((name) => /^(animal|food|game)-[a-z]+\.png$/.test(name))
+    .filter((name) => /^(animal|food|tool|game)-[a-z]+\.png$/.test(name))
     .sort();
   for (const name of files) {
     const kind = name.split("-")[0],
