@@ -95,7 +95,7 @@ const GAMES = [
   {
     id: "restaurant",
     name: "動物餐廳",
-    hint: "端出客人想吃的食物",
+    hint: "做出客人點的料理",
     cover: "assets/ui/game-restaurant.webp",
   },
 ];
