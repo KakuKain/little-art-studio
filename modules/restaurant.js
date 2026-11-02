@@ -14,7 +14,7 @@
 // level is checked solvable and the screen has undo. Children's days (kids)
 // start easy enough to finish by tapping anything; grown-ups' (adult) days
 // have more customers, a smaller tray and need planning.
-import { seeded, shuffle } from "./random.js?v=1.0.0-beta.12";
+import { seeded, shuffle } from "./random.js?v=1.0.0-beta.13";
 
 // Each ingredient and dish has a picture named after its id in
 // assets/games/restaurant/ (food-<id>.webp).
