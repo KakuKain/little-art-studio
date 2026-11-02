@@ -25,6 +25,11 @@ import {
   sounds,
   say,
 } from "./modules/sound.js?v=1.0.0-beta.13";
+import {
+  installMusic,
+  musicVolume,
+  setMusicVolume,
+} from "./modules/music.js?v=1.0.0-beta.13";
 import { celebrate } from "./modules/game-kit.js?v=1.0.0-beta.13";
 import { openStudio } from "./modules/storage.js?v=1.0.0-beta.13";
 import { createPainter } from "./modules/painter.js?v=1.0.0-beta.13";
@@ -1167,6 +1172,18 @@ $("about-modal").addEventListener("toggle", (e) => {
 });
 $("sound-on").checked = soundOn();
 $("sound-on").onchange = (e) => setSoundOn(e.target.checked);
+// The music plays at once while the slider moves, so parents hear the
+// volume they choose.
+const showMusicVolume = (volume) =>
+  ($("music-level").textContent = volume ? String(volume) : "關");
+$("music-volume").value = musicVolume();
+showMusicVolume(musicVolume());
+$("music-volume").oninput = (e) => {
+  const volume = Number(e.target.value);
+  setMusicVolume(volume);
+  showMusicVolume(volume);
+};
+installMusic();
 
 installUI({ toolSizes, getTool: () => tool, chooseColor, setTool });
 installAppSupport();

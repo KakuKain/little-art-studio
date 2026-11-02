@@ -129,3 +129,15 @@
   color: #fff;
   background: #e5484d;
 }
+/* The music's volume: a slider, with 「關」 at the far left. */
+.sound-controls .music-volume input {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+.music-volume output {
+  width: 2em;
+  text-align: right;
+  font-weight: 700;
+  color: var(--muted);
+}

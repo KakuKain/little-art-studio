@@ -248,8 +248,16 @@
         <h3>聲音</h3>
         <label
           ><input type="checkbox" id="sound-on" />
-          遊戲的音效，和動物說出想吃的東西</label
+          遊戲的音效，和首頁唸出遊戲名字</label
         >
+        <label class="music-volume" for="music-volume"
+          >背景音樂<input
+            type="range"
+            id="music-volume"
+            min="0"
+            max="100"
+            step="10" /><output id="music-level" for="music-volume"></output
+        ></label>
       </section>
       <section class="install-controls" id="install-controls">
         <h3>安裝到主畫面</h3>

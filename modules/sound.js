@@ -21,11 +21,15 @@ export function setSoundOn(on) {
   if (!on && "speechSynthesis" in window) speechSynthesis.cancel();
 }
 
-function audio() {
-  if (!soundOn() || typeof AudioContext === "undefined") return null;
+// The one audio context, shared with the background music (music.js).
+export function audioContext() {
+  if (typeof AudioContext === "undefined") return null;
   context ??= new AudioContext();
   if (context.state === "suspended") context.resume();
   return context;
+}
+function audio() {
+  return soundOn() ? audioContext() : null;
 }
 // One note that slides from `from` to `to` hertz, fading in and out so it
 // never clicks.
