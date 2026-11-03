@@ -629,7 +629,8 @@ export function createRestaurantGame({ onBack }) {
   $(".game-again").onclick = () => load(level.n);
   // The level picker lists the children's days, and picking one plays it.
   // The grown-ups' days have no levels, so with 大人 chosen it holds only
-  // the 小朋友／大人 switch and a line saying how it goes.
+  // the 小朋友／大人 switch and a line saying how it goes. The switch plays
+  // the other side at once, from the day it was left on.
   function pickLevels(m) {
     for (const button of $(".game-modes").children)
       button.setAttribute("aria-checked", String(button.dataset.mode === m));
@@ -653,10 +654,11 @@ export function createRestaurantGame({ onBack }) {
   $(".game-modes").onclick = (e) => {
     const button = e.target.closest("[data-mode]");
     if (!button) return;
-    if (button.dataset.mode === "kids") return pickLevels("kids");
-    // 大人 goes back to the day the grown-ups were on.
-    dialog.close();
-    if (mode !== "adult") load(track("adult").level, "adult");
+    const m = button.dataset.mode;
+    if (m !== mode) load(track(m).level, m);
+    // 大人 has no levels to pick, so the dialog closes on it.
+    if (m === "adult") dialog.close();
+    else pickLevels(m);
   };
   return {
     open() {

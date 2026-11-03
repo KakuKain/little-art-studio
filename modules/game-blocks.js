@@ -501,8 +501,9 @@ export function createBlocksGame({ onBack }) {
   };
   $(".game-next").onclick = () => load(level.n + 1);
   $(".game-again").onclick = () => load(level.n);
-  // The level picker lists the children's or the grown-ups' levels; its
-  // 小朋友／大人 switch changes the list, and picking a level plays it.
+  // The level picker lists the children's or the grown-ups' levels, and
+  // picking a level plays it. Its 小朋友／大人 switch plays the other side
+  // at once, from the level it was left on, and shows that side's list.
   const dialog = $(".game-levels-dialog");
   function pickLevels(m) {
     for (const button of $(".game-modes").children)
@@ -516,7 +517,10 @@ export function createBlocksGame({ onBack }) {
   $(".game-levels").onclick = () => pickLevels(mode);
   $(".game-modes").onclick = (e) => {
     const button = e.target.closest("[data-mode]");
-    if (button) pickLevels(button.dataset.mode);
+    if (!button) return;
+    const m = button.dataset.mode;
+    if (m !== mode) load(track(m).level, m);
+    pickLevels(m);
   };
   new ResizeObserver(layout).observe(stage);
   return {
