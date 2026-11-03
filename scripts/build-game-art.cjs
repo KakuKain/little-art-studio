@@ -6,6 +6,8 @@
 //   ingredients and dishes, and its kitchen tools (the 電鍋), written to
 //   assets/games/restaurant/.
 // - game-<id>.png: a game's card on the home hub, written to assets/ui/.
+// - category-<id>.png: a coloring category's cover (see categories.json),
+//   written to assets/ui/.
 // - restaurant-background-portrait.png, restaurant-background-landscape.png:
 //   the 動物餐廳 room, cut into strips (see BACKDROP).
 // - cat-<color>-<pose>.png (pose: head, lying, sitting), blocks-frame.png and
@@ -16,7 +18,7 @@
 //
 //   node scripts/build-game-art.cjs [source folder, default tmp/restaurant-art]
 //
-// Each animal, food, tool and card picture is trimmed to its drawing and
+// Each animal, food, tool, card and cover picture is trimmed to its drawing and
 // centered on a transparent square with a little room around the outline,
 // so every animal (and every food) shows at the same size whatever margin
 // the generator left. A cat is trimmed too but keeps its own shape, since it
@@ -32,11 +34,13 @@ const OUTPUT = {
   food: "assets/games/restaurant",
   tool: "assets/games/restaurant",
   game: "assets/ui",
+  category: "assets/ui",
 };
 // An animal shows at up to 170 CSS px, an ingredient at about 30–60px and a
 // finished dish on its plate at up to 90px, the 電鍋 at about 100px and a hub
-// card at about 120px; these sizes stay sharp on 3× phone screens.
-const SIZES = { animal: 384, food: 256, tool: 384, game: 384 };
+// card or category cover at about 120px; these sizes stay sharp on 3× phone
+// screens.
+const SIZES = { animal: 384, food: 256, tool: 384, game: 384, category: 384 };
 const PADDING = 0.04;
 // 方塊出門: a cell is at most 96 CSS px, so a cell's side is 192 pixels of a
 // cat (two cells for a lying or sitting one). The fence is scaled to the
@@ -119,7 +123,9 @@ async function seamlessFrame(file) {
   const clear = { r: 0, g: 0, b: 0, alpha: 0 };
   const files = fs
     .readdirSync(source)
-    .filter((name) => /^(animal|food|tool|game)-[a-z]+\.png$/.test(name))
+    .filter((name) =>
+      /^(animal|food|tool|game|category)-[a-z]+\.png$/.test(name),
+    )
     .sort();
   for (const name of files) {
     const kind = name.split("-")[0],

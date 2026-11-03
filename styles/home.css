@@ -391,18 +391,15 @@
   width: 96px;
   height: 96px;
   flex: none;
-  mix-blend-mode: multiply;
 }
 #home-grid[data-view="categories"] button span {
   font-size: 15px;
   padding-top: 10px;
 }
-/* The blank canvas's card is a colored picture (paper, sun, rainbow and
-   crayons), shown as drawn rather than blended like the line-art covers. */
+/* The blank canvas's picture is as big as the category covers. */
 #home-grid[data-view="categories"] .blank-card img {
   width: 96px;
   height: 96px;
-  mix-blend-mode: normal;
 }
 #home-grid[data-view="categories"] .blank-card {
   --tint: #fff4e2;
