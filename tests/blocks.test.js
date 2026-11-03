@@ -217,14 +217,19 @@ test("grown-ups' levels are bigger, harder and always solvable", () => {
     assert.ok(exitOrder(level), `adult level ${n} must be solvable`);
     assert.ok(blockedCount(level) >= 3, `adult level ${n} needs planning`);
   }
-  assert.deepEqual(
-    [
-      generateLevel(1, "adult").w,
-      generateLevel(20, "adult").w,
-      generateLevel(70, "adult").w,
-    ],
-    [6, 7, 8],
-  );
+  // 8×8 and packed: the cats cover most of the board, more later on, and
+  // every door has cats to let out.
+  const covered = (n) =>
+    generateLevel(n, "adult").blocks.reduce((sum, b) => sum + b.w * b.h, 0) /
+    64;
+  for (const n of [1, 20, 45, 70]) {
+    const level = generateLevel(n, "adult");
+    assert.deepEqual([level.w, level.h], [8, 8]);
+    assert.ok(covered(n) >= levelSpec(n, "adult").fill - 0.1, `level ${n}`);
+    for (const door of level.doors)
+      assert.ok(level.blocks.some((b) => b.color === door.color));
+  }
+  assert.ok(covered(70) > covered(1));
   // Different from the children's level with the same number, and the same
   // every time.
   assert.notDeepEqual(

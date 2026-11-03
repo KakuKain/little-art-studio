@@ -195,79 +195,53 @@ export function blockedCount(level) {
 const FIRST_LEVELS = [
   // 1: drag one block out of its door.
   {
-    w: 3,
-    h: 3,
-    blocks: [{ id: "a", x: 1, y: 1, w: 1, h: 1, color: "pink" }],
-    doors: [{ side: "top", at: 1, size: 1, color: "pink" }],
+    w: 6,
+    h: 6,
+    blocks: [{ id: "a", x: 2, y: 3, w: 1, h: 1, color: "pink" }],
+    doors: [{ side: "top", at: 2, size: 1, color: "pink" }],
   },
   // 2: the yellow block is in the blue block's way; it must leave first.
   {
-    w: 3,
-    h: 3,
+    w: 6,
+    h: 6,
     blocks: [
-      { id: "a", x: 1, y: 1, w: 1, h: 1, color: "blue" },
-      { id: "b", x: 1, y: 0, w: 1, h: 1, color: "yellow" },
+      { id: "a", x: 2, y: 3, w: 1, h: 1, color: "blue" },
+      { id: "b", x: 2, y: 0, w: 1, h: 1, color: "yellow" },
     ],
     doors: [
-      { side: "top", at: 1, size: 1, color: "blue" },
+      { side: "top", at: 2, size: 1, color: "blue" },
       { side: "right", at: 0, size: 1, color: "yellow" },
     ],
   },
 ];
 
 // Board size, block count, colors, chance of two-cell blocks and how deep
-// the chain of "this cat must leave first" should run (fewest, most). Children's levels
-// grow slowly: 4×4 until level 14, 5×5 until 45, then 6×6. The grown-ups'
-// levels (大人) start at 6×6 and reach 8×8 with long chains.
+// the chain of "this cat must leave first" should run (fewest, most).
+// Children's boards are 6×6 with a few cats, more of them and longer chains
+// as the levels go on. The grown-ups' (大人) are 8×8 and packed: `fill` is
+// the share of cells the cats cover, from three quarters to nine tenths.
 export function levelSpec(n, mode = "kids") {
-  if (mode === "adult") {
-    if (n <= 10)
-      return {
-        w: 6,
-        h: 6,
-        count: [8, 10],
-        colors: 4,
-        long: 0.5,
-        depth: [5, 99],
-      };
-    if (n <= 30)
-      return {
-        w: 7,
-        h: 7,
-        count: [10, 13],
-        colors: 5,
-        long: 0.6,
-        depth: [6, 99],
-      };
-    if (n <= 60)
-      return {
-        w: 7,
-        h: 7,
-        count: [12, 14],
-        colors: 5,
-        long: 0.6,
-        depth: [7, 99],
-      };
+  if (mode === "adult")
     return {
       w: 8,
       h: 8,
-      count: [14, 16],
+      fill: n <= 10 ? 0.75 : n <= 30 ? 0.8 : n <= 60 ? 0.85 : 0.9,
       colors: 5,
       long: 0.6,
-      depth: [8, 99],
+      depth: [n <= 10 ? 6 : n <= 30 ? 7 : 8, 99],
     };
-  }
+  const board = { w: 6, h: 6 };
   if (n <= 6)
-    return { w: 4, h: 4, count: [2, 3], colors: 2, long: 0, depth: [2, 2] };
+    return { ...board, count: [3, 4], colors: 2, long: 0, depth: [2, 2] };
   if (n <= 14)
-    return { w: 4, h: 4, count: [3, 4], colors: 3, long: 0.3, depth: [2, 3] };
+    return { ...board, count: [4, 5], colors: 3, long: 0.3, depth: [2, 3] };
   if (n <= 26)
-    return { w: 5, h: 5, count: [4, 5], colors: 3, long: 0.4, depth: [3, 3] };
+    return { ...board, count: [5, 6], colors: 3, long: 0.4, depth: [3, 3] };
   if (n <= 45)
-    return { w: 5, h: 5, count: [5, 7], colors: 4, long: 0.5, depth: [3, 4] };
+    return { ...board, count: [6, 8], colors: 4, long: 0.5, depth: [3, 4] };
   if (n <= 70)
-    return { w: 6, h: 6, count: [6, 8], colors: 4, long: 0.5, depth: [4, 5] };
-  return { w: 6, h: 6, count: [8, 10], colors: 5, long: 0.6, depth: [5, 6] };
+    return { ...board, count: [7, 9], colors: 4, long: 0.5, depth: [4, 5] };
+  return { ...board, count: [8, 10], colors: 5, long: 0.6, depth: [5, 6] };
 }
 
 // How many rounds it takes if every cat that can leave does so at once:
@@ -301,12 +275,9 @@ function choices(level) {
 // of the order they can leave. Each new cat must be able to leave past the
 // cats already there, which keeps the board solvable, and is put where it
 // blocks as many of them as it can, which makes the chains long.
-function build(spec, rand) {
+// A door of each color, one or two cells wide, where no other door is.
+function placeDoors(level, palette, spec, rand) {
   const pick = (list) => list[Math.floor(rand() * list.length)];
-  const count =
-    spec.count[0] + Math.floor(rand() * (spec.count[1] - spec.count[0] + 1));
-  const palette = shuffle(COLORS, rand).slice(0, Math.min(spec.colors, count));
-  const level = { w: spec.w, h: spec.h, blocks: [], doors: [] };
   for (const color of palette) {
     const size = spec.long && rand() < 0.6 ? 2 : 1;
     const spots = [];
@@ -323,6 +294,14 @@ function build(spec, rand) {
     const [side, at] = pick(spots);
     level.doors.push({ side, at, size, color });
   }
+}
+function build(spec, rand) {
+  const pick = (list) => list[Math.floor(rand() * list.length)];
+  const count =
+    spec.count[0] + Math.floor(rand() * (spec.count[1] - spec.count[0] + 1));
+  const palette = shuffle(COLORS, rand).slice(0, Math.min(spec.colors, count));
+  const level = { w: spec.w, h: spec.h, blocks: [], doors: [] };
+  placeDoors(level, palette, spec, rand);
   for (let i = 0; i < count; i++) {
     const free = level.blocks.filter((b) => canExit(level, level.blocks, b.id));
     let best = null,
@@ -355,6 +334,97 @@ function build(spec, rand) {
   return level;
 }
 
+// A packed board can't be built that way: once a cat sits in front of a
+// door, no cat placed after it could leave by that door. So it is filled
+// first and colored after. Cats of random shapes cover `fill` of the cells;
+// then, again and again, one cat that can reach a door past the cats still
+// there is taken out and gets that door's color. Taking them out in that
+// order clears the board, so it is solvable. When no cat can reach a door,
+// one in front of a door is left out of the board, to make room.
+function pack(spec, rand) {
+  const pick = (list) => list[Math.floor(rand() * list.length)];
+  const palette = shuffle(COLORS, rand).slice(0, spec.colors);
+  const level = { w: spec.w, h: spec.h, blocks: [], doors: [] };
+  placeDoors(level, palette, spec, rand);
+  const cells = new Uint8Array(spec.w * spec.h),
+    room = Math.round(spec.fill * spec.w * spec.h);
+  let filled = 0;
+  for (const at of shuffle([...cells.keys()], rand)) {
+    if (filled >= room) break;
+    const long = rand() < spec.long,
+      wide = long && rand() < 0.5;
+    let block = { x: at % spec.w, y: Math.floor(at / spec.w), w: 1, h: 1 };
+    if (
+      long &&
+      fits(level, cells, { w: wide ? 2 : 1, h: wide ? 1 : 2 }, block.x, block.y)
+    )
+      block = { ...block, w: wide ? 2 : 1, h: wide ? 1 : 2 };
+    else if (!fits(level, cells, block, block.x, block.y)) continue;
+    for (let y = block.y; y < block.y + block.h; y++)
+      for (let x = block.x; x < block.x + block.w; x++)
+        cells[y * spec.w + x] = 1;
+    filled += block.w * block.h;
+    block.id = String.fromCharCode(97 + (level.blocks.length % 26));
+    if (level.blocks.length >= 26) block.id += level.blocks.length;
+    level.blocks.push(block);
+  }
+  // Every cat gets the color of a door it can reach once the cats before it
+  // have gone: the first in a shuffled order that can reach one, and of the
+  // doors it can reach, the one with the fewest cats so far, so every color
+  // gets its share.
+  const share = new Map(level.doors.map((d) => [d, 0]));
+  let left = [...level.blocks];
+  while (left.length) {
+    let found = null;
+    for (const block of shuffle(left, rand)) {
+      const spots = reachable(level, left, block.id),
+        doors = level.doors.filter((door) =>
+          spots.some(([x, y]) =>
+            doorFor(level, { ...block, color: door.color }, x, y, door.side),
+          ),
+        );
+      if (doors.length) {
+        const fewest = Math.min(...doors.map((d) => share.get(d)));
+        found = [block, pick(doors.filter((d) => share.get(d) === fewest))];
+        break;
+      }
+    }
+    if (!found) {
+      const blocking = left.filter((b) =>
+          level.doors.some((d) => inFront(level, b, d)),
+        ),
+        out = pick(blocking.length ? blocking : left);
+      level.blocks = level.blocks.filter((b) => b !== out);
+      left = left.filter((b) => b !== out);
+      continue;
+    }
+    const [block, door] = found;
+    block.color = door.color;
+    share.set(door, share.get(door) + 1);
+    left = left.filter((b) => b !== block);
+  }
+  // A door no cat came out of would only puzzle the player.
+  level.doors = level.doors.filter((d) =>
+    level.blocks.some((b) => b.color === d.color),
+  );
+  return level;
+}
+// Whether a block stands against the edge in front of a door, even partly.
+function inFront(level, block, door) {
+  const along = door.side === "top" || door.side === "bottom",
+    start = along ? block.x : block.y,
+    size = along ? block.w : block.h,
+    edge =
+      door.side === "top"
+        ? block.y === 0
+        : door.side === "bottom"
+          ? block.y + block.h === level.h
+          : door.side === "left"
+            ? block.x === 0
+            : block.x + block.w === level.w;
+  return edge && start < door.at + door.size && door.at < start + size;
+}
+
 // Level n of the children's ("kids") or the grown-ups' ("adult") levels.
 const cache = new Map();
 export function generateLevel(n, mode = "kids") {
@@ -369,8 +439,11 @@ export function generateLevel(n, mode = "kids") {
     // few cats to choose from along the way.
     let best = null,
       score = -Infinity;
-    for (let tries = 0; tries < 12 && score < 997.5; tries++) {
-      const candidate = build(spec, rand);
+    // A packed board takes longer to make and is hard anyway: fewer tries.
+    const make = spec.fill ? pack : build,
+      boards = spec.fill ? 5 : 12;
+    for (let tries = 0; tries < boards && score < 997.5; tries++) {
+      const candidate = make(spec, rand);
       if (!candidate) continue;
       const depth = depthOf(candidate),
         [fewest, most] = spec.depth,
@@ -379,7 +452,7 @@ export function generateLevel(n, mode = "kids") {
       if (value > score) [best, score] = [candidate, value];
     }
     // A crowded board can refuse a few times; keep going until one fits.
-    while (!best) best = build(spec, rand);
+    while (!best) best = make(spec, rand);
     level = best;
   }
   cache.set(key, { ...level, n, mode });
