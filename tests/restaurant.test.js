@@ -15,6 +15,7 @@ import {
   solve,
   luckyGames,
   oneStepAhead,
+  generateDay,
   generateLevel,
   levelSpec,
 } from "../modules/restaurant.js";
@@ -208,28 +209,70 @@ test("each new dish is first ordered on the day it joins the menu", () => {
   assert.ok(levelSpec(50).seats > levelSpec(1).seats);
 });
 
-test("grown-ups' days need planning", () => {
-  for (let n = 1; n <= 40; n++) {
-    const level = generateLevel(n, "adult");
+// The grown-ups' days run on: the stacks hold day after day of
+// ingredients, and the next day's customers sit down once a day is over.
+// Playing each day as it would be played alone gets through them all.
+test("grown-ups' days run on and can always be done", () => {
+  for (const n of [1, 12, 33]) {
+    const level = generateLevel(n, "adult"),
+      spec = levelSpec(n, "adult");
     assert.equal(level.mode, "adult");
-    checkLevel(level, `adult level ${n}`);
-    assert.ok(
-      !oneStepAhead(level),
-      `adult level ${n}: looking one tap ahead is enough`,
-    );
+    assert.equal(level.tray, 10);
+    assert.equal(level.customers.length % level.perDay, 0);
+    let state = start(level),
+      before;
+    for (let d = 0; d < level.customers.length / level.perDay; d++) {
+      const day = generateDay(n + d, "adult", spec, before),
+        first = d * level.perDay;
+      assert.deepEqual(
+        day.customers,
+        level.customers.slice(first, first + level.perDay),
+      );
+      // The day starts as if alone: its first customers sit down and the
+      // tray is empty.
+      assert.deepEqual(state.tray, []);
+      assert.deepEqual(
+        state.seats.map((seat) => seat?.customer),
+        [first, first + 1],
+      );
+      for (const stack of solve(day)) {
+        const result = tap(level, state, { stack });
+        assert.ok(result, `adult level ${n}, day ${n + d}`);
+        state = result.state;
+      }
+      assert.equal(state.served, first + level.perDay);
+      before = day.customers;
+    }
+    assert.ok(state.stacks.every((stack) => !stack.length));
   }
-  // Harder than the children's days: more customers, a smaller tray and
-  // far fewer random games that finish.
-  const lucky = (mode) => {
-    let wins = 0;
-    for (let n = 25; n <= 34; n++)
-      wins += luckyGames(generateLevel(n, mode), seeded(n), 20);
-    return wins;
-  };
-  assert.ok(lucky("adult") * 3 < lucky("kids"));
-  assert.ok(levelSpec(1, "adult").customers > levelSpec(1).customers);
-  assert.ok(levelSpec(50, "adult").tray < levelSpec(50).tray);
+  // Fewer stacks to choose from on later days; the same every time.
+  assert.ok(levelSpec(40, "adult").stacks < levelSpec(1, "adult").stacks);
   assert.deepEqual(generateLevel(33, "adult"), generateLevel(33, "adult"));
+});
+
+test("a grown-ups' day waits until the day before is over", () => {
+  const level = {
+    ...day(["greentea", "greentea", "milktea"], {
+      seats: 2,
+      tray: 3,
+      stacks: [
+        ["water", "tea", "cup", "water", "tea", "cup"],
+        ["milk", "water", "tea", "cup"],
+      ],
+    }),
+    perDay: 2,
+  };
+  let state = start(level);
+  for (let i = 0; i < 3; i++) state = tap(level, state, { stack: 0 }).state;
+  // The first customer is done; the third, of the next day, does not sit.
+  assert.equal(state.served, 1);
+  assert.deepEqual(
+    state.seats.map((seat) => seat?.customer ?? null),
+    [null, 1],
+  );
+  for (let i = 0; i < 3; i++) state = tap(level, state, { stack: 0 }).state;
+  assert.equal(state.served, 2);
+  assert.equal(state.seats[0].customer, 2);
 });
 
 test("a level is the same every time and callers cannot change it", () => {

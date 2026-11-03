@@ -122,6 +122,8 @@ const FLIGHT = 300,
   READY = 400,
   THANKS = 1000,
   WALK = 300;
+// The most ingredients a stack shows: a children's stack is never taller.
+const SHOWN = 7;
 
 function animate(el, keyframes, options) {
   return reducedMotion.matches ? null : el.animate(keyframes, options);
@@ -309,26 +311,37 @@ export function createRestaurantGame({ onBack }) {
     }
   }
   // Each stack is a column, its top first; only the top can be taken,
-  // but every ingredient shows, so the player can plan.
+  // but the ingredients under it show, so the player can plan. A
+  // children's stack shows whole; a grown-ups' runs on for days, so its top
+  // SHOWN show and the next comes up from below as one is taken.
   function showStacks() {
     pantry.querySelector(".restaurant-stacks").replaceChildren(
       ...state.stacks.map((stack, i) => {
         const button = document.createElement("button");
         button.className = "restaurant-stack";
         button.dataset.stack = i;
-        button.disabled = !stack.length;
-        button.setAttribute(
-          "aria-label",
-          stack.length ? INGREDIENTS[stack.at(-1)].name : "空的",
-        );
-        for (const item of [...stack].reverse()) {
-          const tile = document.createElement("span");
-          tile.className = "restaurant-tile";
-          tile.append(picture("food", item));
-          button.append(tile);
-        }
+        fillStack(button, stack);
         return button;
       }),
+    );
+  }
+  function fillStack(button, stack) {
+    button.disabled = !stack.length;
+    button.setAttribute(
+      "aria-label",
+      stack.length ? INGREDIENTS[stack.at(-1)].name : "空的",
+    );
+    button.replaceChildren(
+      ...stack
+        .slice(-SHOWN)
+        .reverse()
+        .map((item, i) => {
+          const tile = document.createElement("span");
+          tile.className = "restaurant-tile";
+          tile.style.zIndex = SHOWN - i;
+          tile.append(picture("food", item));
+          return tile;
+        }),
     );
   }
 
@@ -474,7 +487,8 @@ export function createRestaurantGame({ onBack }) {
       let source = button;
       if (from.stack !== undefined) {
         source = button.firstElementChild;
-        setTimeout(() => source.remove());
+        const stack = state.stacks[from.stack];
+        setTimeout(() => fillStack(button, stack));
       } else if (from.cooker) source = cookerEl();
       else if (from.tray !== undefined) {
         source = pantry.querySelectorAll(".restaurant-tray-place")[from.tray];
@@ -546,15 +560,13 @@ export function createRestaurantGame({ onBack }) {
       said.textContent = describeOrder(level.customers[event.customer]);
       if (guide) guideTimer = setTimeout(showHand, 1200);
     } else if (event.type === "done") {
-      track().unlocked = Math.max(track().unlocked, level.n + 1);
-      saveProgress(KEY, progress);
-      // The grown-ups go straight on to the next, harder day.
+      // The grown-ups' days ran out (they run on for weeks): more follow.
       if (mode === "adult") {
-        sounds.cheer();
-        await wait(pause(THANKS));
-        load(level.n + 1);
+        load(track().level);
         return;
       }
+      track().unlocked = Math.max(track().unlocked, level.n + 1);
+      saveProgress(KEY, progress);
       // The cleared card shows the day's customers, all fed.
       $(".win-friends").replaceChildren(
         ...level.customers.map(({ animal }, i) => {
@@ -613,6 +625,16 @@ export function createRestaurantGame({ onBack }) {
       "aria-label",
       left.length ? INGREDIENTS[left.at(-1)].name : "空的",
     );
+    // A grown-ups' day is over once its customers have eaten: the next
+    // visit starts from the day after.
+    if (mode === "adult") {
+      const day = level.n + Math.floor(state.served / level.perDay);
+      if (day > track().level) {
+        track().level = day;
+        track().unlocked = Math.max(track().unlocked, day);
+        saveProgress(KEY, progress);
+      }
+    }
     play(result.events, button);
   });
   $(".game-back").onclick = () => onBack();
@@ -624,7 +646,9 @@ export function createRestaurantGame({ onBack }) {
       .forEach((el) => el.remove());
     render();
   };
-  $(".game-restart").onclick = () => load(level.n);
+  // The grown-ups start again from the start of the day they are on.
+  $(".game-restart").onclick = () =>
+    load(mode === "adult" ? track().level : level.n);
   $(".game-next").onclick = () => load(level.n + 1);
   $(".game-again").onclick = () => load(level.n);
   // The level picker lists the children's days, and picking one plays it.

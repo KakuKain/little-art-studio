@@ -12,8 +12,9 @@
 // small tray until someone does, and with the tray full it is handed back.
 // With the tray full and nothing useful on top the day is stuck, so every
 // level is checked solvable and the screen has undo. Children's days (kids)
-// start easy enough to finish by tapping anything; grown-ups' (adult) days
-// have more customers, a smaller tray and need planning.
+// start easy enough to finish by tapping anything. The grown-ups' (adult)
+// restaurant never closes: day after day the customers keep coming, the
+// stacks never run out and the tray has ten places.
 import { seeded, shuffle } from "./random.js?v=1.0.0-beta.15";
 
 // Each ingredient and dish has a picture named after its id in
@@ -206,11 +207,15 @@ function settle(level, state, events) {
         return;
       events.push({ type: "serve", seat: index, customer: seat.customer });
       state.served++;
-      if (state.next < level.customers.length) {
-        state.seats[index] = { customer: state.next++, plate: [] };
-        events.push({ type: "arrive", seat: index, customer: state.next - 1 });
-      } else state.seats[index] = null;
+      state.seats[index] = null;
       changed = true;
+    });
+    // Empty seats fill up, in order.
+    state.seats.forEach((seat, index) => {
+      if (seat || state.next >= level.customers.length || nextDay(level, state))
+        return;
+      state.seats[index] = { customer: state.next++, plate: [] };
+      events.push({ type: "arrive", seat: index, customer: state.next - 1 });
     });
     for (let i = 0; i < state.tray.length; i++) {
       const item = state.tray[i],
@@ -225,6 +230,14 @@ function settle(level, state, events) {
   }
   if (state.served === level.customers.length) events.push({ type: "done" });
 }
+// Whether the next customer is the first of a grown-ups' day while some
+// of the day before are still eating: they wait, so every day starts with
+// all the earlier days' ingredients used up, as when it is played alone.
+function nextDay(level, state) {
+  return (
+    level.perDay && state.next % level.perDay === 0 && state.served < state.next
+  );
+}
 
 // Customers per day, how many sit at once, the dishes on the menu, how
 // many stacks hold the ingredients and how many places the tray has. A day
@@ -232,32 +245,19 @@ function settle(level, state, events) {
 // must be finished by at least `easy` of them, later days by at most
 // `lucky`, so they need some thought. The children's menu grows one idea
 // at a time: drinks, then 白飯 from the 電鍋, then sushi made from that 白飯.
-// Grown-ups' days have the whole menu, more customers, two seats and a
-// two-place tray; random taps hardly ever finish them, and neither does
-// looking one tap ahead (oneStepAhead()).
+// Grown-ups' days have the whole menu, two seats, ten customers and a
+// ten-place tray; from a later day there are fewer stacks to choose from
+// (six, then five, then four), so more has to wait on the tray.
 export function levelSpec(n, mode = "kids") {
   const all = Object.keys(DISHES);
-  if (mode === "adult") {
-    if (n <= 10)
-      return {
-        customers: 8,
-        seats: 2,
-        menu: all,
-        stacks: 5,
-        tray: 2,
-        lucky: 2,
-      };
-    if (n <= 30)
-      return {
-        customers: 10,
-        seats: 2,
-        menu: all,
-        stacks: 6,
-        tray: 2,
-        lucky: 1,
-      };
-    return { customers: 12, seats: 2, menu: all, stacks: 6, tray: 2, lucky: 0 };
-  }
+  if (mode === "adult")
+    return {
+      customers: 10,
+      seats: 2,
+      menu: all,
+      stacks: n <= 10 ? 6 : n <= 30 ? 5 : 4,
+      tray: 10,
+    };
   const drinks = ["greentea", "milktea"],
     rice = [...drinks, "cookedrice"];
   if (n <= 2)
@@ -296,14 +296,17 @@ export function levelSpec(n, mode = "kids") {
   return { customers: 10, seats: 3, menu: all, stacks: 6, tray: 3, lucky: 10 };
 }
 
-// Customers in order. The first one orders the newest dish on the menu, so
-// a level that brings one in always shows it. No animal sits twice at once,
-// nor comes right back.
-function makeCustomers(spec, rand, newest) {
+// Customers in order, after the ones `before` (the day before, when days
+// run on). The first one orders the newest dish on the menu, so a level
+// that brings one in always shows it. No animal sits twice at once, nor
+// comes right back.
+function makeCustomers(spec, rand, newest, before = []) {
   const animals = Object.keys(ANIMALS),
     customers = [];
   for (let i = 0; i < spec.customers; i++) {
-    const recent = customers.slice(-spec.seats).map((c) => c.animal),
+    const recent = [...before, ...customers]
+        .slice(-spec.seats)
+        .map((c) => c.animal),
       choices = animals.filter((a) => !recent.includes(a)),
       animal = choices[Math.floor(rand() * choices.length)],
       dish =
@@ -392,37 +395,66 @@ function stacksFor(customers, count, rand) {
   return stacks;
 }
 
-// Level n of the children's ("kids") or the grown-ups' ("adult") days. The
-// same every time, on every device.
+// Day n: its customers, after the ones `before` when days run on, and the
+// stacks holding exactly their ingredients. The same every time, on every
+// device.
+export function generateDay(n, mode, spec, before) {
+  const rand = seeded(
+    Math.imul(n, 2246822519) ^ (mode === "adult" ? 0x6c078965 : 0x2545f491),
+  );
+  const previous = n > 1 ? levelSpec(n - 1, mode).menu : [],
+    newest = spec.menu.find((dish) => !previous.includes(dish));
+  for (let tries = 0; ; tries++) {
+    const customers = makeCustomers(spec, rand, newest, before),
+      day = {
+        seats: spec.seats,
+        tray: spec.tray,
+        customers,
+        stacks: stacksFor(customers, spec.stacks, rand),
+      };
+    // A grown-ups' day only has to be one that can be done.
+    if (mode === "adult") {
+      if (oneStepAhead(day) || solve(day, 3000)) return day;
+      continue;
+    }
+    // A finished game shows the day can be done; without one, solve()
+    // has to make sure, and a day it cannot settle quickly is skipped.
+    // Give up on the luck rule if a day refuses to cooperate.
+    const wins = luckyGames(day, rand, 20),
+      fits = spec.easy ? wins >= spec.easy : wins <= spec.lucky;
+    if ((fits || tries > 300) && (wins > 0 || solve(day, 3000))) return day;
+  }
+}
+
+// Level n of the children's ("kids") or the grown-ups' ("adult") days. A
+// grown-ups' level runs on for AHEAD days from day n: their customers one
+// after another, and under each stack's ingredients for day n come those
+// for the next day, and so on, so the stacks never run out. `perDay`
+// customers make a day. Each day can be done by itself, and a day's
+// customers sit down only once the day before is over (nextDay()), so
+// playing each day as it would be played alone gets through them all.
+const AHEAD = 20;
 const cache = new Map();
 export function generateLevel(n, mode = "kids") {
   const key = `${mode}:${n}`;
   let level = cache.get(key);
   if (!level) {
-    const spec = levelSpec(n, mode),
-      rand = seeded(
-        Math.imul(n, 2246822519) ^ (mode === "adult" ? 0x6c078965 : 0x2545f491),
-      );
-    const previous = n > 1 ? levelSpec(n - 1, mode).menu : [],
-      newest = spec.menu.find((dish) => !previous.includes(dish));
-    for (let tries = 0; !level; tries++) {
-      const customers = makeCustomers(spec, rand, newest),
-        candidate = {
-          seats: spec.seats,
-          tray: spec.tray,
-          customers,
-          stacks: stacksFor(customers, spec.stacks, rand),
-        };
-      // A finished game shows the day can be done; without one, solve()
-      // has to make sure, and a day it cannot settle quickly is skipped.
-      // Give up on the luck rule if a day refuses to cooperate.
-      const wins = luckyGames(candidate, rand, 20),
-        fits = spec.easy
-          ? wins >= spec.easy
-          : wins <= spec.lucky && (mode === "kids" || !oneStepAhead(candidate));
-      if ((fits || tries > 300) && (wins > 0 || solve(candidate, 3000)))
-        level = candidate;
-    }
+    const spec = levelSpec(n, mode);
+    if (mode === "adult") {
+      const days = [];
+      for (let d = n; d < n + AHEAD; d++)
+        days.push(generateDay(d, mode, spec, days.at(-1)?.customers));
+      level = {
+        seats: spec.seats,
+        tray: spec.tray,
+        customers: days.flatMap((day) => day.customers),
+        // A stack's top is its last item: day n's go last.
+        stacks: days[0].stacks.map((_, i) =>
+          [...days].reverse().flatMap((day) => day.stacks[i]),
+        ),
+        perDay: spec.customers,
+      };
+    } else level = generateDay(n, mode, spec);
     level = {
       n,
       mode,
