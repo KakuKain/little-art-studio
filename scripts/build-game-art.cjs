@@ -10,6 +10,8 @@
 //   written to assets/ui/.
 // - restaurant-background-portrait.png, restaurant-background-landscape.png:
 //   the 動物餐廳 room, cut into strips (see BACKDROP).
+// - ui-<id>.png: 動物餐廳's plate, saucer, tray and shelf, written to
+//   assets/games/restaurant/ (see styles/game-restaurant.css).
 // - cat-<color>-<pose>.png (pose: head, lying, sitting), blocks-frame.png and
 //   blocks-background-portrait|landscape.png: 方塊出門's cats, the fence
 //   round its board and its room, written to assets/games/blocks/.
@@ -22,7 +24,8 @@
 // centered on a transparent square with a little room around the outline,
 // so every animal (and every food) shows at the same size whatever margin
 // the generator left. A cat is trimmed too but keeps its own shape, since it
-// fills its block on the board.
+// fills its block on the board; so does a ui- piece, whose outline must meet
+// the picture's edges for the page to stretch it.
 const fs = require("node:fs");
 const path = require("node:path");
 const sharp = require("sharp");
@@ -48,6 +51,10 @@ const PADDING = 0.04;
 // screen.
 const BLOCKS = "assets/games/blocks";
 const CAT_BOX = { head: [192, 192], lying: [384, 192], sitting: [192, 384] };
+// A ui- piece fits in this many pixels: the plate shows at up to about 120
+// CSS px, a saucer at up to 55, and the tray and shelf are stretched to
+// 300 or more, their ends kept sharp.
+const UI = { plate: 384, saucer: 192, tray: 768, shelf: 768 };
 // The generated fence is scaled to 1024 pixels, where its wood is 88 pixels
 // wide and each corner fits in 128. The fence written is 1600 pixels square,
 // so its wood is 88/1600 of its side: thin enough beside 8 × 8 cells.
@@ -186,15 +193,24 @@ async function seamlessFrame(file) {
       picture = sharp(file)
         .extract(await drawingBox(file))
         .resize(width, height, { fit: "inside" });
-      target = name.replace(/\.png$/, ".webp");
+      target = path.join(BLOCKS, name.replace(/\.png$/, ".webp"));
+    } else if (/^ui-[a-z]+\.png$/.test(name)) {
+      const size = UI[name.slice(3, -4)] ?? 384;
+      picture = sharp(file)
+        .extract(await drawingBox(file))
+        .resize(size, size, { fit: "inside" });
+      target = path.join(OUTPUT.tool, name.replace(/\.png$/, ".webp"));
     } else if (name === "blocks-frame.png") {
       picture = await seamlessFrame(file);
-      target = "frame.webp";
+      target = path.join(BLOCKS, "frame.webp");
     } else if (/^blocks-background-(portrait|landscape)\.png$/.test(name)) {
       picture = sharp(file);
-      target = name.replace(/^blocks-background-(\w+)\.png$/, "room-$1.webp");
+      target = path.join(
+        BLOCKS,
+        name.replace(/^blocks-background-(\w+)\.png$/, "room-$1.webp"),
+      );
     } else continue;
-    target = path.join(root, BLOCKS, target);
+    target = path.join(root, target);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     await picture
       .webp({ quality: 84, alphaQuality: 90, smartSubsample: true, effort: 6 })

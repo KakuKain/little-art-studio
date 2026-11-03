@@ -242,7 +242,11 @@ export function createRestaurantGame({ onBack }) {
       stacks = document.createElement("div");
     tray.className = "restaurant-tray";
     tray.setAttribute("aria-label", "托盤");
+    // Five places to a row: the grown-ups' ten make two.
+    tray.style.setProperty("--places", Math.min(level.tray, 5));
+    tray.style.setProperty("--rows", Math.ceil(level.tray / 5));
     stacks.className = "restaurant-stacks";
+    stacks.style.setProperty("--stacks", level.stacks.length);
     pantry.replaceChildren(tray, stacks);
   }
 

@@ -128,27 +128,29 @@ body[data-game="restaurant"] #game-restaurant {
       url("../assets/games/restaurant/room-panels-landscape.webp");
   }
 }
-/* A plate in front of each customer, with a faint picture of every part
-   the dish takes. */
+/* A round plate in front of each customer, with a faint picture of every
+   part the dish takes, two to a row. The plate, saucer, tray and shelf are
+   drawn pictures (ui-*.webp, from scripts/build-game-art.cjs); the parts on
+   a plate are sized by its width (cqi). */
 .restaurant-plate {
   grid-row: 2;
   z-index: 2;
   align-self: start;
   justify-self: center;
-  width: min(100%, calc(var(--part) * 5.5));
+  container-type: inline-size;
+  width: min(100%, calc(var(--part) * 3));
+  aspect-ratio: 1;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-content: center;
-  gap: 2px;
-  min-height: calc(var(--part) * 2.6);
-  margin-top: 14px;
-  padding: 6px 2px;
-  background: #fffdf8;
-  border-radius: 999px / 60%;
-  box-shadow:
-    inset 0 0 0 3px #eadbc4,
-    0 4px 0 #dcc6a4;
+  margin-top: 10px;
+  background: url("../assets/games/restaurant/ui-plate.webp") center / 100% 100%
+    no-repeat;
+}
+.restaurant-plate .restaurant-slot {
+  margin: 1cqi 2cqi;
+  font-size: 31cqi;
 }
 .restaurant-plate.empty {
   visibility: hidden;
@@ -179,7 +181,7 @@ body[data-game="restaurant"] #game-restaurant {
 }
 /* The parts become the dish. */
 .restaurant-plate.ready .restaurant-picture {
-  font-size: calc(var(--part) * 2);
+  font-size: 62cqi;
   animation: served 300ms ease-out;
 }
 /* The 電鍋 on the counter. While someone waits for 白飯 it shows what it
@@ -224,49 +226,81 @@ body[data-game="restaurant"] #game-restaurant {
   animation: steam 900ms ease-out;
   pointer-events: none;
 }
-/* Below the counter: the tray for ingredients nobody needs yet, and the
-   stacks. Every ingredient shows, but only the top one (first) of a stack
-   can be taken. */
+/* Below the counter, on one shelf: the tray for ingredients nobody needs
+   yet, and the stacks. Every ingredient shows, but only the top one
+   (first) of a stack can be taken. */
 .restaurant-pantry {
   grid-row: 3;
   grid-column: 1 / -1;
   z-index: 2;
+  container-type: inline-size;
+  justify-self: center;
+  width: min(100%, 520px);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding-top: 14px;
+  margin-top: 10px;
+  padding: 14px 14px 20px;
+  /* The shelf keeps its corners and its thick front edge and stretches
+     between them (sliced in pixels of the 768px picture). Browsers can
+     leave hairline gaps where the stretched pieces meet, so its cream is
+     painted behind them too, inside its outline. */
+  border-image: url("../assets/games/restaurant/ui-shelf.webp") 112 112 124 112
+    fill / 28px 28px 31px;
+  background: linear-gradient(#fbecd8, #fbecd8) 10px 10px / calc(100% - 20px)
+    calc(100% - 24px) no-repeat;
 }
+/* A wooden tray with a handle at each end; each place on it is an empty
+   saucer. The tray is drawn as tall as its rows (--rows, set by the
+   screen), so its ends (the 178 pixels at each side of the 424px tall
+   picture) keep their shape and only its plain middle stretches. Sizes are
+   in em (a place is 1.2em); --h is the height the tray is drawn, a little
+   past its box above and below, over the shelf's margins, so it takes less
+   room. */
 .restaurant-tray {
-  display: flex;
-  gap: 6px;
-  padding: 6px 10px;
-  background: #e9c99a;
-  border-radius: 16px;
-  box-shadow: inset 0 -4px 0 #d3ad77;
+  --h: calc((var(--rows, 1) * 1.35 - 0.15) / 0.74);
+  display: grid;
+  grid-template-columns: repeat(var(--places, 5), auto);
+  gap: 0.15em;
+  padding: calc(var(--h) * 0.06em) calc(var(--h) * 0.25em);
+  /* A row of places (five of the grown-ups' ten) fits across the pantry. */
+  font-size: clamp(28px, min(9vw, 5dvh), 44px);
+  font-size: min(
+    clamp(28px, min(9vw, 5dvh), 44px),
+    calc(100cqi / (var(--places) * 1.35 - 0.15 + var(--h) * 0.5))
+  );
+  border-image: url("../assets/games/restaurant/ui-tray.webp") 0 178 fill / 0
+    calc(var(--h) * 178em / 424) / calc(var(--h) * 0.07em) 0;
+  /* Its floor behind the joins, as on the shelf. */
+  background: linear-gradient(#fce0ba, #fce0ba) center /
+    calc(100% - var(--h) * 0.6em) calc(var(--h) * 0.74em) no-repeat;
+}
+.restaurant-tray-place,
+.restaurant-tile {
+  background: url("../assets/games/restaurant/ui-saucer.webp") center / 100%
+    no-repeat;
 }
 .restaurant-tray-place {
   display: grid;
   place-items: center;
   width: 1.2em;
   height: 1.2em;
-  font-size: clamp(28px, min(9vw, 5dvh), 44px);
-  background: #fff6e8;
-  border-radius: 12px;
 }
 .restaurant-stacks {
   position: relative;
   display: flex;
-  justify-content: center;
+  justify-content: space-evenly;
   align-items: flex-start;
   gap: 6px;
-  width: min(100%, 520px);
-  padding: 10px;
-  background: #f6e3c4;
-  border-radius: 24px;
-  box-shadow: inset 0 -6px 0 #e8c999;
+  width: 100%;
 }
+/* Each ingredient sits on a saucer, which lies on the one under it, peeking
+   out below (the screen sets their z-index, top first). */
 .restaurant-stack {
+  /* The stacks fit side by side across the pantry. */
+  --fit: calc((100cqi - (var(--stacks) - 1) * 6px) / var(--stacks) / 1.12);
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -275,6 +309,7 @@ body[data-game="restaurant"] #game-restaurant {
   max-width: 64px;
   padding: 4px 0;
   font-size: clamp(30px, min(10vw, 5.4dvh), 48px);
+  font-size: min(clamp(30px, min(10vw, 5.4dvh), 48px), var(--fit));
   background: none;
   box-shadow: none;
 }
@@ -284,20 +319,12 @@ body[data-game="restaurant"] #game-restaurant {
   place-items: center;
   width: 1.12em;
   height: 1.12em;
-  background: #fff;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 2px #e0cdb0;
 }
 .restaurant-tile + .restaurant-tile {
   margin-top: -0.42em;
   filter: brightness(0.93) saturate(0.85);
 }
-.restaurant-tile:first-child {
-  z-index: 1;
-  box-shadow:
-    inset 0 0 0 2px #e0cdb0,
-    0 3px 0 #d8bf98;
-}
+.restaurant-tray-place .restaurant-picture,
 .restaurant-tile .restaurant-picture {
   width: 0.86em;
   height: 0.86em;
@@ -324,7 +351,11 @@ body[data-game="restaurant"] #game-restaurant {
 @media (orientation: landscape) and (min-width: 600px) {
   .restaurant-stage {
     --room: calc(55vw - 28px);
-    grid-template-columns: repeat(var(--cols), minmax(0, 1fr)) minmax(0, 0.9fr);
+    /* The pantry keeps room for six stacks side by side. */
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr)) minmax(
+        220px,
+        0.9fr
+      );
     grid-template-rows: minmax(0, 1fr) auto;
   }
   .restaurant-counter {
@@ -334,7 +365,7 @@ body[data-game="restaurant"] #game-restaurant {
     grid-row: 1 / 3;
     grid-column: -2;
     align-self: center;
-    padding-top: 0;
+    margin-top: 0;
   }
   .restaurant-cooker {
     grid-column: -3;
@@ -353,8 +384,17 @@ body[data-game="restaurant"] #game-restaurant {
     margin-top: 8px;
   }
   .restaurant-stack,
-  .restaurant-tray-place {
+  .restaurant-tray {
     font-size: clamp(26px, 9vh, 36px);
+  }
+  .restaurant-stack {
+    font-size: min(clamp(26px, 9vh, 36px), var(--fit));
+  }
+  .restaurant-tray {
+    font-size: min(
+      clamp(26px, 9vh, 36px),
+      calc(100cqi / (var(--places) * 1.35 - 0.15 + var(--h) * 0.5))
+    );
   }
 }
 @media (prefers-reduced-motion: reduce) {
