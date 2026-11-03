@@ -4,12 +4,12 @@ import {
   setStatus,
   holdToOpen,
   onHold,
-} from "./modules/ui.js?v=1.0.0-beta.15";
+} from "./modules/ui.js?v=1.0.0-beta.16";
 import {
   categoryStatus,
   downloadCategory,
   pruneArtCache,
-} from "./modules/offline.js?v=1.0.0-beta.15";
+} from "./modules/offline.js?v=1.0.0-beta.16";
 import {
   createWork,
   record,
@@ -18,27 +18,27 @@ import {
   moveCursor,
   addCheckpoint,
   hasVisibleContent,
-} from "./modules/history.js?v=1.0.0-beta.15";
+} from "./modules/history.js?v=1.0.0-beta.16";
 import {
   soundOn,
   setSoundOn,
   sounds,
-} from "./modules/sound.js?v=1.0.0-beta.15";
+} from "./modules/sound.js?v=1.0.0-beta.16";
 import {
   installMusic,
   musicVolume,
   setMusicVolume,
   updateMusic,
-} from "./modules/music.js?v=1.0.0-beta.15";
-import { celebrate } from "./modules/game-kit.js?v=1.0.0-beta.15";
-import { openStudio } from "./modules/storage.js?v=1.0.0-beta.15";
-import { createPainter } from "./modules/painter.js?v=1.0.0-beta.15";
+} from "./modules/music.js?v=1.0.0-beta.16";
+import { celebrate } from "./modules/game-kit.js?v=1.0.0-beta.16";
+import { openStudio } from "./modules/storage.js?v=1.0.0-beta.16";
+import { createPainter } from "./modules/painter.js?v=1.0.0-beta.16";
 import {
   ART_CATALOG,
   ART_CATEGORIES,
-} from "./assets/coloring/catalog.js?v=1.0.0-beta.15";
-import { loadArtwork, thumbnailURL } from "./modules/assets.js?v=1.0.0-beta.15";
-import { loadRegions } from "./modules/regions.js?v=1.0.0-beta.15";
+} from "./assets/coloring/catalog.js?v=1.0.0-beta.16";
+import { loadArtwork, thumbnailURL } from "./modules/assets.js?v=1.0.0-beta.16";
+import { loadRegions } from "./modules/regions.js?v=1.0.0-beta.16";
 import {
   surfaceFor,
   sameSurface,
@@ -47,21 +47,21 @@ import {
   toPixel,
   CANVAS_WIDTH,
   previewCrop,
-} from "./modules/surface.js?v=1.0.0-beta.15";
+} from "./modules/surface.js?v=1.0.0-beta.16";
 import {
   fillOperations,
   FILL_VERSION,
-} from "./modules/migrations.js?v=1.0.0-beta.15";
+} from "./modules/migrations.js?v=1.0.0-beta.16";
 import {
   planReplay,
   strokePen,
   pixelPlacement,
-} from "./modules/renderer.js?v=1.0.0-beta.15";
-import { createScheduler } from "./modules/scheduler.js?v=1.0.0-beta.15";
-import { PALETTE } from "./modules/palette.js?v=1.0.0-beta.15";
-import { installAppSupport } from "./modules/install.js?v=1.0.0-beta.15";
-import { createBlocksGame } from "./modules/game-blocks.js?v=1.0.0-beta.15";
-import { createRestaurantGame } from "./modules/game-restaurant.js?v=1.0.0-beta.15";
+} from "./modules/renderer.js?v=1.0.0-beta.16";
+import { createScheduler } from "./modules/scheduler.js?v=1.0.0-beta.16";
+import { PALETTE } from "./modules/palette.js?v=1.0.0-beta.16";
+import { installAppSupport } from "./modules/install.js?v=1.0.0-beta.16";
+import { createBlocksGame } from "./modules/game-blocks.js?v=1.0.0-beta.16";
+import { createRestaurantGame } from "./modules/game-restaurant.js?v=1.0.0-beta.16";
 const $ = (id) => document.getElementById(id),
   canvas = $("drawing"),
   ctx = canvas.getContext("2d"),

@@ -15,7 +15,7 @@
 // start easy enough to finish by tapping anything. The grown-ups' (adult)
 // restaurant never closes: day after day the customers keep coming, the
 // stacks never run out and the tray has ten places.
-import { seeded, shuffle } from "./random.js?v=1.0.0-beta.15";
+import { seeded, shuffle } from "./random.js?v=1.0.0-beta.16";
 
 // Each ingredient and dish has a picture named after its id in
 // assets/games/restaurant/ (food-<id>.webp).
